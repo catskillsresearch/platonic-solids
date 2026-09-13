@@ -11,6 +11,13 @@ incidence \(pF = 2E\), \(qV = 2E\) yields the Diophantine inequality
 \((p-2)(q-2) < 4\), hence exactly five Platonic pairs. The same identities
 force \(E > 0\) without a geometric non-degeneracy axiom.
 
+The supporting topology proves singular \(H_n(S^n;R)\cong R\) for \(n>0\)
+from open-cover excision. A chain-level bridge additionally proves that any
+finite \(2\)-complex quasi-isomorphic to singular chains of a space of the
+homotopy type of \(S^2\) has Betti profile \((1,0,1)\), and therefore yields
+the Platonic classification. Constructing that comparison from a concrete
+polyhedral cellulation is a separate geometric input.
+
 In dimension 4, \(\chi(S^3) = 0\) supplies no bound. The six regular convex
 4-polytopes are the Platonic-cell / Platonic-vertex-figure triples whose
 Schläfli Gram determinant

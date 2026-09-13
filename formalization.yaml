@@ -9,7 +9,10 @@ project:
     R^4 (the six regular 4-polytopes). In dimension 3, the Euler
     characteristic χ(S^2)=2 together with regularity incidence yields
     (p-2)(q-2)<4 and forces E>0 without a geometric non-degeneracy
-    axiom. In dimension 4, χ(S^3)=0 supplies no bound; the six spherical
+    axiom. A chain-level bridge proves that any finite 2-complex
+    quasi-isomorphic to singular chains of an S^2 model has Betti
+    profile 1,0,1 and hence satisfies the homological classification.
+    In dimension 4, χ(S^3)=0 supplies no bound; the six spherical
     triples are those Platonic-cell / Platonic-vertex-figure combinations
     whose Schläfli Gram determinant is strictly positive. The informal
     account is the companion note PlatonicSolids.md. The Lean source was
@@ -39,6 +42,9 @@ status:
     strictly positive Schläfli Gram determinant Δ, defined from
     Mathlib Real.sin and Real.cos. The same development proves the
     Gram matrix is positive definite iff the triple is one of the six.
+    Outside the compared surface, platonic_solids_3d_of_sphere derives
+    Euler's formula from a chain-level quasi-isomorphism to singular
+    chains of a space homotopy-equivalent to S^2.
     Nothing in the compared statement is imported from a prior Palomar
     entry.
   sorry_count: 0
@@ -85,8 +91,10 @@ fidelity:
     The algebraic Euler–Poincaré identities and the radial-projection
     homeomorphism are proved. The compared 3D theorem still takes
     V+F=E+2 so that Palomar Comparator types stay combinatorial;
-    platonic_solids_3d_of_sphere is an optional bridge that takes
-    numeric Betti numbers 1, 0, 1, which agree with singular H_*(S^2).
+    the optional cellularChainComplex construction identifies the
+    integer Betti definitions with categorical homology finranks, and
+    platonic_solids_3d_of_sphere derives the numbers 1,0,1 from a
+    quasi-isomorphism to singular chains of an S^2 model.
     The 4D compared theorem classifies Platonic-compatible triples by
     the sign of Δ = det(schlafliGram), using Mathlib Real.sin / Real.cos
     and the rank-4 Gram matrix. It does not construct geometric
@@ -185,7 +193,12 @@ review:
     The author directed and reviewed the development. No external
     review has been performed.
 
-known_gaps: []
+known_gaps:
+  - >-
+    The development does not yet construct the cellular-to-singular
+    quasi-isomorphism from a finite simplicial cellulation and its
+    geometric realization. The optional S^2 bridge takes this
+    chain-level comparison as an explicit hypothesis.
 
 limitations:
   - >-
@@ -202,7 +215,11 @@ limitations:
     Mesh shrinking, the small-chain retract, and the open-cover
     quasi-isomorphism are proved. Stereographic U ∩ V ≃ₕ S^{n-1}
     and singular H_n(S^n; R) ≅ R for n>0 (vanishing in the other
-    positive degrees).
+    positive degrees). The finite cellular complex is packaged
+    categorically, its homology finranks are proved equal to
+    betti0/betti1/betti2, and a quasi-isomorphism to an S^2 model
+    yields Betti profile 1,0,1. Constructing that quasi-isomorphism
+    naturally from a polyhedral cellulation remains separate.
   - >-
     The compared 4D theorem sends a Platonic-compatible triple with
     Δ > 0 to one of the six regular convex 4-polytopes. The
@@ -229,6 +246,11 @@ alignment:
     - source: "E>0 is forced by Euler and regularity; it is not an independent axiom (PlatonicSolids.md, §2.4)"
       lean: "edges_pos_of_regular"
       module: "Challenge (statement), Solution / PlatonicSolids (proof)"
+      status: proved
+
+    - source: "A finite 2-complex quasi-isomorphic to singular chains of an S^2 model has Betti profile 1,0,1 (PlatonicSolids.md, §2.1)"
+      lean: "cellular_betti_profile_of_quasiIso_sphere2"
+      module: "PlatonicSolids/SphereSingularHomology (supporting, not compared)"
       status: proved
 
     - source: "Platonic cells and vertex figures with Δ>0 are one of the six regular convex 4-polytopes (PlatonicSolids.md, §§3–4)"

@@ -10,6 +10,8 @@ flowchart TD
   Top["U ∩ V ≃ₕ S^{n-1}"]
   Drop["hex-free sphere MV"]
   Hn["H_{n+1}(S^{n+1}) ≅ H_n(S^n)"]
+  Comp["cellular → singular QuasiIso (hypothesis)"]
+  Betti["cellular Betti profile 1, 0, 1"]
   Euler["platonic_solids_3d_of_sphere"]
   Mesh --> Ev
   Supp --> Ev
@@ -20,4 +22,6 @@ flowchart TD
   Exc --> Drop
   Top --> Hn
   Drop --> Hn
-  Hn --> Euler
+  Hn --> Betti
+  Comp --> Betti
+  Betti --> Euler

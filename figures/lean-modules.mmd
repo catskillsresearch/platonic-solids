@@ -7,6 +7,7 @@ flowchart TB
     MV["MayerVietoris"]
     SE["SingularExcision"]
     SSH["SphereSingularHomology"]
+    CH["CellularHomology"]
     S2["Sphere2Homology"]
     S3["Sphere3Homology"]
     EB["EulerBetti"]
@@ -17,6 +18,8 @@ flowchart TB
     SE --> MV
     SE --> SSH
     MV --> SSH
+    EP --> CH
+    CH --> SSH
     S2 --> EB
     S3 --> EB
     EP --> EB
@@ -29,6 +32,7 @@ flowchart TB
     Rec --> Inc
     EP --> Inc
     EB --> Inc
+    Inc --> SSH
   end
   subgraph Gram4["4D Gram matrix"]
     Ang["Angles"]

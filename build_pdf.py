@@ -34,6 +34,7 @@ LEAN_MODULES = [
     (LEAN, "Root import of the section-sized modules"),
     (LEAN_DIR / "RadialProjection.lean", r"Frontier of a bounded convex body is homeomorphic to the sphere"),
     (LEAN_DIR / "EulerPoincare.lean", r"Algebraic Euler--Poincar\'e in dimensions $2$ and $3$"),
+    (LEAN_DIR / "CellularHomology.lean", r"Cellular Betti finranks and quasi-isomorphism transport"),
     (LEAN_DIR / "SingularHomology.lean", r"Singular $H_0(S^n)$, $H_*(S^0)$, homotopy invariance"),
     (LEAN_DIR / "RelativeHomology.lean", r"Relative singular homology and the LES of a pair"),
     (LEAN_DIR / "MayerVietoris.lean", r"Mayer--Vietoris of an excisive triad; stereographic cover of $S^n$"),

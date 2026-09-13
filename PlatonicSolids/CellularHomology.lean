@@ -91,7 +91,9 @@ theorem ShortComplex.int_finrank_homology_eq
     omega
   have hiso := S.moduleCatHomologyIso.toLinearEquiv.finrank_eq
   change finrank K S.homology =
-    finrank K (LinearMap.ker S.g.hom ⧸ LinearMap.range S.moduleCatToCycles) at hiso
+    finrank K
+      (HasQuotient.Quotient (LinearMap.ker S.g.hom)
+        (LinearMap.range S.moduleCatToCycles)) at hiso
   rw [hiso, Submodule.finrank_quotient]
   have hle :
       finrank K (LinearMap.range S.moduleCatToCycles) ≤
@@ -107,10 +109,10 @@ theorem cellularChainComplex_homology_finrank_zero
   let C := cellularChainComplex d₂ d₁ hcomp
   letI : FiniteDimensional K (C.sc' 1 0 0).X₁ := by
     change FiniteDimensional K C₁
-    exact ‹FiniteDimensional K C₁›
+    infer_instance
   letI : FiniteDimensional K (C.sc' 1 0 0).X₂ := by
     change FiniteDimensional K C₀
-    exact ‹FiniteDimensional K C₀›
+    infer_instance
   calc
     (finrank K (C.homology 0) : ℤ) =
         finrank K ((C.sc' 1 0 0).homology) := by
@@ -137,10 +139,10 @@ theorem cellularChainComplex_homology_finrank_one
   let C := cellularChainComplex d₂ d₁ hcomp
   letI : FiniteDimensional K (C.sc' 2 1 0).X₁ := by
     change FiniteDimensional K C₂
-    exact ‹FiniteDimensional K C₂›
+    infer_instance
   letI : FiniteDimensional K (C.sc' 2 1 0).X₂ := by
     change FiniteDimensional K C₁
-    exact ‹FiniteDimensional K C₁›
+    infer_instance
   calc
     (finrank K (C.homology 1) : ℤ) =
         finrank K ((C.sc' 2 1 0).homology) := by
@@ -167,7 +169,7 @@ theorem cellularChainComplex_homology_finrank_two
     infer_instance
   letI : FiniteDimensional K (C.sc' 3 2 1).X₂ := by
     change FiniteDimensional K C₂
-    exact ‹FiniteDimensional K C₂›
+    infer_instance
   calc
     (finrank K (C.homology 2) : ℤ) =
         finrank K ((C.sc' 3 2 1).homology) := by

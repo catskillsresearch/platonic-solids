@@ -61,8 +61,8 @@ theorem platonic_solids_3d
 `1, 0, 1`. Euler–Poincaré (`euler_formula_of_sphere2`) supplies
 `V + F = E + 2`; regularity incidence then forces a Platonic pair.
 The optional form `platonic_solids_3d_of_sphere` in
-`SphereSingularHomology.lean` uses the same numeric Betti numbers,
-which agree with singular `H_*(S^2)`. -/
+`SphereSingularHomology.lean` derives these numbers from a
+quasi-isomorphism to singular chains of a model of `S^2`. -/
 theorem platonic_solids_3d_of_homology
     {K : Type*} [Field K]
     {C₂ C₁ C₀ : Type*}

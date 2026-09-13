@@ -5,6 +5,7 @@ Authors: Lars Warren Ericson.
 Github:  https://github.com/catskillsresearch/platonic-solids/blob/main/PlatonicSolids.lean
 -/
 import PlatonicSolids.Angles
+import PlatonicSolids.CellularHomology
 import PlatonicSolids.Classification
 import PlatonicSolids.CompatibleTriples
 import PlatonicSolids.CompletingSquare

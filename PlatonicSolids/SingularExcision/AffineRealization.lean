@@ -88,6 +88,52 @@ theorem reparametrizeSingularSimplex_toContinuousMap
       (X.toSSetObjEquiv _ s).comp σ.realize := by
   simp [reparametrizeSingularSimplex]
 
+/-- The identity affine simplex on a standard simplex. -/
+def idSimplex (n : ℕ) :
+    AffineSimplex (stdSimplex ℝ (Fin (n + 1))) n :=
+  stdSimplex.vertex
+
+/-- Geometric barycenter of an affine simplex inside a standard simplex. -/
+def AffineSimplex.stdBarycenter {p q : ℕ}
+    (σ : AffineSimplex (stdSimplex ℝ (Fin (q + 1))) p) :
+    stdSimplex ℝ (Fin (q + 1)) :=
+  σ.realize stdSimplex.barycenter
+
+/-- Barycentric subdivision of affine chains in a standard simplex. -/
+def subdivideStd {q : ℕ} :
+    (n : ℕ) → AffineChain (stdSimplex ℝ (Fin (q + 1))) n →+
+      AffineChain (stdSimplex ℝ (Fin (q + 1))) n :=
+  subdivide AffineSimplex.stdBarycenter
+
+/-- Prism operator for affine chains in a standard simplex. -/
+def prismStd {q : ℕ} :
+    (n : ℕ) → AffineChain (stdSimplex ℝ (Fin (q + 1))) n →+
+      AffineChain (stdSimplex ℝ (Fin (q + 1))) (n + 1) :=
+  prism AffineSimplex.stdBarycenter
+
+theorem boundary_subdivideStd {q n : ℕ}
+    (c : AffineChain (stdSimplex ℝ (Fin (q + 1))) (n + 1)) :
+    boundary (subdivideStd (q := q) (n + 1) c) =
+      subdivideStd (q := q) n (boundary c) :=
+  boundary_subdivide AffineSimplex.stdBarycenter n c
+
+theorem boundary_prismStd {q n : ℕ}
+    (c : AffineChain (stdSimplex ℝ (Fin (q + 1))) (n + 1)) :
+    boundary (prismStd (q := q) (n + 1) c) +
+        prismStd (q := q) n (boundary c) =
+      c - subdivideStd (q := q) (n + 1) c :=
+  boundary_prism AffineSimplex.stdBarycenter n c
+
+/-- Subdivision of the identity simplex. -/
+def standardSubdivision (n : ℕ) :
+    AffineChain (stdSimplex ℝ (Fin (n + 1))) n :=
+  subdivideStd (q := n) n (simplex (idSimplex n))
+
+/-- Prism of the identity simplex. -/
+def standardPrism (n : ℕ) :
+    AffineChain (stdSimplex ℝ (Fin (n + 1))) (n + 1) :=
+  prismStd (q := n) n (simplex (idSimplex n))
+
 /-- The signed barycentric subdivision chain of the standard interval. -/
 def standardIntervalSubdivision :
     AffineChain (stdSimplex ℝ (Fin 2)) 1 :=

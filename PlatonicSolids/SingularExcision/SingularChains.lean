@@ -59,6 +59,20 @@ theorem realizeAffineChain_single
   classical
   simp [realizeAffineChain]
 
+/-- Subdivision of one singular simplex, on its coproduct generator. -/
+noncomputable def singularSubdivideGenerator
+    (R : C) {X : TopCat.{0}} {n : ℕ}
+    (s : (TopCat.toSSet.obj X) _⦋n⦌) :
+    R ⟶ (((singularChainComplexFunctor C).obj R).obj X).X n :=
+  realizeAffineChain R s (standardSubdivision n)
+
+/-- Prism of one singular simplex, on its coproduct generator. -/
+noncomputable def singularPrismGenerator
+    (R : C) {X : TopCat.{0}} {n : ℕ}
+    (s : (TopCat.toSSet.obj X) _⦋n⦌) :
+    R ⟶ (((singularChainComplexFunctor C).obj R).obj X).X (n + 1) :=
+  realizeAffineChain R s (standardPrism n)
+
 /-- Subdivision of one singular one-simplex, on its coproduct generator. -/
 noncomputable def singularIntervalSubdivision
     (R : C) {X : TopCat.{0}}

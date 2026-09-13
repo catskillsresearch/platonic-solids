@@ -1,0 +1,17 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "platonic_solids_3d",
+    "edges_pos_of_regular",
+    "regular_polychora_classification"
+  ],
+  "definition_names": [
+    "IsPlatonicPair",
+    "IsRegular4Polytope",
+    "sin_sq",
+    "cos_sq",
+    "SchläfliDeterminant"
+  ],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"]
+}

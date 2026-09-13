@@ -1,0 +1,25 @@
+name = "PlatonicSolids"
+version = "0.1.0"
+keywords = ["polytopes", "coxeter", "lean4", "platonic-solids"]
+defaultTargets = ["PlatonicSolids", "Challenge", "Solution"]
+
+# Standalone Lake package: Mathlib only.
+# Challenge / Solution are the Palomar Comparator pair; PlatonicSolids is the proof.
+
+[leanOptions]
+pp.unicode.fun = true
+relaxedAutoImplicit = true
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.30.0"
+
+[[lean_lib]]
+name = "PlatonicSolids"
+
+[[lean_lib]]
+name = "Challenge"
+
+[[lean_lib]]
+name = "Solution"

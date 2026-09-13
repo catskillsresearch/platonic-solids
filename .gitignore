@@ -1,0 +1,34 @@
+# Lake / Lean
+.lake/
+
+# Palomar toolkit checkout (CI) and editorial cache
+palomar-preflight/
+.cache/palomar-editorial/*
+!.cache/palomar-editorial/preflight-run.json
+!.cache/palomar-editorial/mechanical-report.json
+!.cache/palomar-editorial/review-draft.json
+.cache/palomar-comparator/
+vendor/palomar-policy.sync-backup/
+.venv-editorial/
+
+# Python
+__pycache__/
+*.pyc
+
+# Generated TeX (the PDF is the committed deliverable)
+PlatonicSolids.tex
+
+# arXiv submission bundle (scripts/package_arxiv_submit.sh)
+dist/
+00README.json
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.toc
+*.lof
+*.synctex.gz
+texput.log

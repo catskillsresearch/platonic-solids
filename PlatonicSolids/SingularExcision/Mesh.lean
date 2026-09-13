@@ -94,3 +94,24 @@ theorem exists_diam_lt_forall_image_subset_left_or_right
   · left
     rintro _ ⟨x, hx, rfl⟩
     exact hb hx
+
+/-- A geometric mesh bound times an iterated contraction factor
+eventually falls below every positive threshold. The remaining
+geometric input is that each barycentric piece of an `n`-simplex
+has diameter at most `barycentricMeshRatio n` times the parent. -/
+lemma exists_barycentricMeshRatio_pow_mul_lt (n : ℕ) (C : ℝ) {ε : ℝ}
+    (hε : 0 < ε) :
+    ∃ k : ℕ, barycentricMeshRatio n ^ k * C < ε := by
+  rcases le_or_gt C 0 with hC | hC
+  · exact ⟨0, by simp; linarith⟩
+  · obtain ⟨k, hk⟩ :=
+      exists_barycentricMeshRatio_pow_lt n (div_pos hε hC)
+    exact ⟨k, (lt_div_iff₀ hC).mp hk⟩
+
+lemma exists_barycentricMeshRatio_pow_mul_diam_stdSimplex_lt
+    (n : ℕ) {ε : ℝ} (hε : 0 < ε) :
+    ∃ k : ℕ,
+      barycentricMeshRatio n ^ k *
+          Metric.diam
+            (Set.univ : Set (stdSimplex ℝ (Fin (n + 1)))) < ε :=
+  exists_barycentricMeshRatio_pow_mul_lt n _ hε

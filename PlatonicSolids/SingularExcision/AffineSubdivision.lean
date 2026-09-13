@@ -561,6 +561,149 @@ theorem boundary_intervalPrism {V : Type*} [AddCommGroup V] [Module ℚ V]
   simp only [map_sub, cone_vertex]
   abel
 
+/-- Push vertices of an ordered simplex forward along a function. -/
+def AffineSimplex.map {V W : Type*} {n : ℕ} (f : V → W)
+    (σ : AffineSimplex V n) : AffineSimplex W n :=
+  f ∘ σ
+
+@[simp]
+theorem AffineSimplex.map_apply {V W : Type*} {n : ℕ} (f : V → W)
+    (σ : AffineSimplex V n) (i : Fin (n + 1)) :
+    AffineSimplex.map f σ i = f (σ i) :=
+  rfl
+
+@[simp]
+theorem AffineSimplex.map_id {V : Type*} {n : ℕ} (σ : AffineSimplex V n) :
+    AffineSimplex.map id σ = σ :=
+  rfl
+
+@[simp]
+theorem AffineSimplex.map_comp {U V W : Type*} {n : ℕ}
+    (g : V → W) (f : U → V) (σ : AffineSimplex U n) :
+    AffineSimplex.map g (AffineSimplex.map f σ) =
+      AffineSimplex.map (g ∘ f) σ :=
+  rfl
+
+@[simp]
+theorem AffineSimplex.map_face {V W : Type*} {n : ℕ} (f : V → W)
+    (σ : AffineSimplex V (n + 1)) (i : Fin (n + 2)) :
+    AffineSimplex.map f (σ.face i) = (AffineSimplex.map f σ).face i :=
+  rfl
+
+@[simp]
+theorem AffineSimplex.map_append {V W : Type*} {n : ℕ} (f : V → W)
+    (σ : AffineSimplex V n) (v : V) :
+    AffineSimplex.map f (σ.append v) = (AffineSimplex.map f σ).append (f v) := by
+  funext i
+  refine Fin.lastCases ?_ (fun _ ↦ ?_) i
+  · simp [AffineSimplex.map, AffineSimplex.append]
+  · simp [AffineSimplex.map, AffineSimplex.append]
+
+/-- Push a finite affine chain forward along a function of vertices. -/
+def AffineChain.map {V W : Type*} (f : V → W) {n : ℕ} :
+    AffineChain V n →+ AffineChain W n :=
+  Finsupp.mapDomain.addMonoidHom (AffineSimplex.map f)
+
+@[simp]
+theorem AffineChain.map_single {V W : Type*} (f : V → W) {n : ℕ}
+    (σ : AffineSimplex V n) (z : ℤ) :
+    AffineChain.map f (Finsupp.single σ z) =
+      Finsupp.single (AffineSimplex.map f σ) z := by
+  simp [AffineChain.map, Finsupp.mapDomain_single]
+
+@[simp]
+theorem AffineChain.map_simplex {V W : Type*} (f : V → W) {n : ℕ}
+    (σ : AffineSimplex V n) :
+    AffineChain.map f (simplex σ) = simplex (AffineSimplex.map f σ) := by
+  simp [simplex]
+
+@[simp]
+theorem AffineChain.map_vertex {V W : Type*} (f : V → W) (v : V) :
+    AffineChain.map f (vertex v) = vertex (f v) := by
+  simp [vertex, AffineSimplex.map]
+  rfl
+
+theorem AffineChain.map_simplexBoundary {V W : Type*} (f : V → W) {n : ℕ}
+    (σ : AffineSimplex V (n + 1)) :
+    AffineChain.map f (simplexBoundary σ) =
+      simplexBoundary (AffineSimplex.map f σ) := by
+  simp [simplexBoundary, map_sum, map_zsmul]
+
+theorem AffineChain.map_boundary {V W : Type*} (f : V → W) {n : ℕ}
+    (c : AffineChain V (n + 1)) :
+    AffineChain.map f (boundary c) = boundary (AffineChain.map f c) := by
+  refine AffineChain.eq_of_single
+    ((AffineChain.map f).comp boundary)
+    (boundary.comp (AffineChain.map f)) c ?_
+  intro σ z
+  change AffineChain.map f (boundary (Finsupp.single σ z)) =
+    boundary (AffineChain.map f (Finsupp.single σ z))
+  rw [show Finsupp.single σ z = z • simplex σ by simp [simplex]]
+  simp [map_zsmul, boundary_simplex, AffineChain.map_simplexBoundary]
+
+theorem AffineChain.map_simplexCone {V W : Type*} (f : V → W) {n : ℕ}
+    (v : V) (σ : AffineSimplex V n) :
+    AffineChain.map f (simplexCone v σ) =
+      simplexCone (f v) (AffineSimplex.map f σ) := by
+  simp [simplexCone, map_zsmul, AffineSimplex.map_append]
+
+theorem AffineChain.map_cone {V W : Type*} (f : V → W) {n : ℕ}
+    (v : V) (c : AffineChain V n) :
+    AffineChain.map f (cone v c) = cone (f v) (AffineChain.map f c) := by
+  refine AffineChain.eq_of_single
+    ((AffineChain.map f).comp (cone v))
+    ((cone (f v)).comp (AffineChain.map f)) c ?_
+  intro σ z
+  change AffineChain.map f (cone v (Finsupp.single σ z)) =
+    cone (f v) (AffineChain.map f (Finsupp.single σ z))
+  rw [show Finsupp.single σ z = z • simplex σ by simp [simplex]]
+  simp [map_zsmul, cone_simplex, AffineChain.map_simplexCone]
+
+/-- Subdivision is natural for maps that send chosen cone points to
+chosen cone points. -/
+theorem AffineChain.map_subdivide {V W : Type*}
+    (bV : {n : ℕ} → AffineSimplex V n → V)
+    (bW : {n : ℕ} → AffineSimplex W n → W) (f : V → W)
+    (hb : ∀ {n : ℕ} (σ : AffineSimplex V n),
+      f (bV σ) = bW (AffineSimplex.map f σ))
+    (n : ℕ) (c : AffineChain V n) :
+    AffineChain.map f (subdivide bV n c) =
+      subdivide bW n (AffineChain.map f c) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+      refine AffineChain.eq_of_single
+        ((AffineChain.map f).comp (subdivide bV (n + 1)))
+        ((subdivide bW (n + 1)).comp (AffineChain.map f)) c ?_
+      intro σ z
+      change AffineChain.map f (subdivide bV (n + 1) (Finsupp.single σ z)) =
+        subdivide bW (n + 1) (AffineChain.map f (Finsupp.single σ z))
+      rw [subdivide_single, AffineChain.map_single, subdivide_single, map_zsmul,
+        AffineChain.map_cone, ih, AffineChain.map_simplexBoundary, hb]
+
+/-- The prism is natural for the same cone-point maps. -/
+theorem AffineChain.map_prism {V W : Type*}
+    (bV : {n : ℕ} → AffineSimplex V n → V)
+    (bW : {n : ℕ} → AffineSimplex W n → W) (f : V → W)
+    (hb : ∀ {n : ℕ} (σ : AffineSimplex V n),
+      f (bV σ) = bW (AffineSimplex.map f σ))
+    (n : ℕ) (c : AffineChain V n) :
+    AffineChain.map f (prism bV n c) =
+      prism bW n (AffineChain.map f c) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+      refine AffineChain.eq_of_single
+        ((AffineChain.map f).comp (prism bV (n + 1)))
+        ((prism bW (n + 1)).comp (AffineChain.map f)) c ?_
+      intro σ z
+      change AffineChain.map f (prism bV (n + 1) (Finsupp.single σ z)) =
+        prism bW (n + 1) (AffineChain.map f (Finsupp.single σ z))
+      rw [prism_single, AffineChain.map_single, prism_single, map_zsmul,
+        AffineChain.map_cone]
+      simp [map_sub, AffineChain.map_subdivide bV bW f hb,
+        ih, AffineChain.map_simplexBoundary, hb]
+
 end
 
 end PlatonicSolids.SingularExcision

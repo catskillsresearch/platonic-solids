@@ -19,10 +19,11 @@ contractible spaces have the homology of a point, `H₀(Sⁿ) ≅ R` for
 
 The pair and Mayer–Vietoris sequences of singular chains are in
 `PlatonicSolids/RelativeHomology.lean` and
-`PlatonicSolids/MayerVietoris.lean`. Excision for the stereographic
-cover of `Metric.sphere` (small simplices) is still absent, so this
-file does not identify `Hₙ(Sⁿ)` for `n > 0`. The paper’s `χ(S³) = 0`
-is obtained from the cellular calculation in
+`PlatonicSolids/MayerVietoris.lean`. Barycentric subdivision of
+singular chains is in `PlatonicSolids/SingularExcision/`; the
+open-cover quasi-isomorphism for the stereographic charts is not
+finished, so this file does not identify `Hₙ(Sⁿ)` for `n > 0`. The
+paper’s `χ(S³) = 0` is obtained from the cellular calculation in
 `PlatonicSolids/Sphere3Homology.lean`.
 -/
 

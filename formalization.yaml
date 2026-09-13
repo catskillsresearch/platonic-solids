@@ -71,9 +71,15 @@ fidelity:
     χ(S³)=0 is proved for the standard simplicial 3-sphere
     (4-simplex boundary) over ℚ as homology_sphere3 / eulerChar_sphere3.
     Singular H₀ of Metric.sphere for n≥1 and H_*(S⁰) are proved.
-    The pair and triad exact sequences of singular chains are proved;
-    excision for the stereographic cover of the sphere (small simplices)
-    is not, so H_n(Metric.sphere) for n>0 is not identified. The algebraic
+    The pair and triad exact sequences of singular chains are proved.
+    PlatonicSolids/SingularExcision/ constructs barycentric subdivision
+    and the prism homotopy on finite affine chains, realizes them on
+    singular generators, and assembles singularSubdivision as a chain
+    map; cover chains are identified with the small-simplex subcomplex.
+    Mesh shrinking of barycentric pieces and the resulting open-cover
+    quasi-isomorphism are not yet proved, so H_n(Metric.sphere) for
+    n>0 is not identified and Mayer–Vietoris on the stereographic
+    cover still assumes IsExcisiveSubspaces. The algebraic
     Euler–Poincaré identities and the radial-projection homeomorphism
     are proved. The compared 3D theorem still takes V+F=E+2 so that
     Palomar Comparator types stay combinatorial.
@@ -185,9 +191,13 @@ limitations:
     homeomorphism, cellular Betti numbers of the tetrahedron
     surface and of the 4-simplex boundary, singular H₀ of
     Metric.sphere for n≥1, and H_*(S⁰). The pair LES and the
-    Mayer–Vietoris sequence of an excisive triad are proved. It does
-    not compute singular H_n(Metric.sphere) for n>0: that needs
-    excision for the stereographic cover (barycentric subdivision).
+    Mayer–Vietoris sequence of an excisive triad are proved. Affine
+    barycentric subdivision, the prism identity, face-compatible
+    realization, and the singularSubdivision chain map are proved, as
+    is the identification of cover chains with small singular chains.
+    It does not yet prove mesh shrinking or the open-cover
+    quasi-isomorphism, so it does not compute singular
+    H_n(Metric.sphere) for n>0.
   - >-
     The compared 4D theorem classifies the eleven Platonic-compatible
     Schläfli triples by the sign of Δ = det(schlafliGram). The

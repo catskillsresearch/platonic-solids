@@ -30,10 +30,11 @@ commuting square induces a comparison `coker → C_*(X)`. The square is
 homology sequence of the cover is the Mayer–Vietoris sequence of `X`.
 
 The stereographic cover of `Sⁿ` (complements of the poles) is the
-classical excisive pair: each chart is contractible. Small simplices /
-barycentric subdivision, which would prove this pair excisive, are not
-in Mathlib and are not completed here; the remaining obstruction to
-`Hₙ(Metric.sphere)` for `n > 0` is exactly that quasi-isomorphism.
+classical excisive pair: each chart is contractible. Barycentric
+subdivision and the singular chain map live in
+`PlatonicSolids/SingularExcision/`. The remaining obstruction to
+`Hₙ(Metric.sphere)` for `n > 0` is mesh shrinking plus the open-cover
+quasi-isomorphism that would discharge `IsExcisiveSubspaces`.
 -/
 
 open AlgebraicTopology CategoryTheory Limits HomologicalComplex Metric Set

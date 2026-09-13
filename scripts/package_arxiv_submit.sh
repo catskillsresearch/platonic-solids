@@ -25,6 +25,8 @@ LEAN_FILES=(
   PlatonicSolids/D3IffPlatonic.lean
   PlatonicSolids/DetFormula.lean
   PlatonicSolids/EulerBetti.lean
+  PlatonicSolids/EulerPoincare.lean
+  PlatonicSolids/RadialProjection.lean
   PlatonicSolids/GramMatrix.lean
   PlatonicSolids/Incidence.lean
   PlatonicSolids/LeadingMinors.lean

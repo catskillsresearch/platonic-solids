@@ -11,11 +11,13 @@ import PlatonicSolids.CompletingSquare
 import PlatonicSolids.D3IffPlatonic
 import PlatonicSolids.DetFormula
 import PlatonicSolids.EulerBetti
+import PlatonicSolids.EulerPoincare
 import PlatonicSolids.GramMatrix
 import PlatonicSolids.Incidence
 import PlatonicSolids.LeadingMinors
 import PlatonicSolids.PlatonicPair
 import PlatonicSolids.QuadForm
+import PlatonicSolids.RadialProjection
 import PlatonicSolids.Reciprocal
 import PlatonicSolids.Regular4
 import PlatonicSolids.SignTable

@@ -31,6 +31,8 @@ LEAN_DIR = HERE / "PlatonicSolids"
 # Paper order: each file is a gist-sized chunk next to one exposition paragraph.
 LEAN_MODULES = [
     (LEAN, "Root import of the section-sized modules"),
+    (LEAN_DIR / "RadialProjection.lean", r"Frontier of a bounded convex body is homeomorphic to the sphere"),
+    (LEAN_DIR / "EulerPoincare.lean", r"Algebraic Euler--Poincar\'e: $\chi(C)=\chi(H_*)$ by rank-nullity"),
     (LEAN_DIR / "EulerBetti.lean", r"Betti arithmetic of $\chi(S^2)=2$ and $\chi(S^3)=0$"),
     (LEAN_DIR / "PlatonicPair.lean", "The five solutions of the Platonic Diophantine inequality"),
     (LEAN_DIR / "Reciprocal.lean", r"$1/p+1/q>1/2$ iff the integer inequality"),
@@ -81,6 +83,9 @@ EXTRA_LITERATE = r"""    {ä}{{\"{a}}}1
     {ᵥ}{{\textsubscript{v}}}1
     {∑}{{\ensuremath{\sum}}}1
     {⬝}{{\ensuremath{\cdot}}}1
+    {−}{{\ensuremath{-}}}1
+    {∂}{{\ensuremath{\partial}}}1
+    {ₗ}{{\textsubscript{l}}}1
 """
 
 EXTRA_UNICODECHAR = r"""
@@ -102,6 +107,9 @@ EXTRA_UNICODECHAR = r"""
 \newunicodechar{ᵥ}{\textsubscript{v}}
 \newunicodechar{∑}{\ensuremath{\sum}}
 \newunicodechar{⬝}{\ensuremath{\cdot}}
+\newunicodechar{−}{\ensuremath{-}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{ₗ}{\textsubscript{l}}
 \newunicodechar{⦃}{\textbraceleft\textbraceleft}
 \newunicodechar{⦄}{\textbraceright\textbraceright}
 """

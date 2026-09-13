@@ -2,6 +2,7 @@
 Copyright (c) 2026  Lars Warren Ericson.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+import PlatonicSolids.EulerPoincare
 import PlatonicSolids.PlatonicPair
 
 /-!
@@ -55,3 +56,26 @@ theorem platonic_solids_3d
       have : 0 < 2 * p * q := by positivity
       omega
   exact platonic_pairs_of_inequality hp hq h_ineq
+
+/-- The 3D classification from a cellular 2-complex with the Betti
+numbers of `S²`. Euler–Poincaré (`euler_formula_of_sphere2`) supplies
+`V + F = E + 2`; regularity incidence then forces a Platonic pair. -/
+theorem platonic_solids_3d_of_homology
+    {K : Type*} [Field K]
+    {C₂ C₁ C₀ : Type*}
+    [AddCommGroup C₂] [Module K C₂] [FiniteDimensional K C₂]
+    [AddCommGroup C₁] [Module K C₁] [FiniteDimensional K C₁]
+    [AddCommGroup C₀] [Module K C₀] [FiniteDimensional K C₀]
+    (d₂ : C₂ →ₗ[K] C₁) (d₁ : C₁ →ₗ[K] C₀)
+    (V E F p q : ℕ)
+    (hp : 3 ≤ p) (hq : 3 ≤ q)
+    (h_edges_faces : p * F = 2 * E)
+    (h_edges_verts : q * V = 2 * E)
+    (hV : Module.finrank K C₀ = V)
+    (hE : Module.finrank K C₁ = E)
+    (hF : Module.finrank K C₂ = F)
+    (hcomp : d₁.comp d₂ = 0)
+    (hb0 : betti0 d₁ = 1) (hb1 : betti1 d₂ d₁ = 0) (hb2 : betti2 d₂ = 1) :
+    IsPlatonicPair p q :=
+  platonic_solids_3d V E F p q hp hq h_edges_faces h_edges_verts
+    (euler_formula_of_sphere2 d₂ d₁ hV hE hF hcomp hb0 hb1 hb2)

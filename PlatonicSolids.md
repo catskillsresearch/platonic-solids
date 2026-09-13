@@ -22,15 +22,16 @@ This paper addresses these questions through an analytical exposition coupled wi
 ## 2. Dimension 3: Topology, Incidence, and the Non-Degeneracy Insight
 
 ### 2.1. Topological Derivation of Euler’s Formula
-The Lean gist is `PlatonicSolids/EulerBetti.lean`.
+The Lean gists are `PlatonicSolids/RadialProjection.lean` (frontier of a convex body $\simeq S^{n-1}$), `PlatonicSolids/EulerPoincare.lean` (algebraic Euler–Poincaré: $\chi(C)=\chi(H_*)$ by rank-nullity), and `PlatonicSolids/EulerBetti.lean` (the numbers $\chi(S^2)=2$ and $\chi(S^3)=0$).
 Let $P \subset \mathbb{R}^3$ be a convex polyhedron containing the origin in its interior. Radial projection $\pi: \partial P \to S^2$ onto the circumscribed 2-sphere is a homeomorphism. This projection induces a finite CW-complex structure on $S^2$ with $V$ 0-cells (vertices), $E$ 1-cells (edges), and $F$ 2-cells (faces).
 
 From the cellular homology of the 2-sphere:
 $$H_0(S^2; \mathbb{Z}) \cong \mathbb{Z}, \quad H_1(S^2; \mathbb{Z}) \cong 0, \quad H_2(S^2; \mathbb{Z}) \cong \mathbb{Z}$$
 The topological Euler characteristic $\chi(S^2)$ is defined as the alternating sum of Betti numbers:
 $$\chi(S^2) = b_0 - b_1 + b_2 = 1 - 0 + 1 = 2$$
-By the Euler–Poincaré theorem, this topological invariant equals the alternating sum of cell counts:
+By the Euler–Poincaré theorem (proved in Lean as rank-nullity on the cellular chain complex: `euler_poincare`), this topological invariant equals the alternating sum of cell counts:
 $$V - E + F = 2$$
+The remaining geometric inputs are that radial projection realises $\partial P$ as a topological sphere (`frontier_convex_homeo_sphere`) and that the Betti numbers of $S^2$ are $1,0,1$ (Mathlib does not yet compute $H_*(S^2)$; those three ranks are the hypotheses of `euler_formula_of_sphere2`).
 
 ### 2.2. Incidence Combinatorics
 The Lean gist is `PlatonicSolids/Incidence.lean` (with the pair predicate in `PlatonicSolids/PlatonicPair.lean`).
@@ -194,6 +195,8 @@ The stronger equivalence `regular_polychora_iff` identifies those six with posit
 
 | File | Paper | Content |
 |---|---|---|
+| `PlatonicSolids/RadialProjection.lean` | §2.1 | Frontier of a convex body $\simeq$ sphere |
+| `PlatonicSolids/EulerPoincare.lean` | §2.1 | Algebraic Euler–Poincaré; $V+F=E+2$ from Betti of $S^2$ |
 | `PlatonicSolids/EulerBetti.lean` | §§2.1, 3.1 | $\chi(S^2)=2$, $\chi(S^3)=0$ |
 | `PlatonicSolids/PlatonicPair.lean` | §2.3 | Five solutions of $(p-2)(q-2)<4$ |
 | `PlatonicSolids/Reciprocal.lean` | §§2.3, 3.3 | $1/p+1/q>1/2$ |

@@ -66,9 +66,12 @@ status:
 
 fidelity:
   divergences: >-
-    Informal χ(S²)=2 and χ(S³)=0 are background for the paper; the Lean
-    3D theorem takes V+F=E+2 as a hypothesis, because Mathlib does not
-    identify a convex polyhedron with a CW structure on Metric.sphere.
+    Informal χ(S²)=2 and χ(S³)=0 are the Betti numbers of the spheres;
+    Mathlib does not compute singular homology of spheres, so those
+    ranks are hypotheses of euler_formula_of_sphere2. The algebraic
+    Euler–Poincaré identity and the radial-projection homeomorphism
+    are proved. The compared 3D theorem still takes V+F=E+2 so that
+    Palomar Comparator types stay combinatorial.
     The 4D compared theorem classifies Platonic-compatible triples by
     the sign of Δ = det(schlafliGram), using Mathlib Real.sin / Real.cos
     and the rank-4 Gram matrix. It does not construct geometric
@@ -169,9 +172,12 @@ known_gaps: []
 
 limitations:
   - >-
-    The compared 3D theorems assume Euler's formula and regularity
-    incidence; they do not construct a homeomorphism ∂P → S² or prove
-    χ(S²)=2 inside Lean.
+    The compared 3D theorems assume Euler's formula V+F=E+2 and
+    regularity incidence. The development now proves the algebraic
+    Euler–Poincaré identity (rank-nullity on a 2-complex) and the
+    radial-projection homeomorphism frontier ≃ sphere. It does not
+    compute singular homology of S², so the Betti numbers 1,0,1 remain
+    an input to euler_formula_of_sphere2.
   - >-
     The compared 4D theorem classifies the eleven Platonic-compatible
     Schläfli triples by the sign of Δ = det(schlafliGram). The

@@ -21,8 +21,9 @@ The selected theorems are:
 2. `edges_pos_of_regular` — the same identities algebraically force
    \(E>0\); non-degeneracy is a theorem, not an axiom.
 3. `regular_polychora_classification` — Platonic cells and vertex figures
-   with positive Schläfli Gram determinant are exactly the six regular
-   convex 4-polytopes.
+   with positive Schläfli Gram determinant force one of the six regular
+   convex 4-polytopes (the PosDef equivalence is `regular_polychora_iff`,
+   not compared).
 
 ## How to read this file
 
@@ -101,10 +102,10 @@ theorem platonic_solids_3d
     IsPlatonicPair p q := by
   sorry
 
-/-- The Main Classification Theorem for 4D Regular Polychora:
-    Any triple {p, q, r} whose 3D cells {p, q} and vertex figures {q, r} are
-    Platonic solids, and whose Coxeter Gram matrix is positive-definite (Δ > 0),
-    is strictly one of the 6 regular convex 4-polytopes. -/
+/-- The compared 4D classification: a triple {p, q, r} whose 3D cells {p, q}
+    and vertex figures {q, r} are Platonic and whose Schläfli determinant
+    satisfies Δ > 0 is one of the 6 regular convex 4-polytopes.
+    (Not an if-and-only-if; that is `regular_polychora_iff`.) -/
 theorem regular_polychora_classification (p q r : ℕ)
     (h_cell : IsPlatonicPair p q)
     (h_vf : IsPlatonicPair q r)

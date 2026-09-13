@@ -15,9 +15,9 @@ Mayer-Vietoris cover, after the open-cover quasi-isomorphism. The
 intersection of the charts is homotopy-equivalent to `S^{n-1}`; the
 connecting map is an isomorphism in positive degrees; `H_1(S^1)` is
 identified with `ker epsilon` of the two-point space. The optional Euler
-bridge `platonic_solids_3d_of_sphere` feeds those Betti numbers into
-the existing 3D incidence theorem without changing Palomar compared
-types.
+bridge `platonic_solids_3d_of_sphere` takes numeric Betti numbers
+`1, 0, 1`, which agree with singular `H_*(S^2)`, and does not change
+Palomar compared types.
 -/
 
 open AlgebraicTopology CategoryTheory Limits HomologicalComplex Metric Set ContinuousMap
@@ -863,8 +863,8 @@ noncomputable def singularHomology_sphere2 :
         (.of (MetricSphere 2))) ≅ R :=
   singularHomology_sphere (R := R) (n := 2) (by decide)
 
-/-- The 3D classification from a cellular 2-complex whose Betti numbers
-equal the singular Betti numbers of `Metric.sphere` in dimension 2
+/-- The 3D classification from a cellular 2-complex with numeric Betti
+numbers `1, 0, 1`, which agree with singular `H_*(S^2)`
 (`singularHomology_sphere2_zero`, `isZero_singularHomology_sphere2_one`,
 `singularHomology_sphere2`). Euler–Poincaré supplies `V+F=E+2`; regularity
 then forces a Platonic pair. Palomar compared types are unchanged. -/

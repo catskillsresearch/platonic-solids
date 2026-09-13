@@ -85,8 +85,8 @@ fidelity:
     The algebraic Euler–Poincaré identities and the radial-projection
     homeomorphism are proved. The compared 3D theorem still takes
     V+F=E+2 so that Palomar Comparator types stay combinatorial;
-    platonic_solids_3d_of_sphere is an optional bridge from those
-    singular Betti numbers.
+    platonic_solids_3d_of_sphere is an optional bridge that takes
+    numeric Betti numbers 1, 0, 1, which agree with singular H_*(S^2).
     The 4D compared theorem classifies Platonic-compatible triples by
     the sign of Δ = det(schlafliGram), using Mathlib Real.sin / Real.cos
     and the rank-4 Gram matrix. It does not construct geometric
@@ -201,10 +201,11 @@ limitations:
     is the identification of cover chains with small singular chains.
     Mesh shrinking, the small-chain retract, and the open-cover
     quasi-isomorphism are proved. Stereographic U ∩ V ≃ₕ S^{n-1}
-    and H_{n+1}(S^{n+1}) ≅ H_n(S^n) for n≥1.
+    and singular H_n(S^n; R) ≅ R for n>0 (vanishing in the other
+    positive degrees).
   - >-
-    The compared 4D theorem classifies the eleven Platonic-compatible
-    Schläfli triples by the sign of Δ = det(schlafliGram). The
+    The compared 4D theorem sends a Platonic-compatible triple with
+    Δ > 0 to one of the six regular convex 4-polytopes. The
     development also proves PosDef ↔ IsRegular4Polytope for p,q,r ≥ 3.
     Neither statement constructs Coxeter groups, reflection
     representations, or geometric 4-polytopes.
@@ -230,7 +231,7 @@ alignment:
       module: "Challenge (statement), Solution / PlatonicSolids (proof)"
       status: proved
 
-    - source: "Platonic cells and vertex figures with Δ>0 are exactly the six regular convex 4-polytopes (PlatonicSolids.md, §§3–4)"
+    - source: "Platonic cells and vertex figures with Δ>0 are one of the six regular convex 4-polytopes (PlatonicSolids.md, §§3–4)"
       lean: "regular_polychora_classification"
       module: "Challenge (statement), Solution / PlatonicSolids (proof)"
       status: proved

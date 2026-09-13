@@ -11,8 +11,9 @@ of finite-dimensional vector spaces (the cellular complex of a polyhedron):
 `χ(C) = rank C₀ - rank C₁ + rank C₂` equals `χ(H) = b₀ - b₁ + b₂`.
 
 The identity is rank-nullity. Specializing to the Betti numbers of `S²`
-(`b₀ = 1`, `b₁ = 0`, `b₂ = 1`) yields `V - E + F = 2`, hence
-`V + F = E + 2`.
+(`b₀ = 1`, `b₁ = 0`, `b₂ = 1`, computed for the tetrahedron surface
+in `PlatonicSolids/Sphere2Homology.lean`) yields `V - E + F = 2`,
+hence `V + F = E + 2`.
 -/
 
 open Module

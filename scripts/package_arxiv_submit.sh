@@ -27,6 +27,7 @@ LEAN_FILES=(
   PlatonicSolids/EulerBetti.lean
   PlatonicSolids/EulerPoincare.lean
   PlatonicSolids/RadialProjection.lean
+  PlatonicSolids/Sphere2Homology.lean
   PlatonicSolids/GramMatrix.lean
   PlatonicSolids/Incidence.lean
   PlatonicSolids/LeadingMinors.lean

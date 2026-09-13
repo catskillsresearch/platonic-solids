@@ -66,12 +66,13 @@ status:
 
 fidelity:
   divergences: >-
-    Informal χ(S²)=2 and χ(S³)=0 are the Betti numbers of the spheres;
-    Mathlib does not compute singular homology of spheres, so those
-    ranks are hypotheses of euler_formula_of_sphere2. The algebraic
-    Euler–Poincaré identity and the radial-projection homeomorphism
-    are proved. The compared 3D theorem still takes V+F=E+2 so that
-    Palomar Comparator types stay combinatorial.
+    Informal χ(S²)=2 is proved for the standard simplicial 2-sphere
+    (tetrahedron surface) over ℚ as homology_sphere2; Mathlib does
+    not compute singular homology of Metric.sphere. χ(S³)=0 remains
+    an arithmetic input. The algebraic Euler–Poincaré identity and
+    the radial-projection homeomorphism are proved. The compared 3D
+    theorem still takes V+F=E+2 so that Palomar Comparator types
+    stay combinatorial.
     The 4D compared theorem classifies Platonic-compatible triples by
     the sign of Δ = det(schlafliGram), using Mathlib Real.sin / Real.cos
     and the rank-4 Gram matrix. It does not construct geometric
@@ -173,11 +174,11 @@ known_gaps: []
 limitations:
   - >-
     The compared 3D theorems assume Euler's formula V+F=E+2 and
-    regularity incidence. The development now proves the algebraic
-    Euler–Poincaré identity (rank-nullity on a 2-complex) and the
-    radial-projection homeomorphism frontier ≃ sphere. It does not
-    compute singular homology of S², so the Betti numbers 1,0,1 remain
-    an input to euler_formula_of_sphere2.
+    regularity incidence. The development proves the algebraic
+    Euler–Poincaré identity, the radial-projection homeomorphism,
+    and the cellular Betti numbers of the tetrahedron surface
+    (standard simplicial S²) over ℚ. It does not compute Mathlib
+    singular homology of Metric.sphere, nor H_*(S³).
   - >-
     The compared 4D theorem classifies the eleven Platonic-compatible
     Schläfli triples by the sign of Δ = det(schlafliGram). The

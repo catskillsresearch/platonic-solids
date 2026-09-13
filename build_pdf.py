@@ -33,6 +33,7 @@ LEAN_MODULES = [
     (LEAN, "Root import of the section-sized modules"),
     (LEAN_DIR / "RadialProjection.lean", r"Frontier of a bounded convex body is homeomorphic to the sphere"),
     (LEAN_DIR / "EulerPoincare.lean", r"Algebraic Euler--Poincar\'e: $\chi(C)=\chi(H_*)$ by rank-nullity"),
+    (LEAN_DIR / "Sphere2Homology.lean", r"Cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface"),
     (LEAN_DIR / "EulerBetti.lean", r"Betti arithmetic of $\chi(S^2)=2$ and $\chi(S^3)=0$"),
     (LEAN_DIR / "PlatonicPair.lean", "The five solutions of the Platonic Diophantine inequality"),
     (LEAN_DIR / "Reciprocal.lean", r"$1/p+1/q>1/2$ iff the integer inequality"),
@@ -76,6 +77,7 @@ EXTRA_LITERATE = r"""    {ä}{{\"{a}}}1
     {ℝ}{{\ensuremath{\mathbb{R}}}}1
     {ℕ}{{\ensuremath{\mathbb{N}}}}1
     {ℤ}{{\ensuremath{\mathbb{Z}}}}1
+    {ℚ}{{\ensuremath{\mathbb{Q}}}}1
     {χ}{{\ensuremath{\chi}}}1
     {π}{{\ensuremath{\pi}}}1
     {³}{{\textsuperscript{3}}}1
@@ -100,6 +102,7 @@ EXTRA_UNICODECHAR = r"""
 \newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
 \newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
 \newunicodechar{ℤ}{\ensuremath{\mathbb{Z}}}
+\newunicodechar{ℚ}{\ensuremath{\mathbb{Q}}}
 \newunicodechar{χ}{\ensuremath{\chi}}
 \newunicodechar{π}{\ensuremath{\pi}}
 \newunicodechar{³}{\textsuperscript{3}}

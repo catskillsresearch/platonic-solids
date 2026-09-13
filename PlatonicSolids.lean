@@ -21,6 +21,7 @@ import PlatonicSolids.RadialProjection
 import PlatonicSolids.Reciprocal
 import PlatonicSolids.Regular4
 import PlatonicSolids.SignTable
+import PlatonicSolids.Sphere2Homology
 import PlatonicSolids.Sylvester
 import PlatonicSolids.TrailingMinor
 import PlatonicSolids.TrigValues

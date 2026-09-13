@@ -22,13 +22,21 @@ This paper addresses these questions through an analytical exposition coupled wi
 ## 2. Dimension 3: Topology, Incidence, and the Non-Degeneracy Insight
 
 ### 2.1. Topological Derivation of Euler’s Formula
-The Lean gists are `PlatonicSolids/RadialProjection.lean` (frontier of a convex body $\simeq S^{n-1}$), `PlatonicSolids/EulerPoincare.lean` (algebraic Euler–Poincaré: $\chi(C)=\chi(H_*)$ by rank-nullity), `PlatonicSolids/SingularHomology.lean` (homotopy invariance, $H_0$ of path-connected spheres, and $H_*(S^0)$), `PlatonicSolids/Sphere2Homology.lean` (cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface), and `PlatonicSolids/EulerBetti.lean` (the numbers $\chi(S^2)=2$ and $\chi(S^3)=0$).
+The Lean gists are `PlatonicSolids/RadialProjection.lean` (frontier of a convex body $\simeq S^{n-1}$), `PlatonicSolids/EulerPoincare.lean` (algebraic Euler–Poincaré: $\chi(C)=\chi(H_*)$ by rank-nullity), `PlatonicSolids/SingularHomology.lean` (homotopy invariance, $H_0$ of path-connected spheres, and $H_*(S^0)$), `PlatonicSolids/RelativeHomology.lean` and `PlatonicSolids/MayerVietoris.lean` (pair and triad exact sequences of singular chains), `PlatonicSolids/Sphere2Homology.lean` (cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface), and `PlatonicSolids/EulerBetti.lean` (the numbers $\chi(S^2)=2$ and $\chi(S^3)=0$).
 
 Let $P \subset \mathbb{R}^3$ be a convex polyhedron containing the origin in its interior. Radial projection $\pi: \partial P \to S^2$ onto the circumscribed 2-sphere is a homeomorphism (`frontier_convex_homeo_sphere`). This projection induces a finite CW-complex structure on $S^2$ with $V$ 0-cells (vertices), $E$ 1-cells (edges), and $F$ 2-cells (faces).
 
 Mathlib already has the singular homology functor and its homotopy invariance. We package the missing transport lemmas: a homotopy equivalence (or homeomorphism) of spaces induces an isomorphism of singular homology (`singularHomologyIso_of_homotopyEquiv`), a contractible space has vanishing positive homology (`isZero_singularHomology_of_contractible`), and a closed disk is contractible. For the metric sphere itself, path-connectedness in dimension $n\ge 1$ gives
 $$H_0(S^n; R) \cong R$$
-(`singularHomology₀_sphere`). The $0$-sphere is the two-point set $\{\pm 1\}$, which is totally disconnected, so $H_0(S^0; R) \cong R\oplus R$ and $H_n(S^0; R)=0$ for $n>0$. Mathlib still lacks Mayer–Vietoris / excision for singular chains, so this paper does not identify $H_n(S^n)$ for $n>0$ as singular groups of `Metric.sphere`. The classification uses the cellular calculation below.
+(`singularHomology₀_sphere`). The $0$-sphere is the two-point set $\{\pm 1\}$, which is totally disconnected, so $H_0(S^0; R) \cong R\oplus R$ and $H_n(S^0; R)=0$ for $n>0$.
+
+A subspace inclusion $A\hookrightarrow X$ is a monomorphism in `TopCat`. The singular chain-complex functor preserves monomorphisms, so
+$$0\to C_*(A;R)\to C_*(X;R)\to C_*(X,A;R)\to 0$$
+is short exact (`pair_shortExact`). Snake lemma supplies the long exact sequence of the pair: connecting $\delta:H_{n+1}(X,A)\to H_n(A)$ (`pairδ`) and exactness at $H_n(A)$, $H_n(X)$, and $H_n(X,A)$ (`pair_exact_at_A`, `pair_exact_at_X`, `pair_exact_at_rel`).
+
+For a commuting square of spaces $W\to U,V\to X$, the same argument on $C_*(W)\to C_*(U)\oplus C_*(V)$ yields the triad sequence (`triad_shortExact`, `triadδ`). The square induces a comparison from the cover chains to $C_*(X)$; the square is *excisive* when that comparison is a quasi-isomorphism (`IsExcisive`). After excision, the connecting map is Mayer–Vietoris for $X$ (`mayerVietorisδ`).
+
+The stereographic cover of $S^n$ is the standard pair of charts $U=S^n\setminus\{N\}$, $V=S^n\setminus\{S\}$. Each is homeomorphic to a hyperplane (`homeoPuncturedNorth`, `homeoPuncturedSouth`), hence contractible, so $H_k(U)=H_k(V)=0$ for $k>0$. They cover $S^n$ (`punctured_cover`) and meet in $S^n\setminus\{N,S\}$. If this pair is excisive, Mayer–Vietoris gives the inductive connecting map $H_{n+1}(S^{n+1})\to H_n(U\cap V)$ (`singularHomology_sphere_mayerVietorisδ`). The remaining obstruction is exactly that quasi-isomorphism: barycentric subdivision / small simplices, which Mathlib does not have. The classification therefore still uses the cellular calculation below.
 
 The standard simplicial $2$-sphere is the surface of a tetrahedron: $4$ vertices, $6$ edges, $4$ triangles. Oriented incidence matrices $d_1:\mathbb{Q}^6\to\mathbb{Q}^4$ and $d_2:\mathbb{Q}^4\to\mathbb{Q}^6$ satisfy $d_1 d_2=0$. Each has a $3\times 3$ identity minor, so both ranks are at least $3$; the product-zero rank inequality on a $6$-dimensional middle term forces both ranks equal to $3$. Hence
 $$b_0=4-3=1,\qquad b_1=3-3=0,\qquad b_2=4-3=1$$
@@ -36,7 +44,7 @@ $$b_0=4-3=1,\qquad b_1=3-3=0,\qquad b_2=4-3=1$$
 $$\chi(S^2) = b_0 - b_1 + b_2 = 1 - 0 + 1 = 2$$
 Algebraic Euler–Poincaré (`euler_poincare`) is rank-nullity on any $2$-complex: cell ranks equal Betti ranks. Specializing to these numbers yields Euler’s formula
 $$V - E + F = 2$$
-on the tetrahedron (`euler_tetrahedron`) and, for an arbitrary $2$-complex with the same Betti numbers, the general identity `euler_formula_of_sphere2`. The tetrahedron incidence structure is then Platonic (`tetrahedron_platonic`).
+on the tetrahedron (`euler_tetrahedron`) and, for an arbitrary $2$-complex with the same Betti numbers, the general identity `euler_formula_of_sphere2`. The tetrahedron incidence structure is then Platonic (`tetrahedron_platonic`). Combining Euler–Poincaré with regularity incidence gives the classification from homology (`platonic_solids_3d_of_homology`).
 
 ### 2.2. Incidence Combinatorics
 The Lean gist is `PlatonicSolids/Incidence.lean` (with the pair predicate in `PlatonicSolids/PlatonicPair.lean`).
@@ -204,6 +212,8 @@ The stronger equivalence `regular_polychora_iff` identifies those six with posit
 | `PlatonicSolids/RadialProjection.lean` | §2.1 | Frontier of a convex body $\simeq$ sphere |
 | `PlatonicSolids/EulerPoincare.lean` | §§2.1, 3.1 | Algebraic Euler–Poincaré in dimensions $2$ and $3$ |
 | `PlatonicSolids/SingularHomology.lean` | §2.1 | Homotopy invariance; $H_0(S^n)$; $H_*(S^0)$ |
+| `PlatonicSolids/RelativeHomology.lean` | §2.1 | Pair sequence $0\to C_*(A)\to C_*(X)\to C_*(X,A)\to 0$ and LES |
+| `PlatonicSolids/MayerVietoris.lean` | §2.1 | Triad SES, excision predicate, stereographic cover of $S^n$ |
 | `PlatonicSolids/Sphere2Homology.lean` | §2.1 | Cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface |
 | `PlatonicSolids/Sphere3Homology.lean` | §3.1 | Cellular $H_*(S^3;\mathbb{Q})$ of the $4$-simplex boundary |
 | `PlatonicSolids/EulerBetti.lean` | §§2.1, 3.1 | $\chi(S^2)=2$, $\chi(S^3)=0$ |
@@ -224,6 +234,8 @@ The stronger equivalence `regular_polychora_iff` identifies those six with posit
 | `PlatonicSolids/SignTable.lean` | §4 | Sign of $\Delta$ |
 | `PlatonicSolids/Regular4.lean` | §4 | The six regular 4-polytopes |
 | `PlatonicSolids/Classification.lean` | §4 | Compared 4D theorem and PosDef iff |
+
+The remaining named lemmas are the computational steps of those paragraphs: `platonic_pairs_of_inequality` / `platonic_pair_iff` / `platonic_pair_iff_reciprocal` for the Diophantine pair; `leadingMinor_one/two/three` and `leadingMinor_three_pos_iff` / `trailing3_pos_iff` for Sylvester’s first three minors; `schlafliGram_quad` / `band_quad_squares` / `schlafliGram_det` for $\det M=\Delta$; `schlafliDet_*` and `schlafliDet_*_pos/neg` for the eleven signs; `regular_polychora_iff` / `posDef_of_regular` / `regular_of_posDef` for the PosDef equivalence.
 
 ---
 

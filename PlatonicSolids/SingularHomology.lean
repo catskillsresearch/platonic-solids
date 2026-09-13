@@ -17,9 +17,12 @@ equivalences and homeomorphisms induce homology isomorphisms,
 contractible spaces have the homology of a point, `H₀(Sⁿ) ≅ R` for
 `n ≥ 1`, and the full calculation of `H_*(S⁰)`.
 
-Mayer–Vietoris / excision for singular homology is still absent from
-Mathlib, so this file does not identify `Hₙ(Sⁿ)` for `n > 0`.
-The paper’s `χ(S³) = 0` is obtained from the cellular calculation in
+The pair and Mayer–Vietoris sequences of singular chains are in
+`PlatonicSolids/RelativeHomology.lean` and
+`PlatonicSolids/MayerVietoris.lean`. Excision for the stereographic
+cover of `Metric.sphere` (small simplices) is still absent, so this
+file does not identify `Hₙ(Sⁿ)` for `n > 0`. The paper’s `χ(S³) = 0`
+is obtained from the cellular calculation in
 `PlatonicSolids/Sphere3Homology.lean`.
 -/
 

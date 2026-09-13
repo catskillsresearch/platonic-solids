@@ -28,6 +28,8 @@ LEAN_FILES=(
   PlatonicSolids/EulerPoincare.lean
   PlatonicSolids/RadialProjection.lean
   PlatonicSolids/SingularHomology.lean
+  PlatonicSolids/RelativeHomology.lean
+  PlatonicSolids/MayerVietoris.lean
   PlatonicSolids/Sphere2Homology.lean
   PlatonicSolids/Sphere3Homology.lean
   PlatonicSolids/GramMatrix.lean

@@ -15,11 +15,13 @@ import PlatonicSolids.EulerPoincare
 import PlatonicSolids.GramMatrix
 import PlatonicSolids.Incidence
 import PlatonicSolids.LeadingMinors
+import PlatonicSolids.MayerVietoris
 import PlatonicSolids.PlatonicPair
 import PlatonicSolids.QuadForm
 import PlatonicSolids.RadialProjection
 import PlatonicSolids.Reciprocal
 import PlatonicSolids.Regular4
+import PlatonicSolids.RelativeHomology
 import PlatonicSolids.SignTable
 import PlatonicSolids.SingularHomology
 import PlatonicSolids.Sphere2Homology

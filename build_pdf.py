@@ -34,6 +34,8 @@ LEAN_MODULES = [
     (LEAN_DIR / "RadialProjection.lean", r"Frontier of a bounded convex body is homeomorphic to the sphere"),
     (LEAN_DIR / "EulerPoincare.lean", r"Algebraic Euler--Poincar\'e in dimensions $2$ and $3$"),
     (LEAN_DIR / "SingularHomology.lean", r"Singular $H_0(S^n)$, $H_*(S^0)$, homotopy invariance"),
+    (LEAN_DIR / "RelativeHomology.lean", r"Relative singular homology and the LES of a pair"),
+    (LEAN_DIR / "MayerVietoris.lean", r"Mayer--Vietoris of an excisive triad; stereographic cover of $S^n$"),
     (LEAN_DIR / "Sphere2Homology.lean", r"Cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface"),
     (LEAN_DIR / "Sphere3Homology.lean", r"Cellular $H_*(S^3;\mathbb{Q})$ of the $4$-simplex boundary"),
     (LEAN_DIR / "EulerBetti.lean", r"Betti arithmetic of $\chi(S^2)=2$ and $\chi(S^3)=0$"),
@@ -101,6 +103,13 @@ EXTRA_LITERATE = r"""    {ä}{{\"{a}}}1
     {⊂}{{\ensuremath{\subset}}}1
     {𝟙}{{\ensuremath{\mathbb{1}}}}1
     {⊕}{{\ensuremath{\oplus}}}1
+    {⊞}{{\ensuremath{\boxplus}}}1
+    {♯}{{\ensuremath{\sharp}}}1
+    {ᗮ}{{\ensuremath{^{\perp}}}}1
+    {δ}{{\ensuremath{\delta}}}1
+    {ᶜ}{{\ensuremath{^{\mathrm{c}}}}}3
+    {∙}{{\ensuremath{\cdot}}}1
+    {‖}{{\ensuremath{\lVert}}}1
 """
 
 EXTRA_UNICODECHAR = r"""
@@ -138,6 +147,13 @@ EXTRA_UNICODECHAR = r"""
 \newunicodechar{⊕}{\ensuremath{\oplus}}
 \newunicodechar{⦃}{\textbraceleft\textbraceleft}
 \newunicodechar{⦄}{\textbraceright\textbraceright}
+\newunicodechar{⊞}{\ensuremath{\boxplus}}
+\newunicodechar{♯}{\ensuremath{\sharp}}
+\newunicodechar{ᗮ}{\ensuremath{^{\perp}}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{ᶜ}{\ensuremath{^{\mathrm{c}}}}
+\newunicodechar{∙}{\ensuremath{\cdot}}
+\newunicodechar{‖}{\ensuremath{\lVert}}
 """
 
 

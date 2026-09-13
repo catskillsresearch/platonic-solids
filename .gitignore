@@ -1,13 +1,9 @@
 # Lake / Lean
 .lake/
 
-# Palomar toolkit checkout (CI) and editorial cache
+# Palomar toolkit checkout (CI) and local caches
 palomar-preflight/
-.cache/palomar-editorial/*
-!.cache/palomar-editorial/preflight-run.json
-!.cache/palomar-editorial/mechanical-report.json
-!.cache/palomar-editorial/review-draft.json
-.cache/palomar-comparator/
+.cache/
 vendor/palomar-policy.sync-backup/
 .venv-editorial/
 

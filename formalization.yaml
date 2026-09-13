@@ -70,9 +70,10 @@ fidelity:
     (tetrahedron surface) over ℚ as homology_sphere2. Informal
     χ(S³)=0 is proved for the standard simplicial 3-sphere
     (4-simplex boundary) over ℚ as homology_sphere3 / eulerChar_sphere3.
-    Singular H₀ of Metric.sphere for n≥1 and H_*(S⁰) are proved;
-    Mathlib still lacks Mayer–Vietoris for singular homology, so
-    H_n(Metric.sphere) for n>0 is not identified. The algebraic
+    Singular H₀ of Metric.sphere for n≥1 and H_*(S⁰) are proved.
+    The pair and triad exact sequences of singular chains are proved;
+    excision for the stereographic cover of the sphere (small simplices)
+    is not, so H_n(Metric.sphere) for n>0 is not identified. The algebraic
     Euler–Poincaré identities and the radial-projection homeomorphism
     are proved. The compared 3D theorem still takes V+F=E+2 so that
     Palomar Comparator types stay combinatorial.
@@ -181,9 +182,10 @@ limitations:
     Euler–Poincaré in dimensions 2 and 3, the radial-projection
     homeomorphism, cellular Betti numbers of the tetrahedron
     surface and of the 4-simplex boundary, singular H₀ of
-    Metric.sphere for n≥1, and H_*(S⁰). It does not compute
-    singular H_n(Metric.sphere) for n>0 (Mathlib has no
-    Mayer–Vietoris / excision for singular chains).
+    Metric.sphere for n≥1, and H_*(S⁰). The pair LES and the
+    Mayer–Vietoris sequence of an excisive triad are proved. It does
+    not compute singular H_n(Metric.sphere) for n>0: that needs
+    excision for the stereographic cover (barycentric subdivision).
   - >-
     The compared 4D theorem classifies the eleven Platonic-compatible
     Schläfli triples by the sign of Δ = det(schlafliGram). The

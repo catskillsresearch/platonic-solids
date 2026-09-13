@@ -3,9 +3,9 @@ Copyright (c) 2026  Lars Warren Ericson.  All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Lars Warren Ericson.
 -/
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.LinearAlgebra.Matrix.Notation
 import Mathlib.Tactic
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Real.Sqrt
 
 /-!
 # Palomar statement of record (Platonic solids and regular polychora)
@@ -29,8 +29,13 @@ The selected theorems are:
 The definitions below are the vocabulary of the claim. A reader who wants
 to check *what* has been proved should read this file and need not read
 anything else. `Solution.lean` imports the sorry-free development in
-`PlatonicSolids.lean`.
+`PlatonicSolids.lean`. Each supporting lemma lives in a section-sized
+module under `PlatonicSolids/`, meant to be read next to the matching
+paragraph of `PlatonicSolids.md`.
 -/
+
+open scoped Matrix
+open Real Matrix
 
 /-- The 5 Platonic pairs (p, q):
     (3, 3): Tetrahedron
@@ -45,24 +50,16 @@ def IsPlatonicPair (p q : ℕ) : Prop :=
   (p = 3 ∧ q = 5) ∨
   (p = 5 ∧ q = 3)
 
-/-- Exact algebraic values of sin²(π/n) represented in ℝ. -/
-noncomputable def sin_sq (n : ℕ) : ℝ :=
-  if n = 3 then 3 / 4
-  else if n = 4 then 1 / 2
-  else if n = 5 then (5 - Real.sqrt 5) / 8
-  else 0
+/-- Canonical bilinear form of the rank-4 Schläfli Coxeter system `{p, q, r}`. -/
+noncomputable def schlafliGram (p q r : ℕ) : Matrix (Fin 4) (Fin 4) ℝ :=
+  !![1, -cos (π / p), 0, 0;
+     -cos (π / p), 1, -cos (π / q), 0;
+     0, -cos (π / q), 1, -cos (π / r);
+     0, 0, -cos (π / r), 1]
 
-/-- Exact algebraic values of cos²(π/n) represented in ℝ. -/
-noncomputable def cos_sq (n : ℕ) : ℝ :=
-  if n = 3 then 1 / 4
-  else if n = 4 then 1 / 2
-  else if n = 5 then (3 + Real.sqrt 5) / 8
-  else 0
-
-/-- The 4D Schläfli Gram determinant:
-    D₄ = det(M₄) = sin²(π/p) * sin²(π/r) - cos²(π/q). -/
-noncomputable def SchläfliDeterminant (p q r : ℕ) : ℝ :=
-  sin_sq p * sin_sq r - cos_sq q
+/-- `Δ(p, q, r) = sin²(π/p) sin²(π/r) - cos²(π/q)`. -/
+noncomputable def schlafliDet (p q r : ℕ) : ℝ :=
+  sin (π / p) ^ 2 * sin (π / r) ^ 2 - cos (π / q) ^ 2
 
 /-- The 6 regular convex 4-polytopes (Schläfli symbols {p, q, r}):
     {3, 3, 3}: 5-cell (4D Simplex)
@@ -84,11 +81,11 @@ def IsRegular4Polytope (p q r : ℕ) : Prop :=
     algebraically force E ≥ 1 without requiring any geometric non-degeneracy axiom. -/
 theorem edges_pos_of_regular
     (V E F p q : ℕ)
-    (hp : p ≥ 3) (hq : q ≥ 3)
+    (hp : 3 ≤ p) (hq : 3 ≤ q)
     (h_edges_faces : p * F = 2 * E)
     (h_edges_verts : q * V = 2 * E)
     (h_euler : V + F = E + 2) :
-    E > 0 := by
+    0 < E := by
   sorry
 
 /-- The 3D Main Theorem:
@@ -97,7 +94,7 @@ theorem edges_pos_of_regular
     must have (p, q) belonging to the 5 Platonic solids. -/
 theorem platonic_solids_3d
     (V E F p q : ℕ)
-    (hp : p ≥ 3) (hq : q ≥ 3)
+    (hp : 3 ≤ p) (hq : 3 ≤ q)
     (h_edges_faces : p * F = 2 * E)
     (h_edges_verts : q * V = 2 * E)
     (h_euler : V + F = E + 2) :
@@ -106,11 +103,11 @@ theorem platonic_solids_3d
 
 /-- The Main Classification Theorem for 4D Regular Polychora:
     Any triple {p, q, r} whose 3D cells {p, q} and vertex figures {q, r} are
-    Platonic solids, and whose Coxeter Gram matrix is positive-definite (D₄ > 0),
+    Platonic solids, and whose Coxeter Gram matrix is positive-definite (Δ > 0),
     is strictly one of the 6 regular convex 4-polytopes. -/
 theorem regular_polychora_classification (p q r : ℕ)
     (h_cell : IsPlatonicPair p q)
     (h_vf : IsPlatonicPair q r)
-    (h_det : SchläfliDeterminant p q r > 0) :
+    (h_det : 0 < schlafliDet p q r) :
     IsRegular4Polytope p q r := by
   sorry

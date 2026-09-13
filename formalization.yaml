@@ -36,8 +36,11 @@ status:
     regular_polychora_classification. The 3D theorems take a polyhedron
     with p,q ≥ 3, incidence pF=2E and qV=2E, and Euler V+F=E+2. The 4D
     theorem takes Platonic cells and vertex figures together with a
-    strictly positive Schläfli Gram determinant. Nothing in the compared
-    statement is imported from a prior Palomar entry.
+    strictly positive Schläfli Gram determinant Δ, defined from
+    Mathlib Real.sin and Real.cos. The same development proves the
+    Gram matrix is positive definite iff the triple is one of the six.
+    Nothing in the compared statement is imported from a prior Palomar
+    entry.
   sorry_count: 0
   sorry_in_definitions: 0
   axioms: ["propext", "Classical.choice", "Quot.sound"]
@@ -63,13 +66,15 @@ status:
 
 fidelity:
   divergences: >-
-    Informal sin²(π/n) and cos²(π/n) are the closed-form algebraic
-    values for n ∈ {3,4,5}, not Mathlib's Real.sin / Real.cos evaluated
-    at π/n. The 4D classification is the combinatorial filter on those
-    eleven candidate triples; it does not construct geometric
-    realizations, Coxeter groups, or Gram matrices as Lean objects.
     Informal χ(S²)=2 and χ(S³)=0 are background for the paper; the Lean
-    3D theorem takes V+F=E+2 as a hypothesis.
+    3D theorem takes V+F=E+2 as a hypothesis, because Mathlib does not
+    identify a convex polyhedron with a CW structure on Metric.sphere.
+    The 4D compared theorem classifies Platonic-compatible triples by
+    the sign of Δ = det(schlafliGram), using Mathlib Real.sin / Real.cos
+    and the rank-4 Gram matrix. It does not construct geometric
+    realizations or Coxeter groups as Lean objects. The stronger
+    equivalence regular_polychora_iff (PosDef ↔ one of the six) is
+    proved in the development but is not a compared Palomar theorem.
 
 sources:
   - title: "From Platonic Solids to Regular 4-Polytopes"
@@ -83,8 +88,9 @@ sources:
       formalized. Relationship is `other` because Palomar reserves
       `formalizes` for following an existing source. Challenge.lean is
       checked against the 3D Euler classification, the non-degeneracy
-      theorem, and the 4D Schläfli-determinant classification boxed in
-      that note.
+      theorem, and the 4D Schläfli Gram / determinant classification
+      boxed in that note. Each paper paragraph points at a gist-sized
+      Lean module under PlatonicSolids/.
 
   - title: "Regular Polytopes"
     authors: ["H. S. M. Coxeter"]
@@ -168,9 +174,10 @@ limitations:
     χ(S²)=2 inside Lean.
   - >-
     The compared 4D theorem classifies the eleven Platonic-compatible
-    Schläfli triples by the sign of an algebraic determinant. It does
-    not construct Coxeter groups, reflection representations, or
-    geometric 4-polytopes.
+    Schläfli triples by the sign of Δ = det(schlafliGram). The
+    development also proves PosDef ↔ IsRegular4Polytope for p,q,r ≥ 3.
+    Neither statement constructs Coxeter groups, reflection
+    representations, or geometric 4-polytopes.
   - >-
     Challenge.lean states the family but does not prove it; that is the
     Comparator convention, and Solution.lean / PlatonicSolids.lean
@@ -209,6 +216,11 @@ alignment:
       status: proved
 
     - source: "Δ(p,q,r)=sin²(π/p)sin²(π/r)−cos²(π/q)"
-      lean: "SchläfliDeterminant"
-      module: "Challenge (statement), PlatonicSolids (definition)"
+      lean: "schlafliDet"
+      module: "Challenge (statement), PlatonicSolids/GramMatrix (definition)"
+      status: proved
+
+    - source: "The rank-4 Schläfli Gram matrix of {p,q,r}"
+      lean: "schlafliGram"
+      module: "Challenge (statement), PlatonicSolids/GramMatrix (definition)"
       status: proved

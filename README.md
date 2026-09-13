@@ -27,7 +27,8 @@ outside the deliberate holes in `Challenge.lean`.
 | File | Role |
 |---|---|
 | `PlatonicSolids.md` | Paper (topology in 3D, Coxeter in 4D) — the source of truth |
-| `PlatonicSolids.lean` | Sorry-free formalization of the 3D and 4D classifications |
+| `PlatonicSolids.lean` | Root import of the section-sized modules |
+| `PlatonicSolids/*.lean` | Gist-sized proofs, one file per paper paragraph |
 | `Challenge.lean` | Palomar statement of record: the compared family with deliberate `sorry`s |
 | `Solution.lean` | Palomar solution module: imports `PlatonicSolids` |
 | `comparator.json` | Comparator config naming the three theorems and supporting definitions |
@@ -63,8 +64,9 @@ package's `lakefile.toml`. `lake build` also typechecks `Challenge.lean` and
 `Challenge.lean` is the statement of record: it imports only Mathlib,
 declares the definitions the family uses, and leaves the three compared
 theorems as `sorry`. A reader who wants to check *what* has been proved
-should read that file. The proofs are `PlatonicSolids.lean`, exposed to
-Comparator through `Solution.lean`.
+should read that file. The proofs are the gist-sized modules under
+`PlatonicSolids/`, imported by `PlatonicSolids.lean` and exposed to
+Comparator through `Solution.lean`. Each paper paragraph names its file.
 
 ## Palomar packaging
 
@@ -89,13 +91,13 @@ python3 build_pdf.py
 bash scripts/package_arxiv_submit.sh   # dist/arxiv_submit.zip (rebuilds the PDF first)
 ```
 
-`dist/arxiv_submit.zip` is the arXiv upload: `PlatonicSolids.tex`,
-`PlatonicSolids.lean` (the `\lstinputlisting` appendix), and `00README.json`
-so AutoTeX keeps the Lean file and compiles with pdfLaTeX. On arXiv Add
-Files, Delete All before uploading; on Review Files, uncheck deletion if
-`PlatonicSolids.lean` is marked. After a successful arXiv compile, save the
-preview PDF as `view.pdf` and copy it to `PlatonicSolids.pdf` so the
-committed deliverable matches AutoTeX.
+`dist/arxiv_submit.zip` is the arXiv upload: `PlatonicSolids.tex`, the
+Lean sources (root import plus `PlatonicSolids/*.lean`, listed in the
+appendix), and `00README.json` so AutoTeX keeps those files and compiles
+with pdfLaTeX. On arXiv Add Files, Delete All before uploading; on Review
+Files, uncheck deletion if a `.lean` file is marked. After a successful
+arXiv compile, save the preview PDF as `view.pdf` and copy it to
+`PlatonicSolids.pdf` so the committed deliverable matches AutoTeX.
 
 ## License
 

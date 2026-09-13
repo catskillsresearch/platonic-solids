@@ -22,6 +22,7 @@ This paper addresses these questions through an analytical exposition coupled wi
 ## 2. Dimension 3: Topology, Incidence, and the Non-Degeneracy Insight
 
 ### 2.1. Topological Derivation of Euler’s Formula
+The Lean gist is `PlatonicSolids/EulerBetti.lean`.
 Let $P \subset \mathbb{R}^3$ be a convex polyhedron containing the origin in its interior. Radial projection $\pi: \partial P \to S^2$ onto the circumscribed 2-sphere is a homeomorphism. This projection induces a finite CW-complex structure on $S^2$ with $V$ 0-cells (vertices), $E$ 1-cells (edges), and $F$ 2-cells (faces).
 
 From the cellular homology of the 2-sphere:
@@ -32,6 +33,7 @@ By the Euler–Poincaré theorem, this topological invariant equals the alternat
 $$V - E + F = 2$$
 
 ### 2.2. Incidence Combinatorics
+The Lean gist is `PlatonicSolids/Incidence.lean` (with the pair predicate in `PlatonicSolids/PlatonicPair.lean`).
 A regular polyhedron has Schläfli symbol $\{p, q\}$, meaning:
 1. Every 2D face is an identical regular $p$-gon ($p \ge 3$). Each face contributes $p$ edge-face incidences. Since every edge is shared by exactly 2 faces:
    $$p F = 2 E \implies F = \frac{2E}{p}$$
@@ -39,6 +41,7 @@ A regular polyhedron has Schläfli symbol $\{p, q\}$, meaning:
    $$q V = 2 E \implies V = \frac{2E}{q}$$
 
 ### 2.3. The Diophantine Reduction
+The Lean gist is `PlatonicSolids/PlatonicPair.lean`; the reciprocal form $1/p+1/q>1/2$ is `PlatonicSolids/Reciprocal.lean`.
 Substituting these incidence relations into Euler's formula:
 $$\frac{2E}{q} - E + \frac{2E}{p} = 2$$
 Multiplying by $pq$ over $\mathbb{N}$ avoids rational arithmetic:
@@ -59,6 +62,7 @@ Since $p \ge 3$ and $q \ge 3$, both $(p - 2)$ and $(q - 2)$ are strictly positiv
 | $3$ | $1$ | $3$ | **$(5, 3)$** | Dodecahedron |
 
 ### 2.4. Formalization Insight: Elimination of the Non-Degeneracy Axiom
+The Lean gist is `edges_pos_of_regular` in `PlatonicSolids/Incidence.lean`.
 In informal presentations, dividing Euler’s equation by $2E$ to obtain:
 $$\frac{1}{p} + \frac{1}{q} = \frac{1}{2} + \frac{1}{E} > \frac{1}{2}$$
 is typically justified by appealing to physical or geometric intuition: *“a solid polyhedron clearly has edges, so $E > 0$.”*
@@ -78,6 +82,7 @@ Therefore, **the topological Euler characteristic ($\chi = 2$) together with the
 ## 3. Dimension 4: Why Topology Fails and Coxeter Takes Over
 
 ### 3.1. The Topological Barrier: $\chi(S^3) = 0$
+The Lean gist is `eulerChar_sphere3_betti` in `PlatonicSolids/EulerBetti.lean`.
 For a convex 4-polytope with boundary homeomorphic to the 3-sphere $S^3$, the cellular homology yields:
 $$H_0(S^3; \mathbb{Z}) \cong \mathbb{Z}, \quad H_1(S^3; \mathbb{Z}) \cong 0, \quad H_2(S^3; \mathbb{Z}) \cong 0, \quad H_3(S^3; \mathbb{Z}) \cong \mathbb{Z}$$
 The Euler–Poincaré characteristic vanishes:
@@ -87,6 +92,7 @@ $$V - E + F - C = 0$$
 Because the alternating sum is zero, dividing by any flag count yields an identity equal to zero rather than a positive reciprocal like $2/E$. **Topology alone does not impose an upper bound on $p, q,$ or $r$ in 4D.**
 
 ### 3.2. Coxeter Systems and the Schläfli Gram Matrix
+The Lean gist is `PlatonicSolids/GramMatrix.lean`.
 To obtain an upper bound, we use the theory of **Coxeter reflection groups**. A regular 4-polytope is described by its Schläfli symbol $\{p, q, r\}$:
 * The 3D cells are Platonic solids $\{p, q\}$.
 * The 3D vertex figures are Platonic solids $\{q, r\}$.
@@ -105,6 +111,7 @@ $$M = \begin{pmatrix}
 \end{pmatrix}$$
 
 ### 3.3. Sylvester’s Criterion and Principal Minors
+The Lean gists are `PlatonicSolids/Angles.lean`, `LeadingMinors.lean`, `TrailingMinor.lean`, `D3IffPlatonic.lean`, `QuadForm.lean`, `CompletingSquare.lean`, and `Sylvester.lean`.
 By the Cartan–Killing–Coxeter classification:
 1. **$M$ is positive definite ($\det(M) > 0$) $\iff$ $W$ is a finite reflection group acting on $S^3$ (a finite regular convex 4-polytope).**
 2. **$M$ is positive semidefinite with nullity 1 ($\det(M) = 0$) $\iff$ $W$ is an affine reflection group (a Euclidean 3D space-filling honeycomb).**
@@ -121,6 +128,7 @@ By Sylvester’s criterion, $M$ is positive definite if and only if all leading 
   **Thus, the vertex figure $\{q, r\}$ must also be a Platonic solid.**
 
 ### 3.4. The Critical Dimension-4 Minor: $D_4$
+The Lean gist is `PlatonicSolids/DetFormula.lean`.
 Expanding $D_4 = \det(M)$ along the fourth row:
 $$D_4 = D_3 - \cos^2\left(\frac{\pi}{r}\right) D_2 = \left(\sin^2\frac{\pi}{p} - \cos^2\frac{\pi}{q}\right) - \cos^2\left(\frac{\pi}{r}\right) \sin^2\left(\frac{\pi}{p}\right)$$
 Factoring $\sin^2\frac{\pi}{p}$:
@@ -132,6 +140,7 @@ $$\Delta(p, q, r) := \sin^2\left(\frac{\pi}{p}\right) \sin^2\left(\frac{\pi}{r}\
 ---
 
 ## 4. Evaluation of the 11 Candidate Triples
+The Lean gists are `PlatonicSolids/CompatibleTriples.lean` (the eleven triples), `TrigValues.lean` (exact $\sin^2$ and $\cos^2$), `SignTable.lean` (sign of $\Delta$), `Regular4.lean` (the six), and `Classification.lean` (the capstone).
 
 Because both $\{p, q\}$ and $\{q, r\}$ must be Platonic, the indices must satisfy $p, q, r \in \{3, 4, 5\}$. Among the $5 \times 5 = 25$ combinations, only **11 triples** have a compatible middle index $q$.
 
@@ -171,7 +180,7 @@ Thus, **precisely 6 triples yield positive-definite Gram matrices**.
 
 ## 5. Complete Lean 4 Formal Verification
 
-The accompanying Lake package `PlatonicSolids.lean` compiles against Lean 4 and Mathlib. It contains **zero axioms, zero admits, and zero `sorry`s**. The full source is reproduced in the appendix and is the Palomar Solution surface imported by `Solution.lean`.
+The Lake package compiles against Lean 4 and Mathlib. It contains **zero axioms, zero admits, and zero `sorry`s** outside the deliberate holes in `Challenge.lean`. The development is split into section-sized modules under `PlatonicSolids/`, each meant to be copied as a gist next to the matching paragraph above. `PlatonicSolids.lean` is the root import. The full sources are reproduced in the appendix.
 
 The compared theorems are:
 
@@ -179,7 +188,30 @@ The compared theorems are:
 - `edges_pos_of_regular` — the same identities algebraically force $E>0$; non-degeneracy is a theorem, not an axiom.
 - `regular_polychora_classification` — Platonic cells and vertex figures with $\Delta(p,q,r)>0$ are exactly the six regular convex 4-polytopes.
 
-`Challenge.lean` restates that family with deliberate `sorry`s so Palomar Comparator can check types against `Solution.lean`. Supporting definitions are `IsPlatonicPair`, `IsRegular4Polytope`, `sin_sq`, `cos_sq`, and `SchläfliDeterminant`.
+The stronger equivalence `regular_polychora_iff` identifies those six with positive-definiteness of `schlafliGram` for $p,q,r\ge 3$, via Sylvester’s criterion (`PlatonicSolids/Sylvester.lean`).
+
+`Challenge.lean` restates the compared family with deliberate `sorry`s so Palomar Comparator can check types against `Solution.lean`. Supporting definitions are `IsPlatonicPair`, `IsRegular4Polytope`, `schlafliGram`, and `schlafliDet`.
+
+| File | Paper | Content |
+|---|---|---|
+| `PlatonicSolids/EulerBetti.lean` | §§2.1, 3.1 | $\chi(S^2)=2$, $\chi(S^3)=0$ |
+| `PlatonicSolids/PlatonicPair.lean` | §2.3 | Five solutions of $(p-2)(q-2)<4$ |
+| `PlatonicSolids/Reciprocal.lean` | §§2.3, 3.3 | $1/p+1/q>1/2$ |
+| `PlatonicSolids/Incidence.lean` | §§2.2–2.4 | `platonic_solids_3d`, `edges_pos_of_regular` |
+| `PlatonicSolids/Angles.lean` | §3.3 | $\pi/n\in(0,\pi/2)$ |
+| `PlatonicSolids/GramMatrix.lean` | §3.2 | `schlafliGram`, `schlafliDet` |
+| `PlatonicSolids/LeadingMinors.lean` | §3.3 | $D_1,D_2,D_3$ |
+| `PlatonicSolids/TrailingMinor.lean` | §3.3 | Vertex-figure $3\times 3$ |
+| `PlatonicSolids/D3IffPlatonic.lean` | §3.3 | $D_3>0$ iff Platonic cell |
+| `PlatonicSolids/QuadForm.lean` | §3.3 | Gram quadratic form |
+| `PlatonicSolids/CompletingSquare.lean` | §3.3 | LDL identity |
+| `PlatonicSolids/DetFormula.lean` | §3.4 | $\det M=\Delta$ |
+| `PlatonicSolids/Sylvester.lean` | §3.3 | PosDef iff leading minors $>0$ |
+| `PlatonicSolids/TrigValues.lean` | §4 | $\sin^2(\pi/n)$, $\cos^2(\pi/n)$ for $n\in\{3,4,5\}$ |
+| `PlatonicSolids/CompatibleTriples.lean` | §4 | Eleven compatible triples |
+| `PlatonicSolids/SignTable.lean` | §4 | Sign of $\Delta$ |
+| `PlatonicSolids/Regular4.lean` | §4 | The six regular 4-polytopes |
+| `PlatonicSolids/Classification.lean` | §4 | Compared 4D theorem and PosDef iff |
 
 ---
 

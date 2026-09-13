@@ -23,7 +23,7 @@ toolkit_supports_cli() {
 }
 
 TOOLKIT="$(find_toolkit "$ROOT")"
-SORRY_PATHS="PlatonicSolids.lean Solution.lean"
+SORRY_PATHS="PlatonicSolids PlatonicSolids.lean Solution.lean"
 
 if toolkit_supports_cli "$TOOLKIT"; then
   exec bash "$TOOLKIT/palomar_preflight.sh" \

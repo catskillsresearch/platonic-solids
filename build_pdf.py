@@ -26,6 +26,32 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SRC = HERE / "PlatonicSolids.md"
 LEAN = HERE / "PlatonicSolids.lean"
+LEAN_DIR = HERE / "PlatonicSolids"
+
+# Paper order: each file is a gist-sized chunk next to one exposition paragraph.
+LEAN_MODULES = [
+    (LEAN, "Root import of the section-sized modules"),
+    (LEAN_DIR / "EulerBetti.lean", r"Betti arithmetic of $\chi(S^2)=2$ and $\chi(S^3)=0$"),
+    (LEAN_DIR / "PlatonicPair.lean", "The five solutions of the Platonic Diophantine inequality"),
+    (LEAN_DIR / "Reciprocal.lean", r"$1/p+1/q>1/2$ iff the integer inequality"),
+    (LEAN_DIR / "Incidence.lean", r"Regularity incidence plus Euler force a Platonic pair and $E>0$"),
+    (LEAN_DIR / "Angles.lean", r"$\pi/n\in(0,\pi/2)$ so sine and cosine are positive"),
+    (LEAN_DIR / "GramMatrix.lean", "Schläfli Gram matrix and the scalar $\\Delta$"),
+    (LEAN_DIR / "LeadingMinors.lean", r"Closed forms of the leading minors $D_1,D_2,D_3$"),
+    (LEAN_DIR / "TrailingMinor.lean", "Trailing $3\\times 3$ minor is the vertex-figure cell minor"),
+    (LEAN_DIR / "D3IffPlatonic.lean", r"$D_3>0$ iff the cell is Platonic"),
+    (LEAN_DIR / "QuadForm.lean", "Quadratic form of the Gram matrix"),
+    (LEAN_DIR / "CompletingSquare.lean", "LDL / completing-the-square identity"),
+    (LEAN_DIR / "DetFormula.lean", r"$\det M=\Delta$"),
+    (LEAN_DIR / "Sylvester.lean", "Sylvester: positive definite iff leading minors are positive"),
+    (LEAN_DIR / "TrigValues.lean", r"Exact $\\sin^2(\\pi/n)$ and $\\cos^2(\\pi/n)$ for $n\\in\\{3,4,5\\}$"),
+    (LEAN_DIR / "CompatibleTriples.lean", "The eleven Platonic-compatible Schläfli triples"),
+    (LEAN_DIR / "SignTable.lean", r"Sign of $\Delta$ on those eleven triples"),
+    (LEAN_DIR / "Regular4.lean", "The six regular convex 4-polytopes"),
+    (LEAN_DIR / "Classification.lean", r"$\Delta>0$ (equivalently $M$ positive definite) iff one of the six"),
+    (HERE / "Challenge.lean", "Palomar statement of record (deliberate sorries)"),
+    (HERE / "Solution.lean", "Palomar solution module: imports PlatonicSolids"),
+]
 OUT_TEX = HERE / "PlatonicSolids.tex"
 OUT_PDF = HERE / "PlatonicSolids.pdf"
 PREAMBLE = HERE / "scripts" / "tex_preamble_arxiv.tex"
@@ -50,6 +76,11 @@ EXTRA_LITERATE = r"""    {ä}{{\"{a}}}1
     {ℤ}{{\ensuremath{\mathbb{Z}}}}1
     {χ}{{\ensuremath{\chi}}}1
     {π}{{\ensuremath{\pi}}}1
+    {³}{{\textsuperscript{3}}}1
+    {γ}{{\ensuremath{\gamma}}}1
+    {ᵥ}{{\textsubscript{v}}}1
+    {∑}{{\ensuremath{\sum}}}1
+    {⬝}{{\ensuremath{\cdot}}}1
 """
 
 EXTRA_UNICODECHAR = r"""
@@ -66,6 +97,11 @@ EXTRA_UNICODECHAR = r"""
 \newunicodechar{ℤ}{\ensuremath{\mathbb{Z}}}
 \newunicodechar{χ}{\ensuremath{\chi}}
 \newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{³}{\textsuperscript{3}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{ᵥ}{\textsubscript{v}}
+\newunicodechar{∑}{\ensuremath{\sum}}
+\newunicodechar{⬝}{\ensuremath{\cdot}}
 \newunicodechar{⦃}{\textbraceleft\textbraceleft}
 \newunicodechar{⦄}{\textbraceright\textbraceright}
 """
@@ -218,10 +254,7 @@ def build_appendix() -> str:
             r"\texttt{platonic\_solids\_3d}, \texttt{edges\_pos\_of\_regular}, "
             r"and \texttt{regular\_polychora\_classification}.",
             "",
-            listing_block(
-                LEAN,
-                r"Sorry-free classification of the Platonic solids and regular convex 4-polytopes",
-            ),
+            *[listing_block(path, caption) for path, caption in LEAN_MODULES],
         ]
     )
 

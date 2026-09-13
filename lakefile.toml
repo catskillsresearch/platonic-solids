@@ -17,6 +17,7 @@ rev = "v4.30.0"
 
 [[lean_lib]]
 name = "PlatonicSolids"
+globs = ["PlatonicSolids", "PlatonicSolids.+"]
 
 [[lean_lib]]
 name = "Challenge"

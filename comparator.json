@@ -9,9 +9,8 @@
   "definition_names": [
     "IsPlatonicPair",
     "IsRegular4Polytope",
-    "sin_sq",
-    "cos_sq",
-    "SchläfliDeterminant"
+    "schlafliGram",
+    "schlafliDet"
   ],
   "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"]
 }

@@ -146,14 +146,16 @@ automation:
       models:
         - "Google Gemini 3.8"
         - "Cursor Grok 4.6 (SpaceXAI / Cursor)"
+        - "OpenAI GPT-5.6 Sol (via Cursor)"
       framework: "Cursor"
       role: >-
         Exploratory formalization, initial Lean 4 proof tactics, and
         drafting of PlatonicSolids.md. Palomar Challenge / Solution /
         comparator / formalization.yaml packaging and the Lake / arXiv
-        infrastructure were added later by an agent under the author's
-        direction. Generated Lean was provisional until it compiled
-        under the pinned toolchain (leanprover/lean4:v4.30.0).
+        infrastructure, singular-homology and excision investigation,
+        and later expository revisions were added by agents under the
+        author's direction. Generated Lean was provisional until it
+        compiled under the pinned toolchain (leanprover/lean4:v4.30.0).
     - method: manual
       models: []
       role: >-

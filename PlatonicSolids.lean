@@ -23,6 +23,7 @@ import PlatonicSolids.Reciprocal
 import PlatonicSolids.Regular4
 import PlatonicSolids.RelativeHomology
 import PlatonicSolids.SignTable
+import PlatonicSolids.SingularExcision
 import PlatonicSolids.SingularHomology
 import PlatonicSolids.Sphere2Homology
 import PlatonicSolids.Sphere3Homology

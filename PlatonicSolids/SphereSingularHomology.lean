@@ -6,6 +6,7 @@ import Mathlib.Algebra.Category.ModuleCat.Abelian
 import Mathlib.Algebra.Homology.HomologicalComplexBiprod
 import Mathlib.Analysis.Convex.Contractible
 import Mathlib.Analysis.Normed.Module.Ball.RadialEquiv
+import PlatonicSolids.CellularHomology
 import PlatonicSolids.Incidence
 import PlatonicSolids.SingularExcision.OpenCoverQI
 
@@ -15,9 +16,9 @@ Mayer-Vietoris cover, after the open-cover quasi-isomorphism. The
 intersection of the charts is homotopy-equivalent to `S^{n-1}`; the
 connecting map is an isomorphism in positive degrees; `H_1(S^1)` is
 identified with `ker epsilon` of the two-point space. The optional Euler
-bridge `platonic_solids_3d_of_sphere` takes numeric Betti numbers
-`1, 0, 1`, which agree with singular `H_*(S^2)`, and does not change
-Palomar compared types.
+bridge `platonic_solids_3d_of_sphere` derives the Betti numbers `1, 0, 1`
+from a quasi-isomorphism to singular chains of a model homotopy-equivalent
+to `S^2`; it does not change Palomar compared types.
 -/
 
 open AlgebraicTopology CategoryTheory Limits HomologicalComplex Metric Set ContinuousMap
@@ -863,14 +864,82 @@ noncomputable def singularHomology_sphere2 :
         (.of (MetricSphere 2))) ≅ R :=
   singularHomology_sphere (R := R) (n := 2) (by decide)
 
-/-- The 3D classification from a cellular 2-complex with numeric Betti
-numbers `1, 0, 1`, which agree with singular `H_*(S^2)`
-(`singularHomology_sphere2_zero`, `isZero_singularHomology_sphere2_one`,
-`singularHomology_sphere2`). Euler–Poincaré supplies `V+F=E+2`; regularity
-then forces a Platonic pair. Palomar compared types are unchanged. -/
+/-- The singular zeroth homology of `S²` has dimension one over a field. -/
+theorem singularHomology_sphere2_finrank_zero
+    (K : Type) [Field K] :
+    Module.finrank K
+        (((singularHomologyFunctor (ModuleCat.{0} K) 0).obj
+          (ModuleCat.of K K)).obj (.of (MetricSphere 2))) = 1 := by
+  simpa using ModuleCat.finrank_eq_of_iso
+    (singularHomology_sphere2_zero (R := ModuleCat.of K K))
+
+/-- The singular first homology of `S²` has dimension zero over a field. -/
+theorem singularHomology_sphere2_finrank_one
+    (K : Type) [Field K] :
+    Module.finrank K
+        (((singularHomologyFunctor (ModuleCat.{0} K) 1).obj
+          (ModuleCat.of K K)).obj (.of (MetricSphere 2))) = 0 := by
+  letI := ModuleCat.subsingleton_of_isZero
+    (isZero_singularHomology_sphere2_one (R := ModuleCat.of K K))
+  exact Module.finrank_zero_of_subsingleton
+
+/-- The singular second homology of `S²` has dimension one over a field. -/
+theorem singularHomology_sphere2_finrank_two
+    (K : Type) [Field K] :
+    Module.finrank K
+        (((singularHomologyFunctor (ModuleCat.{0} K) 2).obj
+          (ModuleCat.of K K)).obj (.of (MetricSphere 2))) = 1 := by
+  simpa using ModuleCat.finrank_eq_of_iso
+    (singularHomology_sphere2 (R := ModuleCat.of K K))
+
+/-- A finite cellular `2`-complex quasi-isomorphic to the singular chains of
+a space homotopy-equivalent to `S²` has Betti profile `(1, 0, 1)`. -/
+theorem cellular_betti_profile_of_quasiIso_sphere2
+    {K : Type} [Field K]
+    {C₂ C₁ C₀ : Type}
+    [AddCommGroup C₂] [Module K C₂] [FiniteDimensional K C₂]
+    [AddCommGroup C₁] [Module K C₁] [FiniteDimensional K C₁]
+    [AddCommGroup C₀] [Module K C₀] [FiniteDimensional K C₀]
+    {X : Type} [TopologicalSpace X]
+    (d₂ : C₂ →ₗ[K] C₁) (d₁ : C₁ →ₗ[K] C₀)
+    (hcomp : d₁.comp d₂ = 0)
+    (φ : cellularChainComplex d₂ d₁ hcomp ⟶
+      ((singularChainComplexFunctor (ModuleCat.{0} K)).obj
+        (ModuleCat.of K K)).obj (.of X))
+    [QuasiIso φ]
+    (e : X ≃ₕ MetricSphere 2) :
+    betti0 d₁ = 1 ∧ betti1 d₂ d₁ = 0 ∧ betti2 d₂ = 1 := by
+  have hfinrank (n : ℕ) :
+      Module.finrank K ((cellularChainComplex d₂ d₁ hcomp).homology n) =
+        Module.finrank K
+          (((singularHomologyFunctor (ModuleCat.{0} K) n).obj
+            (ModuleCat.of K K)).obj (.of (MetricSphere 2))) := by
+    calc
+      Module.finrank K ((cellularChainComplex d₂ d₁ hcomp).homology n) =
+          Module.finrank K
+            ((((singularChainComplexFunctor (ModuleCat.{0} K)).obj
+              (ModuleCat.of K K)).obj (.of X)).homology n) :=
+        homology_finrank_eq_of_quasiIso φ n
+      _ = Module.finrank K
+            (((singularHomologyFunctor (ModuleCat.{0} K) n).obj
+              (ModuleCat.of K K)).obj (.of (MetricSphere 2))) :=
+        ModuleCat.finrank_eq_of_iso
+          (singularHomologyIso_of_homotopyEquiv e (ModuleCat.of K K) n)
+  refine ⟨?_, ?_, ?_⟩
+  · rw [← cellularChainComplex_homology_finrank_zero d₂ d₁ hcomp]
+    exact_mod_cast (hfinrank 0).trans (singularHomology_sphere2_finrank_zero K)
+  · rw [← cellularChainComplex_homology_finrank_one d₂ d₁ hcomp]
+    exact_mod_cast (hfinrank 1).trans (singularHomology_sphere2_finrank_one K)
+  · rw [← cellularChainComplex_homology_finrank_two d₂ d₁ hcomp]
+    exact_mod_cast (hfinrank 2).trans (singularHomology_sphere2_finrank_two K)
+
+/-- The 3D classification from a cellular `2`-complex identified, by a
+quasi-isomorphism, with the singular chains of a space homotopy-equivalent
+to `S²`. Euler–Poincaré supplies `V+F=E+2`; regularity then forces a
+Platonic pair. Palomar compared types are unchanged. -/
 theorem platonic_solids_3d_of_sphere
-    {K : Type*} [Field K]
-    {C₂ C₁ C₀ : Type*}
+    {K : Type} [Field K]
+    {C₂ C₁ C₀ : Type}
     [AddCommGroup C₂] [Module K C₂] [FiniteDimensional K C₂]
     [AddCommGroup C₁] [Module K C₁] [FiniteDimensional K C₁]
     [AddCommGroup C₀] [Module K C₀] [FiniteDimensional K C₀]
@@ -883,11 +952,16 @@ theorem platonic_solids_3d_of_sphere
     (hE : Module.finrank K C₁ = E)
     (hF : Module.finrank K C₂ = F)
     (hcomp : d₁.comp d₂ = 0)
-    (hs0 : betti0 d₁ = 1)
-    (hs1 : betti1 d₂ d₁ = 0)
-    (hs2 : betti2 d₂ = 1) :
-    IsPlatonicPair p q :=
-  platonic_solids_3d_of_homology d₂ d₁ V E F p q hp hq
+    {X : Type} [TopologicalSpace X]
+    (φ : cellularChainComplex d₂ d₁ hcomp ⟶
+      ((singularChainComplexFunctor (ModuleCat.{0} K)).obj
+        (ModuleCat.of K K)).obj (.of X))
+    [QuasiIso φ]
+    (e : X ≃ₕ MetricSphere 2) :
+    IsPlatonicPair p q := by
+  obtain ⟨hs0, hs1, hs2⟩ :=
+    cellular_betti_profile_of_quasiIso_sphere2 d₂ d₁ hcomp φ e
+  exact platonic_solids_3d_of_homology d₂ d₁ V E F p q hp hq
     h_edges_faces h_edges_verts hV hE hF hcomp hs0 hs1 hs2
 
 end

@@ -1,0 +1,18 @@
+%%{init: {"theme": "neutral", "flowchart": {"htmlLabels": false, "curve": "basis"}}}%%
+flowchart TD
+  Rad["frontier_convex_homeo_sphere"]
+  Cell["Cellular 2-complex on ∂P"]
+  EP["euler_poincare"]
+  H2["homology_sphere2: b0=1, b1=0, b2=1"]
+  Chi["V + F = E + 2"]
+  Inc["pF = 2E and qV = 2E"]
+  Pair["IsPlatonicPair p q"]
+  Epos["edges_pos_of_regular"]
+  Rad --> Cell
+  H2 --> EP
+  Cell --> EP
+  EP --> Chi
+  Chi --> Pair
+  Inc --> Pair
+  Chi --> Epos
+  Inc --> Epos

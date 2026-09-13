@@ -1,0 +1,23 @@
+%%{init: {"theme": "neutral", "flowchart": {"htmlLabels": false, "curve": "basis"}}}%%
+flowchart TD
+  Mesh["Mesh: piece diam ≤ n/(n+1) parent"]
+  Hom["Homotopy id ≃ Sd"]
+  Supp["ModuleCat finite support"]
+  Ev["Eventual smallness"]
+  Ret["small_cycles_and_boundaries"]
+  QI["QuasiIso small → C_*(Y)"]
+  Exc["IsExcisiveSubspaces of open cover"]
+  Top["U ∩ V ≃ₕ S^{n-1}"]
+  Drop["Drop hex from sphere MV"]
+  Hn["H_n of Metric.sphere"]
+  Euler["platonic_solids_3d_of_sphere"]
+  Mesh --> Ev
+  Supp --> Ev
+  Hom --> Ret
+  Ev --> Ret
+  Ret --> QI
+  QI --> Exc
+  Exc --> Drop
+  Top --> Hn
+  Drop --> Hn
+  Hn --> Euler

@@ -1,0 +1,18 @@
+%%{init: {"theme": "neutral", "flowchart": {"htmlLabels": false, "curve": "basis"}}}%%
+flowchart TD
+  Compat["11 Platonic-compatible triples"]
+  Gram["schlafliGram"]
+  Det["schlafliDet = Δ"]
+  Sylv["Sylvester: PosDef iff leading minors"]
+  Sign["sign table of Δ"]
+  Six["6 regular polychora"]
+  Zero["1 Euclidean honeycomb"]
+  Neg["4 hyperbolic honeycombs"]
+  Compat --> Gram
+  Gram --> Det
+  Gram --> Sylv
+  Det --> Sign
+  Sign --> Six
+  Sign --> Zero
+  Sign --> Neg
+  Sylv --> Six

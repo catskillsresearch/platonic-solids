@@ -27,6 +27,7 @@ HERE = Path(__file__).resolve().parent
 SRC = HERE / "PlatonicSolids.md"
 LEAN = HERE / "PlatonicSolids.lean"
 LEAN_DIR = HERE / "PlatonicSolids"
+FIGURES = HERE / "figures"
 
 # Paper order: each file is a gist-sized chunk next to one exposition paragraph.
 LEAN_MODULES = [
@@ -36,6 +37,20 @@ LEAN_MODULES = [
     (LEAN_DIR / "SingularHomology.lean", r"Singular $H_0(S^n)$, $H_*(S^0)$, homotopy invariance"),
     (LEAN_DIR / "RelativeHomology.lean", r"Relative singular homology and the LES of a pair"),
     (LEAN_DIR / "MayerVietoris.lean", r"Mayer--Vietoris of an excisive triad; stereographic cover of $S^n$"),
+    (LEAN_DIR / "SingularExcision.lean", r"Root import of barycentric subdivision and small-chain excision"),
+    (LEAN_DIR / "SingularExcision" / "Algebra.lean", r"Ungraded subdivision retract on an abelian group"),
+    (LEAN_DIR / "SingularExcision" / "AffineSubdivision.lean", r"Affine barycentric subdivision and prism"),
+    (LEAN_DIR / "SingularExcision" / "AffineRealization.lean", r"Realization of affine simplices in a space"),
+    (LEAN_DIR / "SingularExcision" / "Mesh.lean", r"Lebesgue number and mesh-ratio $n/(n+1)$"),
+    (LEAN_DIR / "SingularExcision" / "BarycentricGeometry.lean", r"Diameter of barycentric pieces and eventual smallness"),
+    (LEAN_DIR / "SingularExcision" / "SingularChains.lean", r"Singular $\mathrm{Sd}$ as a chain map and the prism homotopy"),
+    (LEAN_DIR / "SingularExcision" / "ModuleSupport.lean", r"Finite coproduct support in $\mathrm{ModuleCat}$"),
+    (LEAN_DIR / "SingularExcision" / "Subcomplexes.lean", r"Lands-in and small singular subcomplexes"),
+    (LEAN_DIR / "SingularExcision" / "DegreewisePushout.lean", r"Degreewise pushout of small chains"),
+    (LEAN_DIR / "SingularExcision" / "CokernelPushout.lean", r"Cokernel model of a preadditive pushout"),
+    (LEAN_DIR / "SingularExcision" / "CoverChains.lean", r"Cover chains isomorphic to small singular chains"),
+    (LEAN_DIR / "SingularExcision" / "SmallChains.lean", r"Small-chain subgroup, invariance, and the retract"),
+    (LEAN_DIR / "SingularExcision" / "OpenCoverQI.lean", r"Cover comparison equals the small-subcomplex inclusion"),
     (LEAN_DIR / "Sphere2Homology.lean", r"Cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface"),
     (LEAN_DIR / "Sphere3Homology.lean", r"Cellular $H_*(S^3;\mathbb{Q})$ of the $4$-simplex boundary"),
     (LEAN_DIR / "EulerBetti.lean", r"Betti arithmetic of $\chi(S^2)=2$ and $\chi(S^3)=0$"),
@@ -110,6 +125,13 @@ EXTRA_LITERATE = r"""    {ä}{{\"{a}}}1
     {ᶜ}{{\ensuremath{^{\mathrm{c}}}}}3
     {∙}{{\ensuremath{\cdot}}}1
     {‖}{{\ensuremath{\lVert}}}1
+    {•}{{\ensuremath{\bullet}}}1
+    {¹}{{\textsuperscript{1}}}1
+    {ᵒ}{{\textsuperscript{o}}}1
+    {ᵖ}{{\textsuperscript{p}}}1
+    {⦋}{{[}}1
+    {⦌}{{]}}1
+    {ρ}{{\ensuremath{\rho}}}1
 """
 
 EXTRA_UNICODECHAR = r"""
@@ -154,11 +176,48 @@ EXTRA_UNICODECHAR = r"""
 \newunicodechar{ᶜ}{\ensuremath{^{\mathrm{c}}}}
 \newunicodechar{∙}{\ensuremath{\cdot}}
 \newunicodechar{‖}{\ensuremath{\lVert}}
+\newunicodechar{•}{\ensuremath{\bullet}}
+\newunicodechar{¹}{\textsuperscript{1}}
+\newunicodechar{ᵒ}{\textsuperscript{o}}
+\newunicodechar{ᵖ}{\textsuperscript{p}}
+\newunicodechar{⦋}{[}
+\newunicodechar{⦌}{]}
+\newunicodechar{ρ}{\ensuremath{\rho}}
 """
 
 
 FENCE_RE = re.compile(r"^```[^\n]*\n(.*?)^```[ \t]*$", re.M | re.S)
 PLACEHOLDER = "PLATONICCODEBLOCK{}ENDBLOCK"
+
+
+def render_mermaid_figures() -> list[Path]:
+    """Render every ``figures/*.mmd`` blueprint to a PDF for ``\\includegraphics``."""
+    rendered: list[Path] = []
+    puppeteer = FIGURES / "puppeteer.json"
+    for src in sorted(FIGURES.glob("*.mmd")):
+        out = src.with_suffix(".pdf")
+        cmd = [
+            "mmdc",
+            "-i",
+            str(src),
+            "-o",
+            str(out),
+            "-t",
+            "neutral",
+            "-b",
+            "white",
+            "-f",
+            "-p",
+            str(puppeteer),
+        ]
+        proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+        if proc.returncode != 0 or not out.is_file():
+            sys.stderr.write(proc.stdout)
+            sys.stderr.write(proc.stderr)
+            raise RuntimeError(f"mmdc failed on {src.name}")
+        print(f"rendered {out.relative_to(HERE)} ({out.stat().st_size:,} bytes)")
+        rendered.append(out)
+    return rendered
 
 
 def extract_fences(md: str) -> tuple[str, list[str]]:
@@ -310,6 +369,7 @@ def build_appendix() -> str:
 
 
 def main() -> int:
+    render_mermaid_figures()
     title_md, abstract_md, body_md = split_front_matter(SRC.read_text(encoding="utf-8"))
 
     title_tex = tidy(pandoc(title_md, shift=False)).strip()

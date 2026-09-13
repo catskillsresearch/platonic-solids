@@ -1,0 +1,30 @@
+%%{init: {"theme": "neutral", "flowchart": {"htmlLabels": false, "nodeSpacing": 14, "rankSpacing": 26}}}%%
+flowchart TB
+  Aff["AffineSubdivision"]
+  Real["AffineRealization"]
+  Mesh["Mesh / Lebesgue"]
+  Bar["BarycentricGeometry"]
+  SC["SingularChains"]
+  Alg["Algebra retract"]
+  Sup["ModuleSupport"]
+  Sub["Subcomplexes"]
+  Deg["DegreewisePushout"]
+  Cok["CokernelPushout"]
+  Cov["CoverChains"]
+  Sm["SmallChains"]
+  QI["OpenCoverQI"]
+  Aff --> Real
+  Aff --> Bar
+  Mesh --> Bar
+  Real --> SC
+  Aff --> SC
+  Bar --> Sm
+  SC --> Sm
+  Alg --> Sm
+  Sup --> Sm
+  Sub --> Deg
+  Deg --> Cok
+  Cok --> Cov
+  Cov --> Sm
+  Sm --> QI
+  Cov --> QI

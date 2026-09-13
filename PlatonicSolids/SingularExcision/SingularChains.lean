@@ -302,6 +302,171 @@ noncomputable def singularSubdivision
         rw [← ι_singularSubdivisionHom, ← Preadditive.zsmul_comp]
         rfl
 
+lemma singularSubdivisionHom_zero
+    (R : C) (X : TopCat.{0}) :
+    singularSubdivisionHom R X 0 = 𝟙 _ := by
+  apply (TopCat.toSSet.obj X).chainComplex_hom_ext
+  intro s
+  rw [ι_singularSubdivisionHom]
+  simp [singularSubdivideGenerator, standardSubdivision, subdivideStd,
+    realizeAffineSimplex_id]
+  exact (Category.comp_id _).symm
+
+lemma singularPrismHom_zero
+    (R : C) (X : TopCat.{0}) :
+    singularPrismHom R X 0 = 0 := by
+  apply (TopCat.toSSet.obj X).chainComplex_hom_ext
+  intro s
+  rw [ι_singularPrismHom]
+  simp [singularPrismGenerator, standardPrism, prismStd]
+  exact (Limits.comp_zero (f := (TopCat.toSSet.obj X).ιChainComplex s)).symm
+
+theorem singularPrismGenerator_d
+    (R : C) {X : TopCat.{0}} {n : ℕ}
+    (s : (TopCat.toSSet.obj X) _⦋n + 1⦌) :
+    realizeAffineChain R s
+        (prismStd (q := n + 1) n (simplexBoundary (idSimplex (n + 1)))) =
+      (TopCat.toSSet.obj X).ιChainComplex s ≫
+        (((singularChainComplexFunctor C).obj R).obj X).d (n + 1) n ≫
+          singularPrismHom R X n := by
+  have hd :
+      (TopCat.toSSet.obj X).ιChainComplex s ≫
+          (((singularChainComplexFunctor C).obj R).obj X).d (n + 1) n =
+        ∑ i : Fin (n + 2),
+          (-1 : ℤ) ^ (i : ℕ) •
+            (TopCat.toSSet.obj X).ιChainComplex
+              ((TopCat.toSSet.obj X).δ i s) := by
+    change _ ≫ ((TopCat.toSSet.obj X).chainComplex R).d (n + 1) n = _
+    rw [SSet.ιChainComplex_d]
+  simp only [simplexBoundary, map_sum, map_zsmul]
+  rw [← Category.assoc, hd]
+  refine Eq.trans ?_
+    (Preadditive.sum_comp (s := Finset.univ)
+      (fun i : Fin (n + 2) =>
+        (-1 : ℤ) ^ (i : ℕ) •
+          (TopCat.toSSet.obj X).ιChainComplex
+            ((TopCat.toSSet.obj X).δ i s))
+      (singularPrismHom R X n)).symm
+  refine Finset.sum_congr rfl fun i _ ↦ ?_
+  have hpiece :
+      realizeAffineChain R s
+          (prismStd (q := n + 1) n (simplex ((idSimplex (n + 1)).face i))) =
+        (TopCat.toSSet.obj X).ιChainComplex
+            ((TopCat.toSSet.obj X).δ i s) ≫
+          singularPrismHom R X n := by
+    rw [realizeAffineChain_prismStd_simplex, reparametrizeSingularSimplex_id_face]
+    exact (ι_singularPrismHom R X _).symm
+  rw [hpiece]
+  exact (Preadditive.zsmul_comp
+    ((TopCat.toSSet.obj X).ιChainComplex
+      ((TopCat.toSSet.obj X).δ i s))
+    (singularPrismHom R X n)
+    ((-1 : ℤ) ^ (i : ℕ))).symm
+
+/-- The prism operator is a chain homotopy from the identity to
+barycentric subdivision. -/
+noncomputable def singularPrismHomotopy
+    (R : C) (X : TopCat.{0}) :
+    Homotopy
+      (𝟙 (((singularChainComplexFunctor C).obj R).obj X))
+      (singularSubdivision R X) where
+  hom i j :=
+    if h : i + 1 = j then
+      singularPrismHom R X i ≫ eqToHom (by rw [h])
+    else
+      0
+  zero i j hij := by
+    refine dif_neg ?_
+    intro h
+    exact hij (by rw [ComplexShape.down_Rel, h])
+  comm i := by
+    rw [Homotopy.prevD_chainComplex]
+    cases i with
+    | zero =>
+        rw [Homotopy.dNext_zero_chainComplex, zero_add]
+        simp [dif_pos, singularPrismHom_zero]
+        exact (singularSubdivisionHom_zero R X).symm
+    | succ n =>
+        rw [Homotopy.dNext_succ_chainComplex]
+        apply (TopCat.toSSet.obj X).chainComplex_hom_ext
+        intro s
+        simp only [dif_pos, eqToHom_refl]
+        have h := singularPrismGenerator_homotopy R s
+        have hd := singularPrismGenerator_d R s
+        change
+            (TopCat.toSSet.obj X).ιChainComplex s ≫
+                𝟙 (((TopCat.toSSet.obj X).chainComplex R).X (n + 1)) =
+              _
+        simp [Category.comp_id, eqToHom_refl]
+        have hadd :=
+          (Preadditive.comp_add _ _ _
+            ((TopCat.toSSet.obj X).ιChainComplex s)
+            ((((singularChainComplexFunctor C).obj R).obj X).d
+                (n + 1) n ≫
+              singularPrismHom R X n +
+            singularPrismHom R X (n + 1) ≫
+              (((singularChainComplexFunctor C).obj R).obj X).d
+                (n + 2) (n + 1))
+            ((singularSubdivision R X).f (n + 1))).trans
+          (congrArg
+            (fun t => t +
+              (TopCat.toSSet.obj X).ιChainComplex s ≫
+                (singularSubdivision R X).f (n + 1))
+            (Preadditive.comp_add _ _ _
+              ((TopCat.toSSet.obj X).ιChainComplex s)
+              ((((singularChainComplexFunctor C).obj R).obj X).d
+                  (n + 1) n ≫
+                singularPrismHom R X n)
+              (singularPrismHom R X (n + 1) ≫
+                (((singularChainComplexFunctor C).obj R).obj X).d
+                  (n + 2) (n + 1))))
+        erw [hadd]
+        rw [← Category.assoc
+            ((TopCat.toSSet.obj X).ιChainComplex s)
+            (singularPrismHom R X (n + 1)),
+          ι_singularPrismHom]
+        change _ =
+          (TopCat.toSSet.obj X).ιChainComplex s ≫
+              (((singularChainComplexFunctor C).obj R).obj X).d
+                (n + 1) n ≫
+              singularPrismHom R X n +
+            singularPrismGenerator R s ≫
+              (((singularChainComplexFunctor C).obj R).obj X).d
+                (n + 2) (n + 1) +
+            (TopCat.toSSet.obj X).ιChainComplex s ≫
+              singularSubdivisionHom R X (n + 1)
+        rw [ι_singularSubdivisionHom, ← hd,
+          add_comm (realizeAffineChain R s _), h]
+        exact (sub_add_cancel
+          ((TopCat.toSSet.obj X).ιChainComplex s)
+          (singularSubdivideGenerator R s)).symm
+
+/-- Iterated barycentric subdivision, as a chain map. -/
+noncomputable def singularSubdivisionIterate
+    (R : C) (X : TopCat.{0}) (N : ℕ) :
+    ((singularChainComplexFunctor C).obj R).obj X ⟶
+      ((singularChainComplexFunctor C).obj R).obj X :=
+  ((fun f => f ≫ singularSubdivision R X)^[N]) (𝟙 _)
+
+lemma singularSubdivisionIterate_zero
+    (R : C) (X : TopCat.{0}) :
+    singularSubdivisionIterate R X 0 = 𝟙 _ :=
+  rfl
+
+lemma singularSubdivisionIterate_succ
+    (R : C) (X : TopCat.{0}) (n : ℕ) :
+    singularSubdivisionIterate R X (n + 1) =
+      singularSubdivisionIterate R X n ≫ singularSubdivision R X :=
+  Function.iterate_succ_apply' _ n _
+
+lemma singularSubdivisionIterate_f_succ
+    (R : C) (X : TopCat.{0}) (N n : ℕ) :
+    (singularSubdivisionIterate R X (N + 1)).f n =
+      (singularSubdivisionIterate R X N).f n ≫
+        singularSubdivisionHom R X n := by
+  rw [singularSubdivisionIterate_succ]
+  rfl
+
 end
 
 end PlatonicSolids.SingularExcision

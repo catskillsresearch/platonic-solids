@@ -1,0 +1,60 @@
+%%{init: {"theme": "neutral", "flowchart": {"htmlLabels": false, "nodeSpacing": 16, "rankSpacing": 28}}}%%
+flowchart TB
+  subgraph Top["Topology"]
+    Rad["RadialProjection"]
+    SH["SingularHomology"]
+    Rel["RelativeHomology"]
+    MV["MayerVietoris"]
+    SE["SingularExcision"]
+    S2["Sphere2Homology"]
+    S3["Sphere3Homology"]
+    EB["EulerBetti"]
+    EP["EulerPoincare"]
+    Rad --> SH
+    SH --> Rel
+    Rel --> MV
+    SE --> MV
+    S2 --> EB
+    S3 --> EB
+    EP --> EB
+  end
+  subgraph Comb["3D combinatorics"]
+    PP["PlatonicPair"]
+    Rec["Reciprocal"]
+    Inc["Incidence"]
+    PP --> Inc
+    Rec --> Inc
+    EP --> Inc
+    EB --> Inc
+  end
+  subgraph Gram4["4D Gram matrix"]
+    Ang["Angles"]
+    GM["GramMatrix"]
+    LM["LeadingMinors"]
+    TM["TrailingMinor"]
+    D3["D3IffPlatonic"]
+    QF["QuadForm"]
+    CS["CompletingSquare"]
+    DF["DetFormula"]
+    Syl["Sylvester"]
+    TV["TrigValues"]
+    CT["CompatibleTriples"]
+    ST["SignTable"]
+    R4["Regular4"]
+    Cl["Classification"]
+    Ang --> GM
+    GM --> LM
+    GM --> TM
+    LM --> D3
+    GM --> QF
+    QF --> CS
+    CS --> DF
+    LM --> Syl
+    TV --> ST
+    CT --> ST
+    ST --> R4
+    R4 --> Cl
+    Syl --> Cl
+    D3 --> Cl
+    DF --> Cl
+  end

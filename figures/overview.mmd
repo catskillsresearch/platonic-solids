@@ -1,0 +1,22 @@
+%%{init: {"theme": "neutral", "flowchart": {"htmlLabels": false, "curve": "basis"}}}%%
+flowchart LR
+  subgraph D3["Dimension 3"]
+    E2["χ(S²) = 2"]
+    Inc["pF = 2E, qV = 2E"]
+    Dioph["(p−2)(q−2) < 4"]
+    Five["5 Platonic solids"]
+    E2 --> Dioph
+    Inc --> Dioph
+    Dioph --> Five
+  end
+  subgraph D4["Dimension 4"]
+    Chi0["χ(S³) = 0"]
+    Plat["Platonic cells and vertex figures"]
+    Gram["Schläfli Gram matrix"]
+    Delta["sign of Δ"]
+    Six["6 regular polychora"]
+    Chi0 -.->|"no flag bound"| Gram
+    Plat --> Gram
+    Gram --> Delta
+    Delta --> Six
+  end

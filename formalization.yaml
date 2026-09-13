@@ -76,10 +76,11 @@ fidelity:
     and the prism homotopy on finite affine chains, realizes them on
     singular generators, and assembles singularSubdivision as a chain
     map; cover chains are identified with the small-simplex subcomplex.
-    Mesh shrinking of barycentric pieces and the resulting open-cover
-    quasi-isomorphism are not yet proved, so H_n(Metric.sphere) for
-    n>0 is not identified and Mayer–Vietoris on the stereographic
-    cover still assumes IsExcisiveSubspaces. The algebraic
+    Mesh shrinking of barycentric pieces, the prism homotopy, and the
+    small-chain retract are proved. The open-cover quasi-isomorphism
+    is not yet proved, so H_n(Metric.sphere) for n>0 is not identified
+    and Mayer–Vietoris on the stereographic cover still assumes
+    IsExcisiveSubspaces. The algebraic
     Euler–Poincaré identities and the radial-projection homeomorphism
     are proved. The compared 3D theorem still takes V+F=E+2 so that
     Palomar Comparator types stay combinatorial.
@@ -195,9 +196,9 @@ limitations:
     barycentric subdivision, the prism identity, face-compatible
     realization, and the singularSubdivision chain map are proved, as
     is the identification of cover chains with small singular chains.
-    It does not yet prove mesh shrinking or the open-cover
-    quasi-isomorphism, so it does not compute singular
-    H_n(Metric.sphere) for n>0.
+    Mesh shrinking and the small-chain retract are proved. It does
+    not yet prove the open-cover quasi-isomorphism, so it does not
+    compute singular H_n(Metric.sphere) for n>0.
   - >-
     The compared 4D theorem classifies the eleven Platonic-compatible
     Schläfli triples by the sign of Δ = det(schlafliGram). The

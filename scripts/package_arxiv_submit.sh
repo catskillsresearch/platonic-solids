@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Build PlatonicSolids.tex and zip everything arXiv needs to compile it (pdfLaTeX).
 #
-# Template: lrsodincic/scripts/package_arxiv_submit.sh. This note has no mermaid
-# figures and inlines Lean via \lstinputlisting of PlatonicSolids.lean plus the
-# gist-sized modules under PlatonicSolids/, so the zip is 00README.json, the
-# generated .tex, and those Lean sources.
+# Template: lrsodincic/scripts/package_arxiv_submit.sh. Dependency-graph
+# blueprints live in figures/*.mmd and are rendered to figures/*.pdf by
+# build_pdf.py. Lean is inlined via \lstinputlisting of PlatonicSolids.lean,
+# the gist-sized modules under PlatonicSolids/, and the SingularExcision/
+# subtree. The zip is 00README.json, the generated .tex, those Lean
+# sources, and the rendered figure PDFs.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -14,36 +16,11 @@ TEX="PlatonicSolids.tex"
 OUT_DIR="dist"
 ZIP="${OUT_DIR}/arxiv_submit.zip"
 
-LEAN_FILES=(
-  PlatonicSolids.lean
-  Challenge.lean
-  Solution.lean
-  PlatonicSolids/Angles.lean
-  PlatonicSolids/Classification.lean
-  PlatonicSolids/CompatibleTriples.lean
-  PlatonicSolids/CompletingSquare.lean
-  PlatonicSolids/D3IffPlatonic.lean
-  PlatonicSolids/DetFormula.lean
-  PlatonicSolids/EulerBetti.lean
-  PlatonicSolids/EulerPoincare.lean
-  PlatonicSolids/RadialProjection.lean
-  PlatonicSolids/SingularHomology.lean
-  PlatonicSolids/RelativeHomology.lean
-  PlatonicSolids/MayerVietoris.lean
-  PlatonicSolids/Sphere2Homology.lean
-  PlatonicSolids/Sphere3Homology.lean
-  PlatonicSolids/GramMatrix.lean
-  PlatonicSolids/Incidence.lean
-  PlatonicSolids/LeadingMinors.lean
-  PlatonicSolids/PlatonicPair.lean
-  PlatonicSolids/QuadForm.lean
-  PlatonicSolids/Reciprocal.lean
-  PlatonicSolids/Regular4.lean
-  PlatonicSolids/SignTable.lean
-  PlatonicSolids/Sylvester.lean
-  PlatonicSolids/TrailingMinor.lean
-  PlatonicSolids/TrigValues.lean
+mapfile -t LEAN_FILES < <(
+  printf '%s\n' PlatonicSolids.lean Challenge.lean Solution.lean
+  find PlatonicSolids -name '*.lean' | sort
 )
+mapfile -t FIGURE_PDFS < <(find figures -name '*.pdf' | sort)
 
 if [[ "${1:-}" != "--skip-tex-build" ]]; then
   echo "==> Regenerating ${TEX} + PlatonicSolids.pdf"
@@ -68,7 +45,7 @@ fi
 mkdir -p "$OUT_DIR"
 rm -f "$ZIP"
 
-echo "==> Writing 00README.json (mark Lean listings as include so arXiv does not drop them)"
+echo "==> Writing 00README.json (mark Lean listings and figures as include)"
 python3 - <<'PY'
 import json
 from pathlib import Path
@@ -77,13 +54,14 @@ lean = [
     "PlatonicSolids.lean",
     "Challenge.lean",
     "Solution.lean",
-] + sorted(p.as_posix() for p in Path("PlatonicSolids").glob("*.lean"))
+] + sorted(p.as_posix() for p in Path("PlatonicSolids").rglob("*.lean"))
+figures = sorted(p.as_posix() for p in Path("figures").glob("*.pdf"))
 
 readme = {
     "process": {"compiler": "pdflatex"},
     "sources": (
         [{"filename": "PlatonicSolids.tex", "usage": "toplevel"}]
-        + [{"filename": name, "usage": "include"} for name in lean]
+        + [{"filename": name, "usage": "include"} for name in lean + figures]
     ),
 }
 Path("00README.json").write_text(json.dumps(readme, indent=2) + "\n")
@@ -94,7 +72,8 @@ echo "==> Packaging"
 zip -r "$ZIP" \
   00README.json \
   "$TEX" \
-  "${LEAN_FILES[@]}"
+  "${LEAN_FILES[@]}" \
+  "${FIGURE_PDFS[@]}"
 
 echo "wrote $ZIP ($(du -h "$ZIP" | cut -f1))"
 echo "Contents:"

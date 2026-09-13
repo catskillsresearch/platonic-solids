@@ -704,6 +704,120 @@ theorem AffineChain.map_prism {V W : Type*}
       simp [map_sub, AffineChain.map_subdivide bV bW f hb,
         ih, AffineChain.map_simplexBoundary, hb]
 
+lemma mem_support_simplexCone {V : Type*} {n : ℕ} (v : V)
+    (σ : AffineSimplex V n) {τ : AffineSimplex V (n + 1)}
+    (hτ : τ ∈ (simplexCone v σ).support) :
+    τ = σ.append v := by
+  have hz : (-1 : ℤ) ^ (n + 1) ≠ 0 := pow_ne_zero _ (by decide)
+  simpa [simplexCone, simplex, Finsupp.support_smul_eq hz,
+    Finsupp.support_single_ne_zero _ (one_ne_zero (α := ℤ))] using hτ
+
+lemma cone_single {V : Type*} {n : ℕ} (v : V)
+    (σ : AffineSimplex V n) (z : ℤ) :
+    cone v (Finsupp.single σ z) = z • simplexCone v σ := by
+  rw [show Finsupp.single σ z = z • simplex σ by simp [simplex]]
+  simp [map_zsmul, cone_simplex]
+
+lemma mem_support_cone {V : Type*} {n : ℕ} (v : V)
+    (c : AffineChain V n) {τ : AffineSimplex V (n + 1)}
+    (hτ : τ ∈ (cone v c).support) :
+    ∃ σ ∈ c.support, τ = σ.append v := by
+  classical
+  induction c using Finsupp.induction with
+  | zero =>
+      simp at hτ
+  | single_add σ z c hmem hn ih =>
+      rw [map_add, cone_single] at hτ
+      have hτ' :
+          τ ∈ (z • simplexCone v σ).support ∪ (cone v c).support :=
+        Finset.mem_of_subset Finsupp.support_add hτ
+      rw [Finset.mem_union] at hτ'
+      rcases hτ' with hσ | hc
+      · refine ⟨σ, ?_,
+          mem_support_simplexCone v σ (Finset.mem_of_subset Finsupp.support_smul hσ)⟩
+        have hcσ : c σ = 0 := Finsupp.notMem_support_iff.mp hmem
+        simp [Finsupp.mem_support_iff, hcσ, hn]
+      · obtain ⟨ρ, hρ, hτρ⟩ := ih hc
+        refine ⟨ρ, ?_, hτρ⟩
+        simp [Finsupp.mem_support_iff] at hρ ⊢
+        have hρσ : ρ ≠ σ := fun h => hmem (h ▸ (Finsupp.mem_support_iff.mpr hρ))
+        simpa [hρσ] using hρ
+
+lemma mem_support_subdivide_simplexBoundary {V : Type*}
+    (b : {n : ℕ} → AffineSimplex V n → V) {n : ℕ}
+    (σ : AffineSimplex V (n + 1)) {τ : AffineSimplex V n}
+    (hτ : τ ∈ (subdivide b n (simplexBoundary σ)).support) :
+    ∃ i : Fin (n + 2),
+      τ ∈ (subdivide b n (simplex (σ.face i))).support := by
+  classical
+  simp only [simplexBoundary, map_sum, map_zsmul] at hτ
+  have hsum (s : Finset (Fin (n + 2))) :
+      τ ∈ (∑ i ∈ s,
+          (-1 : ℤ) ^ (i : ℕ) •
+            subdivide b n (simplex (σ.face i))).support →
+        ∃ i ∈ s, τ ∈ (subdivide b n (simplex (σ.face i))).support := by
+    induction s using Finset.induction with
+    | empty => simp
+    | insert i s his ih =>
+        intro h
+        rw [Finset.sum_insert his] at h
+        have h' := Finset.mem_of_subset Finsupp.support_add h
+        rw [Finset.mem_union] at h'
+        rcases h' with hi | hs
+        · exact ⟨i, Finset.mem_insert_self _ _,
+            Finset.mem_of_subset Finsupp.support_smul hi⟩
+        · obtain ⟨j, hj, hjτ⟩ := ih hs
+          exact ⟨j, Finset.mem_insert_of_mem hj, hjτ⟩
+  obtain ⟨i, _, hi⟩ := hsum _ hτ
+  exact ⟨i, hi⟩
+
+lemma mem_support_subdivide_simplex {V : Type*}
+    (b : {n : ℕ} → AffineSimplex V n → V) {n : ℕ}
+    (σ : AffineSimplex V (n + 1)) {τ : AffineSimplex V (n + 1)}
+    (hτ : τ ∈ (subdivide b (n + 1) (simplex σ)).support) :
+    ∃ i : Fin (n + 2),
+      ∃ ρ ∈ (subdivide b n (simplex (σ.face i))).support,
+        τ = ρ.append (b σ) := by
+  rw [subdivide_simplex] at hτ
+  obtain ⟨ρ, hρ, hτρ⟩ := mem_support_cone (b σ) _ hτ
+  obtain ⟨i, hi⟩ := mem_support_subdivide_simplexBoundary b σ hρ
+  exact ⟨i, ρ, hi, hτρ⟩
+
+/-- Every simplex in the support of a subdivided chain comes from
+subdividing one of the original generators. -/
+lemma mem_support_subdivide {V : Type*}
+    (b : {n : ℕ} → AffineSimplex V n → V) (n : ℕ)
+    {c : AffineChain V n} {τ : AffineSimplex V n}
+    (hτ : τ ∈ (subdivide b n c).support) :
+    ∃ σ ∈ c.support, τ ∈ (subdivide b n (simplex σ)).support := by
+  classical
+  induction c using Finsupp.induction with
+  | zero =>
+      simp at hτ
+  | single_add σ z c hmem hn ih =>
+      rw [map_add] at hτ
+      have hτ' :
+          τ ∈ (subdivide b n (Finsupp.single σ z)).support ∪
+            (subdivide b n c).support :=
+        Finset.mem_of_subset Finsupp.support_add hτ
+      rw [Finset.mem_union] at hτ'
+      rcases hτ' with hσ | hc
+      · refine ⟨σ, ?_, ?_⟩
+        · have hcσ : c σ = 0 := Finsupp.notMem_support_iff.mp hmem
+          simp [Finsupp.mem_support_iff, hcσ, hn]
+        · have hsmul :
+              subdivide b n (Finsupp.single σ z) =
+                z • subdivide b n (simplex σ) := by
+            rw [show Finsupp.single σ z = z • simplex σ by simp [simplex]]
+            simp
+          rw [hsmul] at hσ
+          exact Finset.mem_of_subset Finsupp.support_smul hσ
+      · obtain ⟨ρ, hρ, hτρ⟩ := ih hc
+        refine ⟨ρ, ?_, hτρ⟩
+        simp [Finsupp.mem_support_iff] at hρ ⊢
+        have hρσ : ρ ≠ σ := fun h => hmem (h ▸ (Finsupp.mem_support_iff.mpr hρ))
+        simpa [hρσ] using hρ
+
 end
 
 end PlatonicSolids.SingularExcision

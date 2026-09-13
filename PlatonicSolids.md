@@ -22,16 +22,21 @@ This paper addresses these questions through an analytical exposition coupled wi
 ## 2. Dimension 3: Topology, Incidence, and the Non-Degeneracy Insight
 
 ### 2.1. Topological Derivation of Euler’s Formula
-The Lean gists are `PlatonicSolids/RadialProjection.lean` (frontier of a convex body $\simeq S^{n-1}$), `PlatonicSolids/EulerPoincare.lean` (algebraic Euler–Poincaré: $\chi(C)=\chi(H_*)$ by rank-nullity), `PlatonicSolids/Sphere2Homology.lean` (cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface), and `PlatonicSolids/EulerBetti.lean` (the numbers $\chi(S^2)=2$ and $\chi(S^3)=0$).
-Let $P \subset \mathbb{R}^3$ be a convex polyhedron containing the origin in its interior. Radial projection $\pi: \partial P \to S^2$ onto the circumscribed 2-sphere is a homeomorphism. This projection induces a finite CW-complex structure on $S^2$ with $V$ 0-cells (vertices), $E$ 1-cells (edges), and $F$ 2-cells (faces).
+The Lean gists are `PlatonicSolids/RadialProjection.lean` (frontier of a convex body $\simeq S^{n-1}$), `PlatonicSolids/EulerPoincare.lean` (algebraic Euler–Poincaré: $\chi(C)=\chi(H_*)$ by rank-nullity), `PlatonicSolids/SingularHomology.lean` (homotopy invariance, $H_0$ of path-connected spheres, and $H_*(S^0)$), `PlatonicSolids/Sphere2Homology.lean` (cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface), and `PlatonicSolids/EulerBetti.lean` (the numbers $\chi(S^2)=2$ and $\chi(S^3)=0$).
 
-From the cellular homology of the 2-sphere:
-$$H_0(S^2; \mathbb{Z}) \cong \mathbb{Z}, \quad H_1(S^2; \mathbb{Z}) \cong 0, \quad H_2(S^2; \mathbb{Z}) \cong \mathbb{Z}$$
-The topological Euler characteristic $\chi(S^2)$ is defined as the alternating sum of Betti numbers:
+Let $P \subset \mathbb{R}^3$ be a convex polyhedron containing the origin in its interior. Radial projection $\pi: \partial P \to S^2$ onto the circumscribed 2-sphere is a homeomorphism (`frontier_convex_homeo_sphere`). This projection induces a finite CW-complex structure on $S^2$ with $V$ 0-cells (vertices), $E$ 1-cells (edges), and $F$ 2-cells (faces).
+
+Mathlib already has the singular homology functor and its homotopy invariance. We package the missing transport lemmas: a homotopy equivalence (or homeomorphism) of spaces induces an isomorphism of singular homology (`singularHomologyIso_of_homotopyEquiv`), a contractible space has vanishing positive homology (`isZero_singularHomology_of_contractible`), and a closed disk is contractible. For the metric sphere itself, path-connectedness in dimension $n\ge 1$ gives
+$$H_0(S^n; R) \cong R$$
+(`singularHomology₀_sphere`). The $0$-sphere is the two-point set $\{\pm 1\}$, which is totally disconnected, so $H_0(S^0; R) \cong R\oplus R$ and $H_n(S^0; R)=0$ for $n>0$. Mathlib still lacks Mayer–Vietoris / excision for singular chains, so this paper does not identify $H_n(S^n)$ for $n>0$ as singular groups of `Metric.sphere`. The classification uses the cellular calculation below.
+
+The standard simplicial $2$-sphere is the surface of a tetrahedron: $4$ vertices, $6$ edges, $4$ triangles. Oriented incidence matrices $d_1:\mathbb{Q}^6\to\mathbb{Q}^4$ and $d_2:\mathbb{Q}^4\to\mathbb{Q}^6$ satisfy $d_1 d_2=0$. Each has a $3\times 3$ identity minor, so both ranks are at least $3$; the product-zero rank inequality on a $6$-dimensional middle term forces both ranks equal to $3$. Hence
+$$b_0=4-3=1,\qquad b_1=3-3=0,\qquad b_2=4-3=1$$
+(`homology_sphere2`). The Euler characteristic is the alternating sum of Betti numbers:
 $$\chi(S^2) = b_0 - b_1 + b_2 = 1 - 0 + 1 = 2$$
-By the Euler–Poincaré theorem (proved in Lean as rank-nullity on the cellular chain complex: `euler_poincare`), this topological invariant equals the alternating sum of cell counts:
+Algebraic Euler–Poincaré (`euler_poincare`) is rank-nullity on any $2$-complex: cell ranks equal Betti ranks. Specializing to these numbers yields Euler’s formula
 $$V - E + F = 2$$
-Radial projection realises $\partial P$ as a topological sphere (`frontier_convex_homeo_sphere`). The Betti numbers $1,0,1$ are proved for the standard simplicial $2$-sphere --- the surface of a tetrahedron, with $4$ vertices, $6$ edges and $4$ triangles --- by an explicit rank calculation over $\mathbb{Q}$ (`homology_sphere2` in `PlatonicSolids/Sphere2Homology.lean`). Both boundary maps have rank $3$, so $b_0=4-3=1$, $b_1=3-3=0$, $b_2=4-3=1$. Euler–Poincaré then gives $V+F=E+2$ on that complex (`euler_tetrahedron`), and the tetrahedron incidence structure is Platonic (`tetrahedron_platonic`). Mathlib does not compute singular homology of `Metric.sphere`; this is the cellular/simplicial model the paper uses. The general lemma `euler_formula_of_sphere2` still takes Betti numbers as hypotheses so that it applies to any $2$-complex with the homology of $S^2$.
+on the tetrahedron (`euler_tetrahedron`) and, for an arbitrary $2$-complex with the same Betti numbers, the general identity `euler_formula_of_sphere2`. The tetrahedron incidence structure is then Platonic (`tetrahedron_platonic`).
 
 ### 2.2. Incidence Combinatorics
 The Lean gist is `PlatonicSolids/Incidence.lean` (with the pair predicate in `PlatonicSolids/PlatonicPair.lean`).
@@ -83,14 +88,15 @@ Therefore, **the topological Euler characteristic ($\chi = 2$) together with the
 ## 3. Dimension 4: Why Topology Fails and Coxeter Takes Over
 
 ### 3.1. The Topological Barrier: $\chi(S^3) = 0$
-The Lean gist is `eulerChar_sphere3_betti` in `PlatonicSolids/EulerBetti.lean`.
-For a convex 4-polytope with boundary homeomorphic to the 3-sphere $S^3$, the cellular homology yields:
-$$H_0(S^3; \mathbb{Z}) \cong \mathbb{Z}, \quad H_1(S^3; \mathbb{Z}) \cong 0, \quad H_2(S^3; \mathbb{Z}) \cong 0, \quad H_3(S^3; \mathbb{Z}) \cong \mathbb{Z}$$
-The Euler–Poincaré characteristic vanishes:
+The Lean gists are `PlatonicSolids/EulerPoincare.lean` (now also the $3$-complex identity `euler_poincare3`), `PlatonicSolids/Sphere3Homology.lean` (cellular $H_*(S^3;\mathbb{Q})$ of the $4$-simplex boundary), and `eulerChar_sphere3_betti` in `PlatonicSolids/EulerBetti.lean`.
+
+A convex $4$-polytope with nonempty interior has frontier homeomorphic to $S^3$ by the same radial projection as in §2.1. The standard simplicial $3$-sphere is the boundary of a $4$-simplex: $5$ vertices, $10$ edges, $10$ triangles, $5$ tetrahedra. Oriented incidence matrices $d_1:\mathbb{Q}^{10}\to\mathbb{Q}^5$, $d_2:\mathbb{Q}^{10}\to\mathbb{Q}^{10}$, $d_3:\mathbb{Q}^5\to\mathbb{Q}^{10}$ satisfy $d_1 d_2=0$ and $d_2 d_3=0$. Identity minors give $\mathrm{rank}\,d_1\ge 4$ and $\mathrm{rank}\,d_3\ge 4$; a $6\times 6$ minor of $d_2$ has determinant $1$, so $\mathrm{rank}\,d_2\ge 6$. The product-zero inequalities on the two middle dimensions of size $10$ then force the ranks to be exactly $4$, $6$, and $4$. Hence
+$$b_0=5-4=1,\qquad b_1=(10-4)-6=0,\qquad b_2=(10-6)-4=0,\qquad b_3=5-4=1$$
+(`homology_sphere3`). The Euler characteristic vanishes:
 $$\chi(S^3) = b_0 - b_1 + b_2 - b_3 = 1 - 0 + 0 - 1 = 0$$
-Hence, the alternating sum of boundary faces satisfies:
+Algebraic Euler–Poincaré in dimension $3$ (`euler_poincare3`) again equates cell ranks with Betti ranks, so any such cellulation satisfies
 $$V - E + F - C = 0$$
-Because the alternating sum is zero, dividing by any flag count yields an identity equal to zero rather than a positive reciprocal like $2/E$. **Topology alone does not impose an upper bound on $p, q,$ or $r$ in 4D.**
+(`eulerChar_sphere3` on the $4$-simplex, and `euler_formula_of_sphere3` in general). Because the alternating sum is zero, dividing by any flag count yields an identity equal to zero rather than a positive reciprocal like $2/E$. **Topology alone does not impose an upper bound on $p, q,$ or $r$ in 4D.**
 
 ### 3.2. Coxeter Systems and the Schläfli Gram Matrix
 The Lean gist is `PlatonicSolids/GramMatrix.lean`.
@@ -196,8 +202,10 @@ The stronger equivalence `regular_polychora_iff` identifies those six with posit
 | File | Paper | Content |
 |---|---|---|
 | `PlatonicSolids/RadialProjection.lean` | §2.1 | Frontier of a convex body $\simeq$ sphere |
-| `PlatonicSolids/EulerPoincare.lean` | §2.1 | Algebraic Euler–Poincaré; $V+F=E+2$ from Betti of $S^2$ |
+| `PlatonicSolids/EulerPoincare.lean` | §§2.1, 3.1 | Algebraic Euler–Poincaré in dimensions $2$ and $3$ |
+| `PlatonicSolids/SingularHomology.lean` | §2.1 | Homotopy invariance; $H_0(S^n)$; $H_*(S^0)$ |
 | `PlatonicSolids/Sphere2Homology.lean` | §2.1 | Cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface |
+| `PlatonicSolids/Sphere3Homology.lean` | §3.1 | Cellular $H_*(S^3;\mathbb{Q})$ of the $4$-simplex boundary |
 | `PlatonicSolids/EulerBetti.lean` | §§2.1, 3.1 | $\chi(S^2)=2$, $\chi(S^3)=0$ |
 | `PlatonicSolids/PlatonicPair.lean` | §2.3 | Five solutions of $(p-2)(q-2)<4$ |
 | `PlatonicSolids/Reciprocal.lean` | §§2.3, 3.3 | $1/p+1/q>1/2$ |

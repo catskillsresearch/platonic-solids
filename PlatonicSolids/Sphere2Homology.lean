@@ -14,9 +14,9 @@ Paper §2.1. Cellular homology of the standard simplicial \(S^2\):
 the boundary of a tetrahedron (4 vertices, 6 edges, 4 triangles).
 
 This is the usual CW / simplicial calculation
-`H₀ ≅ ℚ`, `H₁ = 0`, `H₂ ≅ ℚ`. Mathlib's singular homology of
-`Metric.sphere` is not computed; this is the chain complex the
-Euler–Poincaré argument uses.
+`H₀ ≅ ℚ`, `H₁ = 0`, `H₂ ≅ ℚ`. Singular `H₀` of `Metric.sphere`
+and `H_*(S⁰)` are in `PlatonicSolids/SingularHomology.lean`;
+the $3$-sphere calculation is `PlatonicSolids/Sphere3Homology.lean`.
 -/
 
 open scoped Matrix

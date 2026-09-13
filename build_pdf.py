@@ -32,8 +32,10 @@ LEAN_DIR = HERE / "PlatonicSolids"
 LEAN_MODULES = [
     (LEAN, "Root import of the section-sized modules"),
     (LEAN_DIR / "RadialProjection.lean", r"Frontier of a bounded convex body is homeomorphic to the sphere"),
-    (LEAN_DIR / "EulerPoincare.lean", r"Algebraic Euler--Poincar\'e: $\chi(C)=\chi(H_*)$ by rank-nullity"),
+    (LEAN_DIR / "EulerPoincare.lean", r"Algebraic Euler--Poincar\'e in dimensions $2$ and $3$"),
+    (LEAN_DIR / "SingularHomology.lean", r"Singular $H_0(S^n)$, $H_*(S^0)$, homotopy invariance"),
     (LEAN_DIR / "Sphere2Homology.lean", r"Cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface"),
+    (LEAN_DIR / "Sphere3Homology.lean", r"Cellular $H_*(S^3;\mathbb{Q})$ of the $4$-simplex boundary"),
     (LEAN_DIR / "EulerBetti.lean", r"Betti arithmetic of $\chi(S^2)=2$ and $\chi(S^3)=0$"),
     (LEAN_DIR / "PlatonicPair.lean", "The five solutions of the Platonic Diophantine inequality"),
     (LEAN_DIR / "Reciprocal.lean", r"$1/p+1/q>1/2$ iff the integer inequality"),
@@ -88,6 +90,17 @@ EXTRA_LITERATE = r"""    {ä}{{\"{a}}}1
     {−}{{\ensuremath{-}}}1
     {∂}{{\ensuremath{\partial}}}1
     {ₗ}{{\textsubscript{l}}}1
+    {ₕ}{{\textsubscript{h}}}1
+    {ⁿ}{{\textsuperscript{n}}}1
+    {⁰}{{\textsuperscript{0}}}1
+    {±}{{\ensuremath{\pm}}}1
+    {ε}{{\ensuremath{\varepsilon}}}1
+    {’}{{\textquoteright}}1
+    {∐}{{\ensuremath{\coprod}}}1
+    {≫}{{\ensuremath{\gg}}}1
+    {⊂}{{\ensuremath{\subset}}}1
+    {𝟙}{{\ensuremath{\mathbb{1}}}}1
+    {⊕}{{\ensuremath{\oplus}}}1
 """
 
 EXTRA_UNICODECHAR = r"""
@@ -113,6 +126,16 @@ EXTRA_UNICODECHAR = r"""
 \newunicodechar{−}{\ensuremath{-}}
 \newunicodechar{∂}{\ensuremath{\partial}}
 \newunicodechar{ₗ}{\textsubscript{l}}
+\newunicodechar{ₕ}{\textsubscript{h}}
+\newunicodechar{ⁿ}{\textsuperscript{n}}
+\newunicodechar{⁰}{\textsuperscript{0}}
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{∐}{\ensuremath{\coprod}}
+\newunicodechar{≫}{\ensuremath{\gg}}
+\newunicodechar{⊂}{\ensuremath{\subset}}
+\newunicodechar{𝟙}{\ensuremath{\mathbb{1}}}
+\newunicodechar{⊕}{\ensuremath{\oplus}}
 \newunicodechar{⦃}{\textbraceleft\textbraceleft}
 \newunicodechar{⦄}{\textbraceright\textbraceright}
 """

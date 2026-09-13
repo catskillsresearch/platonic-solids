@@ -67,12 +67,15 @@ status:
 fidelity:
   divergences: >-
     Informal χ(S²)=2 is proved for the standard simplicial 2-sphere
-    (tetrahedron surface) over ℚ as homology_sphere2; Mathlib does
-    not compute singular homology of Metric.sphere. χ(S³)=0 remains
-    an arithmetic input. The algebraic Euler–Poincaré identity and
-    the radial-projection homeomorphism are proved. The compared 3D
-    theorem still takes V+F=E+2 so that Palomar Comparator types
-    stay combinatorial.
+    (tetrahedron surface) over ℚ as homology_sphere2. Informal
+    χ(S³)=0 is proved for the standard simplicial 3-sphere
+    (4-simplex boundary) over ℚ as homology_sphere3 / eulerChar_sphere3.
+    Singular H₀ of Metric.sphere for n≥1 and H_*(S⁰) are proved;
+    Mathlib still lacks Mayer–Vietoris for singular homology, so
+    H_n(Metric.sphere) for n>0 is not identified. The algebraic
+    Euler–Poincaré identities and the radial-projection homeomorphism
+    are proved. The compared 3D theorem still takes V+F=E+2 so that
+    Palomar Comparator types stay combinatorial.
     The 4D compared theorem classifies Platonic-compatible triples by
     the sign of Δ = det(schlafliGram), using Mathlib Real.sin / Real.cos
     and the rank-4 Gram matrix. It does not construct geometric
@@ -174,11 +177,13 @@ known_gaps: []
 limitations:
   - >-
     The compared 3D theorems assume Euler's formula V+F=E+2 and
-    regularity incidence. The development proves the algebraic
-    Euler–Poincaré identity, the radial-projection homeomorphism,
-    and the cellular Betti numbers of the tetrahedron surface
-    (standard simplicial S²) over ℚ. It does not compute Mathlib
-    singular homology of Metric.sphere, nor H_*(S³).
+    regularity incidence. The development proves algebraic
+    Euler–Poincaré in dimensions 2 and 3, the radial-projection
+    homeomorphism, cellular Betti numbers of the tetrahedron
+    surface and of the 4-simplex boundary, singular H₀ of
+    Metric.sphere for n≥1, and H_*(S⁰). It does not compute
+    singular H_n(Metric.sphere) for n>0 (Mathlib has no
+    Mayer–Vietoris / excision for singular chains).
   - >-
     The compared 4D theorem classifies the eleven Platonic-compatible
     Schläfli triples by the sign of Δ = det(schlafliGram). The

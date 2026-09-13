@@ -14,9 +14,10 @@ preserves monomorphisms (it is free on simplices), so a subspace
 inclusion yields a short exact sequence of chain complexes and therefore
 the long exact sequence of the pair.
 
-This is the first half of the classical path to `Hₙ(Sⁿ)`: the remaining
-obstruction is excision / small simplices, packaged in
-`PlatonicSolids/MayerVietoris.lean`.
+The pair sequence is the first half of the path to `Hₙ(Sⁿ)`. Excision
+of an open cover and the stereographic connecting isomorphism are in
+`PlatonicSolids/SingularExcision/` and
+`PlatonicSolids/SphereSingularHomology.lean`.
 -/
 
 open AlgebraicTopology CategoryTheory Limits HomologicalComplex

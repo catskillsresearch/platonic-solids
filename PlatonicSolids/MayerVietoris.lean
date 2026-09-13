@@ -31,10 +31,11 @@ homology sequence of the cover is the Mayer–Vietoris sequence of `X`.
 
 The stereographic cover of `Sⁿ` (complements of the poles) is the
 classical excisive pair: each chart is contractible. Barycentric
-subdivision and the singular chain map live in
-`PlatonicSolids/SingularExcision/`. The remaining obstruction to
-`Hₙ(Metric.sphere)` for `n > 0` is mesh shrinking plus the open-cover
-quasi-isomorphism that would discharge `IsExcisiveSubspaces`.
+subdivision, mesh shrinking, and the open-cover quasi-isomorphism live
+in `PlatonicSolids/SingularExcision/`. For `ModuleCat` coefficients the
+pair is excisive (`IsExcisiveSubspaces_of_openCover`); the hex-free
+connecting map and `H_n(S^n) ≅ R` for `n > 0` are in
+`PlatonicSolids/SphereSingularHomology.lean`.
 -/
 
 open AlgebraicTopology CategoryTheory Limits HomologicalComplex Metric Set
@@ -297,20 +298,6 @@ lemma isZero_singularHomology_puncturedSouth
       (.of ↥(puncturedSouth n))) :=
   isZero_singularHomology_of_contractible R hk
 
-/-- Mayer–Vietoris connecting map for the stereographic cover, after
-excision. The charts are contractible, so this is the inductive step
-for `Hₙ(Sⁿ)` once `IsExcisiveSubspaces` is available. -/
-noncomputable def singularHomology_sphere_mayerVietorisδ
-    (n : ℕ)
-    (hex : IsExcisiveSubspaces (C := C) R
-      (puncturedNorth (n + 1)) (puncturedSouth (n + 1))) :
-    (((singularChainComplexFunctor C).obj R).obj
-        (.of (MetricSphere (n + 1)))).homology (n + 1) ⟶
-      (((singularChainComplexFunctor C).obj R).obj
-        (.of ↥(puncturedNorth (n + 1) ∩ puncturedSouth (n + 1)))).homology n :=
-  mayerVietorisδ (C := C) R
-    (interInclLeft (puncturedNorth (n + 1)) (puncturedSouth (n + 1)))
-    (interInclRight (puncturedNorth (n + 1)) (puncturedSouth (n + 1)))
-    (subtypeIncl (MetricSphere (n + 1)) (puncturedNorth (n + 1)))
-    (subtypeIncl (MetricSphere (n + 1)) (puncturedSouth (n + 1)))
-    (subset_square_comm _ _) hex n
+-- The hex-free stereographic connecting map is
+-- `singularHomology_sphere_mayerVietorisδ` in
+-- `PlatonicSolids/SphereSingularHomology.lean` (ModuleCat coefficients).

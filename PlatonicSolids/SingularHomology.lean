@@ -19,10 +19,10 @@ contractible spaces have the homology of a point, `H₀(Sⁿ) ≅ R` for
 
 The pair and Mayer–Vietoris sequences of singular chains are in
 `PlatonicSolids/RelativeHomology.lean` and
-`PlatonicSolids/MayerVietoris.lean`. Barycentric subdivision of
-singular chains is in `PlatonicSolids/SingularExcision/`; the
-open-cover quasi-isomorphism for the stereographic charts is not
-finished, so this file does not identify `Hₙ(Sⁿ)` for `n > 0`. The
+`PlatonicSolids/MayerVietoris.lean`. Barycentric subdivision and the
+open-cover quasi-isomorphism are in `PlatonicSolids/SingularExcision/`.
+The calculation `H_n(S^n) ≅ R` for `n > 0` is in
+`PlatonicSolids/SphereSingularHomology.lean`. The
 paper’s `χ(S³) = 0` is obtained from the cellular calculation in
 `PlatonicSolids/Sphere3Homology.lean`.
 -/
@@ -96,11 +96,92 @@ lemma isZero_singularHomology_of_contractible
   exact (isZero_singularHomology_unit R hn).of_iso
     (singularHomologyIso_of_homotopyEquiv e R n)
 
+/-- Path-connectedness transfers along a homotopy equivalence. -/
+lemma pathConnectedSpace_of_homotopyEquiv
+    {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
+    [PathConnectedSpace Y] (e : ContinuousMap.HomotopyEquiv X Y) :
+    PathConnectedSpace X :=
+  ⟨⟨e.invFun (Classical.arbitrary Y)⟩, fun x₁ x₂ =>
+    ⟨(e.left_inv.some.evalAt x₁).symm.trans
+      (((PathConnectedSpace.somePath (e.toFun x₁) (e.toFun x₂)).map
+          e.invFun.continuous).trans
+        (e.left_inv.some.evalAt x₂))⟩⟩
+
+/-- The augmentation `H₀(X) → R` is natural. -/
+lemma singularHomology₀ε_natural {X Y : TopCat.{0}} (f : X ⟶ Y) (R : C) :
+    homologyMap (((singularChainComplexFunctor C).obj R).map f) 0 ≫
+      Y.singularHomology₀ε R =
+    X.singularHomology₀ε R := by
+  let SX := TopCat.toSSet.obj X
+  let SY := TopCat.toSSet.obj Y
+  let sf := TopCat.toSSet.map f
+  let φ := SSet.chainComplexMap sf R
+  let KX := SX.chainComplex R
+  let KY := SY.chainComplex R
+  apply (cancel_epi (KX.homologyπ 0)).1
+  apply (cancel_epi (ChainComplex.cycles₀Iso KX).inv).1
+  apply SSet.chainComplex_hom_ext
+  intro x
+  have hx :
+      KX.liftCycles (SX.ιChainComplex x) 0 (by simp) (by simp) =
+        SX.ιChainComplex x ≫ (ChainComplex.cycles₀Iso KX).inv := by
+    rw [← cancel_mono (KX.iCycles 0)]
+    simp [ChainComplex.cycles₀Iso]
+    exact (Category.comp_id _).symm
+  have hnat := HomologicalComplex.homologyπ_naturality (φ := φ) (i := 0)
+  have hcycle := HomologicalComplex.liftCycles_comp_cyclesMap
+    (k := SX.ιChainComplex x) (j := 0) (hj := by simp) (hk := by simp) φ
+  have hf : SX.ιChainComplex x ≫ φ.f 0 = SY.ιChainComplex (sf.app _ x) :=
+    SSet.ι_chainComplexMap_f (X := SX) (Y := SY) (f := sf) (R := R) x
+  have hY := SSet.liftCycles_ιChainComplex_homologyπ_homology₀ε SY R (sf.app _ x)
+  have hX := SSet.liftCycles_ιChainComplex_homologyπ_homology₀ε SX R x
+  have lhs :
+      SX.ιChainComplex x ≫ (ChainComplex.cycles₀Iso KX).inv ≫
+        KX.homologyπ 0 ≫ homologyMap φ 0 ≫ Y.singularHomology₀ε R = 𝟙 R := by
+    rw [← Category.assoc, ← hx, reassoc_of% hnat, reassoc_of% hcycle]
+    exact (congrArg (fun t =>
+      KY.liftCycles t 0 (by simp) (by simp) ≫
+        KY.homologyπ 0 ≫ Y.singularHomology₀ε R) hf).trans hY
+  have rhs :
+      SX.ιChainComplex x ≫ (ChainComplex.cycles₀Iso KX).inv ≫
+        KX.homologyπ 0 ≫ X.singularHomology₀ε R = 𝟙 R := by
+    rw [← Category.assoc, ← hx]
+    exact hX
+  exact lhs.trans rhs.symm
+
 /-- Path-connected spaces have `H₀ ≅ R` via the augmentation. -/
 noncomputable def singularHomology₀Iso_pathConnected
     (X : TopCat.{0}) [PathConnectedSpace X] (R : C) :
     ((singularHomologyFunctor C 0).obj R).obj X ≅ R :=
   asIso (X.singularHomology₀ε R)
+
+/-- A map of path-connected spaces induces an isomorphism on `H₀`. -/
+instance singularHomology₀_map_isIso
+    {X Y : TopCat.{0}} [PathConnectedSpace X] [PathConnectedSpace Y]
+    (f : X ⟶ Y) (R : C) :
+    IsIso (homologyMap (((singularChainComplexFunctor C).obj R).map f) 0) := by
+  have h := singularHomology₀ε_natural f R
+  let eX := singularHomology₀Iso_pathConnected X R
+  let eY := singularHomology₀Iso_pathConnected Y R
+  refine ⟨eY.hom ≫ eX.inv, ?_, ?_⟩
+  · erw [← Category.assoc, h, eX.hom_inv_id]; rfl
+  · have hf : homologyMap (((singularChainComplexFunctor C).obj R).map f) 0 =
+        eX.hom ≫ eY.inv := by
+      refine (cancel_mono eY.hom).mp ?_
+      erw [h, Category.assoc, eY.inv_hom_id, Category.comp_id]
+      rfl
+    calc
+      (eY.hom ≫ eX.inv) ≫
+          homologyMap (((singularChainComplexFunctor C).obj R).map f) 0 =
+          (eY.hom ≫ eX.inv) ≫ eX.hom ≫ eY.inv := by
+        rw [hf]; rfl
+      _ = eY.hom ≫ (eX.inv ≫ eX.hom) ≫ eY.inv := by
+        simp [Category.assoc]
+      _ = eY.hom ≫ (𝟙 R) ≫ eY.inv := by
+        rw [eX.inv_hom_id]
+      _ = eY.hom ≫ eY.inv := by
+        simp
+      _ = 𝟙 _ := eY.hom_inv_id
 
 /-- The unit sphere in Euclidean dimension `n+1 ≥ 2` is path-connected. -/
 instance pathConnectedSpace_sphere_euclidean

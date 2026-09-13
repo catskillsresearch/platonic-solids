@@ -6,6 +6,7 @@ flowchart TB
     Rel["RelativeHomology"]
     MV["MayerVietoris"]
     SE["SingularExcision"]
+    SSH["SphereSingularHomology"]
     S2["Sphere2Homology"]
     S3["Sphere3Homology"]
     EB["EulerBetti"]
@@ -14,6 +15,8 @@ flowchart TB
     SH --> Rel
     Rel --> MV
     SE --> MV
+    SE --> SSH
+    MV --> SSH
     S2 --> EB
     S3 --> EB
     EP --> EB

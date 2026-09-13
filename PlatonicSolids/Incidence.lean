@@ -59,7 +59,9 @@ theorem platonic_solids_3d
 
 /-- The 3D classification from a cellular 2-complex with the Betti
 numbers of `S²`. Euler–Poincaré (`euler_formula_of_sphere2`) supplies
-`V + F = E + 2`; regularity incidence then forces a Platonic pair. -/
+`V + F = E + 2`; regularity incidence then forces a Platonic pair.
+The optional singular-homology form is `platonic_solids_3d_of_sphere`
+in `SphereSingularHomology.lean`. -/
 theorem platonic_solids_3d_of_homology
     {K : Type*} [Field K]
     {C₂ C₁ C₀ : Type*}

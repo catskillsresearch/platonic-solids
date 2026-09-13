@@ -25,6 +25,7 @@ import PlatonicSolids.RelativeHomology
 import PlatonicSolids.SignTable
 import PlatonicSolids.SingularExcision
 import PlatonicSolids.SingularHomology
+import PlatonicSolids.SphereSingularHomology
 import PlatonicSolids.Sphere2Homology
 import PlatonicSolids.Sphere3Homology
 import PlatonicSolids.Sylvester

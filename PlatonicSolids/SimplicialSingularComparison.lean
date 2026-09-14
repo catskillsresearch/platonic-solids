@@ -6,14 +6,18 @@ import Mathlib.Algebra.Category.ModuleCat.Abelian
 import Mathlib.Algebra.Category.ModuleCat.Colimits
 import Mathlib.Algebra.Homology.SingleHomology
 import Mathlib.Algebra.Homology.HomologySequenceLemmas
+import Mathlib.Algebra.Homology.HomologicalComplexLimits
 import Mathlib.AlgebraicTopology.ExtraDegeneracy
+import Mathlib.AlgebraicTopology.SimplicialSet.Boundary
 import Mathlib.AlgebraicTopology.SimplicialSet.Homology.HomologyZero
 import Mathlib.AlgebraicTopology.SimplicialSet.Monoidal
 import Mathlib.AlgebraicTopology.SimplicialSet.Homology.Nondegenerate
+import Mathlib.AlgebraicTopology.SimplicialSet.SubcomplexColimits
 import Mathlib.AlgebraicTopology.SimplicialSet.TopAdj
 import Mathlib.AlgebraicTopology.SingularHomology.Basic
 import Mathlib.Analysis.Convex.Contractible
 import Mathlib.CategoryTheory.Limits.Shapes.ConcreteCategory
+import Mathlib.CategoryTheory.Limits.Preserves.SigmaConst
 import PlatonicSolids.SingularHomology
 
 /-!
@@ -92,6 +96,141 @@ lemma normalizedSimplicialSingularComparison_quasiIso_iff
       QuasiIso (simplicialSingularComparison R X) := by
   exact quasiIso_iff_comp_left
     (X.fromNormalizedChainComplex R) (simplicialSingularComparison R X)
+
+/-! ## Chain-level gluing for subcomplexes -/
+
+/-- The infimum and supremum of two subcomplexes form a pushout square
+after evaluation in each simplicial degree. -/
+noncomputable def subcomplexSimplexSetIsPushout
+    {X : SSet.{0}} (A B : X.Subcomplex) (n : SimplexCategoryᵒᵖ) :
+    IsPushout
+      ((SSet.Subcomplex.homOfLE (inf_le_left : A ⊓ B ≤ A)).app n)
+      ((SSet.Subcomplex.homOfLE (inf_le_right : A ⊓ B ≤ B)).app n)
+      ((SSet.Subcomplex.homOfLE (le_sup_left : A ≤ A ⊔ B)).app n)
+      ((SSet.Subcomplex.homOfLE (le_sup_right : B ≤ A ⊔ B)).app n) :=
+  (show SSet.Subcomplex.BicartSq (A ⊓ B) A B (A ⊔ B) from
+    { sup_eq := rfl
+      inf_eq := rfl }).isPushout.map
+        ((evaluation SimplexCategoryᵒᵖ (Type)).obj n)
+
+/-- Applying the free `R`-module functor preserves the degreewise
+subcomplex pushout. -/
+noncomputable def subcomplexSigmaConstIsPushout
+    (R : ModuleCat.{0} k) {X : SSet.{0}}
+    (A B : X.Subcomplex) (n : SimplexCategoryᵒᵖ) :
+    IsPushout
+      ((sigmaConst.obj R).map
+        ((SSet.Subcomplex.homOfLE (inf_le_left : A ⊓ B ≤ A)).app n))
+      ((sigmaConst.obj R).map
+        ((SSet.Subcomplex.homOfLE (inf_le_right : A ⊓ B ≤ B)).app n))
+      ((sigmaConst.obj R).map
+        ((SSet.Subcomplex.homOfLE (le_sup_left : A ≤ A ⊔ B)).app n))
+      ((sigmaConst.obj R).map
+        ((SSet.Subcomplex.homOfLE (le_sup_right : B ≤ A ⊔ B)).app n)) :=
+  (subcomplexSimplexSetIsPushout A B n).map (sigmaConst.obj R)
+
+/-- In every chain degree, simplicial chains carry the union of two
+subcomplexes to the pushout of their chain objects. -/
+noncomputable def subcomplexChainDegreeIsPushout
+    (R : ModuleCat.{0} k) {X : SSet.{0}}
+    (A B : X.Subcomplex) (n : ℕ) :
+    IsPushout
+      ((SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE (inf_le_left : A ⊓ B ≤ A)) R).f n)
+      ((SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE (inf_le_right : A ⊓ B ≤ B)) R).f n)
+      ((SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE (le_sup_left : A ≤ A ⊔ B)) R).f n)
+      ((SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE (le_sup_right : B ≤ A ⊔ B)) R).f n) := by
+  simpa [SSet.chainComplexMap, SSet.chainComplexFunctor,
+    AlgebraicTopology.alternatingFaceMapComplex] using
+    subcomplexSigmaConstIsPushout R A B (Opposite.op ⦋n⦌)
+
+/-- Simplicial chain complexes turn a union of two subcomplexes into a
+pushout square. This is the source-side gluing theorem needed by an
+attachment induction. -/
+noncomputable def subcomplexChainIsPushout
+    (R : ModuleCat.{0} k) {X : SSet.{0}} (A B : X.Subcomplex) :
+    IsPushout
+      (SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE (inf_le_left : A ⊓ B ≤ A)) R)
+      (SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE (inf_le_right : A ⊓ B ≤ B)) R)
+      (SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE (le_sup_left : A ≤ A ⊔ B)) R)
+      (SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE (le_sup_right : B ≤ A ⊔ B)) R) := by
+  refine
+    { w := by
+        rw [← Functor.map_comp, ← Functor.map_comp]
+        rfl
+      isColimit' := ⟨?_⟩ }
+  apply HomologicalComplex.isColimitOfEval
+  intro n
+  exact (PushoutCocone.isColimitMapCoconeEquiv _ _).symm
+    (subcomplexChainDegreeIsPushout R A B n).isColimit
+
+/-! ### The first two-dimensional boundary attachment -/
+
+/-- One edge of the boundary of the standard two-simplex. -/
+abbrev boundaryTwoFirstFace :
+    (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex :=
+  SSet.stdSimplex.face ({0}ᶜ : Finset (Fin 3))
+
+/-- The union of the other two edges of the boundary of the standard
+two-simplex. -/
+abbrev boundaryTwoRemainingFaces :
+    (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex :=
+  SSet.stdSimplex.face ({1}ᶜ : Finset (Fin 3)) ⊔
+    SSet.stdSimplex.face ({2}ᶜ : Finset (Fin 3))
+
+/-- The boundary of the two-simplex is the union of one edge and the
+remaining two-edge path. -/
+lemma boundary_two_eq_face_sup :
+    (SSet.boundary 2 : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) =
+      boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces := by
+  rw [SSet.boundary_eq_iSup]
+  apply le_antisymm
+  · rw [iSup_le_iff]
+    intro i
+    fin_cases i
+    · exact le_sup_left
+    · exact le_sup_left.trans le_sup_right
+    · exact le_sup_right.trans le_sup_right
+  · rw [← SSet.boundary_eq_iSup]
+    exact sup_le
+      (SSet.face_singleton_compl_le_boundary (n := 2) 0)
+      (sup_le
+        (SSet.face_singleton_compl_le_boundary (n := 2) 1)
+        (SSet.face_singleton_compl_le_boundary (n := 2) 2))
+
+/-- On simplicial chains, the decomposition of `∂Δ[2]` into an edge
+and the other two edges is a pushout square. -/
+noncomputable def boundaryTwoChainIsPushout (R : ModuleCat.{0} k) :
+    IsPushout
+      (SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE
+          (inf_le_left :
+            boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+              boundaryTwoFirstFace)) R)
+      (SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE
+          (inf_le_right :
+            boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+              boundaryTwoRemainingFaces)) R)
+      (SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE
+          (le_sup_left :
+            boundaryTwoFirstFace ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)) R)
+      (SSet.chainComplexMap
+        (SSet.Subcomplex.homOfLE
+          (le_sup_right :
+            boundaryTwoRemainingFaces ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)) R) :=
+  subcomplexChainIsPushout R
+    boundaryTwoFirstFace boundaryTwoRemainingFaces
 
 /-! ## The representable-simplex case -/
 

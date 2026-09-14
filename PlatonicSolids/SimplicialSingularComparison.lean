@@ -23,6 +23,7 @@ import Mathlib.AlgebraicTopology.SimplicialSet.SubcomplexColimits
 import Mathlib.AlgebraicTopology.SimplicialSet.TopAdj
 import Mathlib.AlgebraicTopology.SingularHomology.Basic
 import Mathlib.Analysis.Convex.Contractible
+import Mathlib.CategoryTheory.Adjunction.Limits
 import Mathlib.CategoryTheory.Limits.Shapes.ConcreteCategory
 import Mathlib.CategoryTheory.Limits.Preserves.SigmaConst
 import PlatonicSolids.SingularHomology
@@ -608,6 +609,406 @@ lemma epi_of_isZero_target {C : Type*} [Category* C] [HasZeroMorphisms C]
     {X Y : C} (f : X ⟶ Y) (hY : IsZero Y) : Epi f :=
   ⟨fun _ _ _ => hY.eq_of_src _ _⟩
 
+/-- Homology in a fixed degree preserves binary biproducts of chain complexes. -/
+instance preservesBinaryBiproduct_sset_homologyFunctor (n : ℕ)
+    (K L : ChainComplex (ModuleCat.{0} k) ℕ) :
+    PreservesBinaryBiproduct K L
+      (homologyFunctor (ModuleCat.{0} k) (ComplexShape.down ℕ) n) :=
+  preservesBinaryBiproduct_of_preservesBiproduct _ K L
+
+/-- The biproduct of two chain complexes with vanishing homology in degree `n`
+again has vanishing homology in that degree. -/
+lemma isZero_homology_sset_biprod
+    {K L : ChainComplex (ModuleCat.{0} k) ℕ} {n : ℕ}
+    (hK : IsZero (K.homology n)) (hL : IsZero (L.homology n)) :
+    IsZero ((K ⊞ L).homology n) := by
+  rw [IsZero.iff_id_eq_zero, ← homologyMap_id (K ⊞ L) n, ← biprod.total]
+  rw [homologyMap_add, homologyMap_comp, homologyMap_comp]
+  have hf : homologyMap (biprod.fst : K ⊞ L ⟶ K) n = 0 := hK.eq_of_tgt _ _
+  have hs : homologyMap (biprod.snd : K ⊞ L ⟶ L) n = 0 := hL.eq_of_tgt _ _
+  simp [hf, hs]
+
+/-- `(1, -1) : X ⟶ X ⊞ X` is a monomorphism. -/
+lemma mono_biprod_lift_id_neg (X : ModuleCat.{0} k) :
+    Mono (biprod.lift (𝟙 X) (-𝟙 X)) :=
+  ⟨fun {Z} a b eq ↦ by
+    simpa using congrArg (fun t => t ≫ biprod.fst) eq⟩
+
+/-- Complementary edges of `Δ[2]` have vanishing positive simplicial homology. -/
+lemma isZero_boundaryTwoFace_homology
+    (R : ModuleCat.{0} k) (i : Fin 3) (n : ℕ) (hn : n ≠ 0) :
+    IsZero
+      ((SSet.stdSimplex.face ({i}ᶜ : Finset (Fin 3)) : SSet.{0}).homology R n) :=
+  isZero_homology_of_stdSimplex_iso R
+    (SSet.stdSimplex.faceSingletonComplIso (n := 1) i) n hn
+
+/-- The shared vertex of the two remaining faces has vanishing positive
+simplicial homology. -/
+lemma isZero_boundaryTwoRemainingFaces_inf_homology
+    (R : ModuleCat.{0} k) (n : ℕ) (hn : n ≠ 0) :
+    IsZero
+      (((SSet.stdSimplex.face ({1}ᶜ : Finset (Fin 3)) ⊓
+          SSet.stdSimplex.face ({2}ᶜ : Finset (Fin 3)) :
+            (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) :
+          SSet.{0}).homology R n) := by
+  rw [boundaryTwoRemainingFaces_inf]
+  exact isZero_homology_of_stdSimplex_iso R
+    (SSet.stdSimplex.faceSingletonIso 0) n hn
+
+/-- The Mayer–Vietoris inclusion on `H₀` for a union of connected subcomplexes
+is monic: after augmentation it is `(1, -1) : R ⟶ R ⊕ R`. -/
+lemma mono_homologyMap_subcomplex_incl_zero
+    (R : ModuleCat.{0} k) {X : SSet.{0}} (A B : X.Subcomplex)
+    [((A ⊓ B : X.Subcomplex) : SSet.{0}).IsConnected]
+    [(A : SSet.{0}).IsConnected] [(B : SSet.{0}).IsConnected] :
+    Mono (homologyMap (subcomplexChainShortComplex R A B).f 0) := by
+  let S := subcomplexChainShortComplex R A B
+  let iA := SSet.Subcomplex.homOfLE (inf_le_left : A ⊓ B ≤ A)
+  let iB := SSet.Subcomplex.homOfLE (inf_le_right : A ⊓ B ≤ B)
+  let εA := (A : SSet.{0}).homology₀ε R
+  let εB := (B : SSet.{0}).homology₀ε R
+  let εW := ((A ⊓ B : X.Subcomplex) : SSet.{0}).homology₀ε R
+  let F := homologyFunctor (ModuleCat.{0} k) (ComplexShape.down ℕ) 0
+  let e := F.mapBiprod ((A : SSet.{0}).chainComplex R) ((B : SSet.{0}).chainComplex R)
+  have hnatA := sset_homology₀ε_natural iA R
+  have hnatB := sset_homology₀ε_natural iB R
+  have hlift :
+      homologyMap S.f 0 ≫ e.hom ≫ biprod.map εA εB =
+        εW ≫ biprod.lift (𝟙 R) (-𝟙 R) := by
+    change F.map
+        (biprod.lift (SSet.chainComplexMap iA R) (-SSet.chainComplexMap iB R)) ≫
+        (F.mapBiprod ((A : SSet.{0}).chainComplex R)
+          ((B : SSet.{0}).chainComplex R)).hom ≫
+        biprod.map εA εB =
+      εW ≫ biprod.lift (𝟙 R) (-𝟙 R)
+    rw [← Category.assoc, biprod.map_lift_mapBiprod, F.map_neg]
+    have hfst : (εW ≫ biprod.lift (𝟙 R) (-𝟙 R)) ≫ biprod.fst = εW := by
+      rw [Category.assoc, biprod.lift_fst, Category.comp_id]
+    have hsnd : (εW ≫ biprod.lift (𝟙 R) (-𝟙 R)) ≫ biprod.snd = -εW := by
+      rw [Category.assoc, biprod.lift_snd, Preadditive.comp_neg, Category.comp_id]
+    apply biprod.hom_ext
+    · simp [biprod.map_fst]
+      exact hnatA.trans hfst.symm
+    · simp [biprod.map_snd, Preadditive.neg_comp]
+      exact (congrArg Neg.neg hnatB).trans hsnd.symm
+  refine ⟨fun {Z} a b eq ↦ ?_⟩
+  haveI : IsIso εW := inferInstance
+  haveI : Mono (biprod.lift (𝟙 R) (-𝟙 R)) := mono_biprod_lift_id_neg R
+  haveI : Mono (εW ≫ biprod.lift (𝟙 R) (-𝟙 R)) := inferInstance
+  apply (cancel_mono (εW ≫ biprod.lift (𝟙 R) (-𝟙 R))).1
+  simpa [← hlift, ← Category.assoc, S] using
+    congrArg (fun t => t ≫ e.hom ≫ biprod.map εA εB) eq
+
+/-- `H₁(Λ[2, 0]) = 0`: the two-edge horn is a tree. -/
+lemma isZero_horn_two_zero_homology_one (R : ModuleCat.{0} k) :
+    IsZero ((Λ[2, 0] : SSet.{0}).homology R 1) := by
+  rw [← boundaryTwoRemainingFaces_eq_horn]
+  let A := SSet.stdSimplex.face ({1}ᶜ : Finset (Fin 3))
+  let B := SSet.stdSimplex.face ({2}ᶜ : Finset (Fin 3))
+  let S := subcomplexChainShortComplex R A B
+  have hS := subcomplexChainShortComplex_shortExact R A B
+  have hA := isZero_boundaryTwoFace_homology R 1 1 (by decide)
+  have hB := isZero_boundaryTwoFace_homology R 2 1 (by decide)
+  have hInf := isZero_boundaryTwoRemainingFaces_inf_homology R 1 (by decide)
+  have hX₂ : IsZero (S.X₂.homology 1) :=
+    isZero_homology_sset_biprod hA hB
+  haveI : ((A ⊓ B : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) :
+      SSet.{0}).IsConnected := by
+    rw [boundaryTwoRemainingFaces_inf]
+    infer_instance
+  have hmono0 : Mono (homologyMap S.f 0) :=
+    mono_homologyMap_subcomplex_incl_zero R A B
+  have hX₃ : S.X₃.ExactAt 1 :=
+    hS.exactAt_X₃ (i := 1) (h₁ := epi_of_isZero_target _ hX₂)
+      (h₂ := fun j hij => by
+        have : j = 0 := by
+          simp [ComplexShape.down_Rel] at hij
+          exact hij
+        subst j
+        exact hmono0)
+  rwa [exactAt_iff_isZero_homology] at hX₃
+
+/-- Simplicial homology of `Λ[2, 0]` vanishes in every positive degree. -/
+lemma isZero_horn_two_zero_homology
+    (R : ModuleCat.{0} k) (n : ℕ) (hn : n ≠ 0) :
+    IsZero ((Λ[2, 0] : SSet.{0}).homology R n) := by
+  by_cases h2 : 2 ≤ n
+  · exact isZero_horn_two_zero_homology_of_ge_two R n h2
+  · have : n = 1 := by omega
+    subst n
+    exact isZero_horn_two_zero_homology_one R
+
+/-- The face inclusion `δ₁ : Δ[0] ⟶ Δ[1]` realises as the endpoint `0` of `I`. -/
+lemma toTop_map_δ_one_comp_toTopObjIsoI :
+    SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)) ≫
+      SSet.stdSimplex.toTopObjIsoI.hom =
+      TopCat.const (0 : TopCat.I.{0}) := by
+  apply (sSetTopAdj.homEquiv (Δ[0] : SSet.{0}) TopCat.I.{0}).injective
+  rw [Adjunction.homEquiv_naturality_left]
+  change SSet.stdSimplex.δ (1 : Fin 2) ≫ SSet.stdSimplex.toSSetObjI = _
+  rw [SSet.stdSimplex.δ_one_toSSetObjI, sSetTopAdj_homEquiv_stdSimplex_zero]
+  simp [TopCat.const_apply]
+
+/-- `toTop` sends the two-edge horn pushout to a pushout of spaces. -/
+lemma toTop_horn₂₀_isPushout :
+    IsPushout
+      (SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)))
+      (SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)))
+      (SSet.toTop.map SSet.horn₂₀.ι₀₁)
+      (SSet.toTop.map SSet.horn₂₀.ι₀₂) :=
+  SSet.horn₂₀.isPushout.map SSet.toTop
+
+/-- The closed interval obtained by gluing two copies of `I` at `0`. -/
+abbrev hornIcc : TopCat.{0} := TopCat.of (Set.Icc (-1 : ℝ) 1)
+
+/-- Include `|Δ[1]| ≅ I` as the nonnegative half of `[-1, 1]`. -/
+def hornIcc_inl : |(Δ[1] : SSet.{0})| ⟶ hornIcc :=
+  TopCat.ofHom
+    { toFun := fun x =>
+        let t := TopCat.I.homeomorph (SSet.stdSimplex.toTopObjIsoI.hom x)
+        ⟨(t : ℝ), (by norm_num : (-1 : ℝ) ≤ 0).trans t.2.1, t.2.2⟩
+      continuous_toFun := by
+        refine Continuous.subtype_mk ?_ _
+        exact continuous_induced_dom.comp
+          (TopCat.I.homeomorph.continuous.comp
+            SSet.stdSimplex.toTopObjIsoI.hom.hom.continuous) }
+
+/-- Include `|Δ[1]| ≅ I` as the nonpositive half of `[-1, 1]`. -/
+def hornIcc_inr : |(Δ[1] : SSet.{0})| ⟶ hornIcc :=
+  TopCat.ofHom
+    { toFun := fun x =>
+        let t := TopCat.I.homeomorph (SSet.stdSimplex.toTopObjIsoI.hom x)
+        ⟨-(t : ℝ), neg_le_neg t.2.2, (neg_nonpos.2 t.2.1).trans (by norm_num)⟩
+      continuous_toFun := by
+        refine Continuous.subtype_mk ?_ _
+        exact continuous_neg.comp
+          (continuous_induced_dom.comp
+            (TopCat.I.homeomorph.continuous.comp
+              SSet.stdSimplex.toTopObjIsoI.hom.hom.continuous)) }
+
+lemma hornIcc_inl_δ_one :
+    SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)) ≫ hornIcc_inl =
+      TopCat.const (⟨0, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) := by
+  ext x
+  have hx : SSet.stdSimplex.toTopObjIsoI.hom
+      (SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)) x) = 0 := by
+    simpa using congrArg (fun f : _ ⟶ TopCat.I.{0} => f x)
+      toTop_map_δ_one_comp_toTopObjIsoI
+  simp [hornIcc_inl, hx, TopCat.I.homeomorph_zero]
+  rfl
+
+lemma hornIcc_inr_δ_one :
+    SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)) ≫ hornIcc_inr =
+      TopCat.const (⟨0, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) := by
+  ext x
+  have hx : SSet.stdSimplex.toTopObjIsoI.hom
+      (SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)) x) = 0 := by
+    simpa using congrArg (fun f : _ ⟶ TopCat.I.{0} => f x)
+      toTop_map_δ_one_comp_toTopObjIsoI
+  simp [hornIcc_inr, hx, TopCat.I.homeomorph_zero]
+  rfl
+
+lemma hornIcc_inl_comp_δ :
+    SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)) ≫ hornIcc_inl =
+      SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)) ≫ hornIcc_inr := by
+  rw [hornIcc_inl_δ_one, hornIcc_inr_δ_one]
+
+/-- The comparison `|Λ[2, 0]| ⟶ [-1, 1]` induced by the two endpoint-glued intervals. -/
+noncomputable def horn_two_zero_toIcc :
+    |(Λ[2, 0] : SSet.{0})| ⟶ hornIcc :=
+  toTop_horn₂₀_isPushout.desc hornIcc_inl hornIcc_inr hornIcc_inl_comp_δ
+
+lemma toTopObjIsoI_inv_zero :
+    SSet.stdSimplex.toTopObjIsoI.inv (0 : TopCat.I.{0}) =
+      SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2))
+        (default : |(Δ[0] : SSet.{0})|) := by
+  have h : SSet.stdSimplex.toTopObjIsoI.hom
+      (SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)) default) = 0 := by
+    simpa using congrArg (fun f : _ ⟶ TopCat.I.{0} => f default)
+      toTop_map_δ_one_comp_toTopObjIsoI
+  simpa using (congrArg SSet.stdSimplex.toTopObjIsoI.inv h).symm
+
+lemma horn_two_zero_glue_zero :
+    SSet.toTop.map SSet.horn₂₀.ι₀₁
+        (SSet.stdSimplex.toTopObjIsoI.inv (0 : TopCat.I.{0})) =
+      SSet.toTop.map SSet.horn₂₀.ι₀₂
+        (SSet.stdSimplex.toTopObjIsoI.inv (0 : TopCat.I.{0})) := by
+  rw [toTopObjIsoI_inv_zero]
+  have hw := congrArg (fun f => f (default : |(Δ[0] : SSet.{0})|))
+    toTop_horn₂₀_isPushout.w
+  simpa using hw
+
+/-- The inverse `[-1, 1] ⟶ |Λ[2, 0]|`, sending the two halves back to the two edges. -/
+noncomputable def hornIcc_to_horn_two_zero (t : Set.Icc (-1 : ℝ) 1) :
+    |(Λ[2, 0] : SSet.{0})| :=
+  if (0 : ℝ) ≤ t.1 then
+    SSet.toTop.map SSet.horn₂₀.ι₀₁
+      (SSet.stdSimplex.toTopObjIsoI.inv ⟨Set.projIcc (0 : ℝ) 1 zero_le_one t.1⟩)
+  else
+    SSet.toTop.map SSet.horn₂₀.ι₀₂
+      (SSet.stdSimplex.toTopObjIsoI.inv ⟨Set.projIcc (0 : ℝ) 1 zero_le_one (-t.1)⟩)
+
+lemma continuous_hornIcc_to_horn_two_zero :
+    Continuous hornIcc_to_horn_two_zero := by
+  refine Continuous.if_le
+    (f' := fun t : Set.Icc (-1 : ℝ) 1 =>
+      SSet.toTop.map SSet.horn₂₀.ι₀₁
+        (SSet.stdSimplex.toTopObjIsoI.inv ⟨Set.projIcc (0 : ℝ) 1 zero_le_one t.1⟩))
+    (g' := fun t : Set.Icc (-1 : ℝ) 1 =>
+      SSet.toTop.map SSet.horn₂₀.ι₀₂
+        (SSet.stdSimplex.toTopObjIsoI.inv ⟨Set.projIcc (0 : ℝ) 1 zero_le_one (-t.1)⟩))
+    (f := fun _ : Set.Icc (-1 : ℝ) 1 => (0 : ℝ))
+    (g := fun t => t.1) ?_ ?_ (by fun_prop) continuous_subtype_val ?_
+  · fun_prop
+  · fun_prop
+  · intro t ht
+    have ht0 : t.1 = 0 := ht.symm
+    have h0 : Set.projIcc (0 : ℝ) 1 zero_le_one t.1 = ⟨0, by norm_num⟩ := by
+      rw [ht0, Set.projIcc_left]
+    have h0' : Set.projIcc (0 : ℝ) 1 zero_le_one (-t.1) = ⟨0, by norm_num⟩ := by
+      rw [ht0, neg_zero, Set.projIcc_left]
+    change SSet.toTop.map SSet.horn₂₀.ι₀₁
+        (SSet.stdSimplex.toTopObjIsoI.inv ⟨Set.projIcc (0 : ℝ) 1 zero_le_one t.1⟩) =
+      SSet.toTop.map SSet.horn₂₀.ι₀₂
+        (SSet.stdSimplex.toTopObjIsoI.inv ⟨Set.projIcc (0 : ℝ) 1 zero_le_one (-t.1)⟩)
+    rw [h0, h0']
+    exact horn_two_zero_glue_zero
+
+noncomputable def hornIcc_from :
+    hornIcc ⟶ |(Λ[2, 0] : SSet.{0})| :=
+  TopCat.ofHom ⟨hornIcc_to_horn_two_zero, continuous_hornIcc_to_horn_two_zero⟩
+
+lemma toTopObjIsoI_inv_homeomorph
+    (x : |(Δ[1] : SSet.{0})|) :
+    SSet.stdSimplex.toTopObjIsoI.inv
+        (TopCat.I.homeomorph.symm
+          (TopCat.I.homeomorph (SSet.stdSimplex.toTopObjIsoI.hom x))) = x := by
+  rw [Homeomorph.symm_apply_apply]
+  exact congrArg (fun f : _ ⟶ |(Δ[1] : SSet.{0})| => f x)
+    SSet.stdSimplex.toTopObjIsoI.hom_inv_id
+
+lemma hornIcc_from_inl (x : |(Δ[1] : SSet.{0})|) :
+    hornIcc_from (hornIcc_inl x) = SSet.toTop.map SSet.horn₂₀.ι₀₁ x := by
+  let t := TopCat.I.homeomorph (SSet.stdSimplex.toTopObjIsoI.hom x)
+  have ht : (0 : ℝ) ≤ (hornIcc_inl x).1 := t.2.1
+  have hproj : Set.projIcc (0 : ℝ) 1 zero_le_one (hornIcc_inl x).1 = t :=
+    Set.projIcc_of_mem _ t.2
+  change hornIcc_to_horn_two_zero (hornIcc_inl x) = SSet.toTop.map SSet.horn₂₀.ι₀₁ x
+  rw [hornIcc_to_horn_two_zero, if_pos ht, hproj]
+  exact congrArg (SSet.toTop.map SSet.horn₂₀.ι₀₁) (toTopObjIsoI_inv_homeomorph x)
+
+lemma hornIcc_from_inr (x : |(Δ[1] : SSet.{0})|) :
+    hornIcc_from (hornIcc_inr x) = SSet.toTop.map SSet.horn₂₀.ι₀₂ x := by
+  let t := TopCat.I.homeomorph (SSet.stdSimplex.toTopObjIsoI.hom x)
+  change hornIcc_to_horn_two_zero (hornIcc_inr x) = SSet.toTop.map SSet.horn₂₀.ι₀₂ x
+  by_cases h0 : (t : ℝ) = 0
+  · have ht : (0 : ℝ) ≤ (hornIcc_inr x).1 := by
+      change (0 : ℝ) ≤ -(t : ℝ)
+      simp [h0]
+    have hproj0 : Set.projIcc (0 : ℝ) 1 zero_le_one (hornIcc_inr x).1 =
+        ⟨0, by norm_num⟩ := by
+      change Set.projIcc (0 : ℝ) 1 zero_le_one (-(t : ℝ)) = _
+      simp [h0, Set.projIcc_left]
+    have hx0 : SSet.stdSimplex.toTopObjIsoI.hom x = 0 :=
+      TopCat.I.homeomorph.injective (by
+        simpa [TopCat.I.homeomorph_zero] using h0)
+    rw [hornIcc_to_horn_two_zero, if_pos ht, hproj0]
+    have hx := toTopObjIsoI_inv_homeomorph x
+    rw [hx0] at hx
+    have hx' : SSet.stdSimplex.toTopObjIsoI.inv (0 : TopCat.I.{0}) = x := by
+      simpa [TopCat.I.homeomorph_zero] using hx
+    have hI0 : (⟨(⟨0, by norm_num⟩ : unitInterval)⟩ : TopCat.I.{0}) = 0 :=
+      ULift.ext _ _ (Subtype.ext rfl)
+    rw [hI0]
+    exact horn_two_zero_glue_zero.trans
+      (congrArg (SSet.toTop.map SSet.horn₂₀.ι₀₂) hx')
+  · have hneg : ¬ (0 : ℝ) ≤ (hornIcc_inr x).1 := by
+      change ¬ (0 : ℝ) ≤ -(t : ℝ)
+      have : 0 < (t : ℝ) := lt_of_le_of_ne t.2.1 (Ne.symm h0)
+      exact not_le.mpr (neg_neg_iff_pos.mpr this)
+    have hproj : Set.projIcc (0 : ℝ) 1 zero_le_one (-(hornIcc_inr x).1) = t := by
+      change Set.projIcc (0 : ℝ) 1 zero_le_one (-(-(t : ℝ))) = t
+      rw [neg_neg]
+      exact Set.projIcc_of_mem _ t.2
+    rw [hornIcc_to_horn_two_zero, if_neg hneg, hproj]
+    exact congrArg (SSet.toTop.map SSet.horn₂₀.ι₀₂) (toTopObjIsoI_inv_homeomorph x)
+
+lemma horn_two_zero_toIcc_from :
+    horn_two_zero_toIcc ≫ hornIcc_from = 𝟙 _ := by
+  apply toTop_horn₂₀_isPushout.hom_ext
+  · have h := toTop_horn₂₀_isPushout.inl_desc hornIcc_inl hornIcc_inr
+      hornIcc_inl_comp_δ
+    change (SSet.toTop.map SSet.horn₂₀.ι₀₁ ≫ horn_two_zero_toIcc) ≫ hornIcc_from =
+      SSet.toTop.map SSet.horn₂₀.ι₀₁ ≫ 𝟙 _
+    rw [horn_two_zero_toIcc, h, Category.comp_id]
+    ext x
+    exact hornIcc_from_inl x
+  · have h := toTop_horn₂₀_isPushout.inr_desc hornIcc_inl hornIcc_inr
+      hornIcc_inl_comp_δ
+    change (SSet.toTop.map SSet.horn₂₀.ι₀₂ ≫ horn_two_zero_toIcc) ≫ hornIcc_from =
+      SSet.toTop.map SSet.horn₂₀.ι₀₂ ≫ 𝟙 _
+    rw [horn_two_zero_toIcc, h, Category.comp_id]
+    ext x
+    exact hornIcc_from_inr x
+
+lemma horn_two_zero_toIcc_inl (x : |(Δ[1] : SSet.{0})|) :
+    horn_two_zero_toIcc (SSet.toTop.map SSet.horn₂₀.ι₀₁ x) = hornIcc_inl x := by
+  have h := toTop_horn₂₀_isPushout.inl_desc hornIcc_inl hornIcc_inr
+    hornIcc_inl_comp_δ
+  exact congrArg (fun f : _ ⟶ hornIcc => f x) (by
+    change SSet.toTop.map SSet.horn₂₀.ι₀₁ ≫ horn_two_zero_toIcc = hornIcc_inl
+    rwa [horn_two_zero_toIcc])
+
+lemma horn_two_zero_toIcc_inr (x : |(Δ[1] : SSet.{0})|) :
+    horn_two_zero_toIcc (SSet.toTop.map SSet.horn₂₀.ι₀₂ x) = hornIcc_inr x := by
+  have h := toTop_horn₂₀_isPushout.inr_desc hornIcc_inl hornIcc_inr
+    hornIcc_inl_comp_δ
+  exact congrArg (fun f : _ ⟶ hornIcc => f x) (by
+    change SSet.toTop.map SSet.horn₂₀.ι₀₂ ≫ horn_two_zero_toIcc = hornIcc_inr
+    rwa [horn_two_zero_toIcc])
+
+lemma toTopObjIsoI_hom_inv (y : TopCat.I.{0}) :
+    SSet.stdSimplex.toTopObjIsoI.hom (SSet.stdSimplex.toTopObjIsoI.inv y) = y :=
+  congrArg (fun f : _ ⟶ TopCat.I.{0} => f y)
+    SSet.stdSimplex.toTopObjIsoI.inv_hom_id
+
+lemma hornIcc_from_toIcc :
+    hornIcc_from ≫ horn_two_zero_toIcc = 𝟙 _ := by
+  ext t
+  change (horn_two_zero_toIcc (hornIcc_to_horn_two_zero t)).1 = t.1
+  by_cases ht : (0 : ℝ) ≤ t.1
+  · have hproj : Set.projIcc (0 : ℝ) 1 zero_le_one t.1 = ⟨t.1, ht, t.2.2⟩ :=
+      Set.projIcc_of_mem _ ⟨ht, t.2.2⟩
+    rw [hornIcc_to_horn_two_zero, if_pos ht, horn_two_zero_toIcc_inl, hproj]
+    simp [hornIcc_inl]
+    rfl
+  · have hneg : ¬ (0 : ℝ) ≤ t.1 := ht
+    have htmem : (-t.1) ∈ Set.Icc (0 : ℝ) 1 :=
+      ⟨le_of_lt (neg_pos.mpr (not_le.mp hneg)),
+        (neg_le_neg t.2.1).trans (by norm_num)⟩
+    have hproj : Set.projIcc (0 : ℝ) 1 zero_le_one (-t.1) = ⟨-t.1, htmem⟩ :=
+      Set.projIcc_of_mem _ htmem
+    rw [hornIcc_to_horn_two_zero, if_neg hneg, horn_two_zero_toIcc_inr, hproj]
+    simp [hornIcc_inr, TopCat.I.homeomorph]
+    exact neg_neg t.1
+
+/-- Geometric realization of the two-edge horn is homeomorphic to `[-1, 1]`. -/
+noncomputable def homeomorph_horn_two_zero_Icc :
+    |(Λ[2, 0] : SSet.{0})| ≃ₜ Set.Icc (-1 : ℝ) 1 :=
+  TopCat.homeoOfIso
+    { hom := horn_two_zero_toIcc
+      inv := hornIcc_from
+      hom_inv_id := horn_two_zero_toIcc_from
+      inv_hom_id := hornIcc_from_toIcc }
+
+/-- The realization of `Λ[2, 0]` is contractible: it is two intervals glued
+at a common endpoint, hence homeomorphic to a closed interval. -/
+instance realization_horn_two_zero_contractible :
+    ContractibleSpace |(Λ[2, 0] : SSet.{0})| := by
+  letI : ContractibleSpace (Set.Icc (-1 : ℝ) 1) :=
+    (convex_Icc (-1 : ℝ) 1).contractibleSpace ⟨0, by norm_num⟩
+  exact homeomorph_horn_two_zero_Icc.contractibleSpace
+
 /-- The canonical adjunction-unit chain map is a quasi-isomorphism on every
 representable simplex. -/
 instance simplicialSingularComparison_stdSimplex_quasiIso
@@ -666,6 +1067,19 @@ lemma simplicialSingularComparison_quasiIso_of_contractible
       (((SSet.toTop ⋙ TopCat.toSSet).obj X).homology₀ε R)
   · apply IsZero.isIso (hpos i hi)
     exact isZero_singularHomology_of_contractible R hi
+
+/-- The canonical comparison is a quasi-isomorphism on the two-edge horn. -/
+instance simplicialSingularComparison_horn_two_zero_quasiIso
+    (R : ModuleCat.{0} k) :
+    QuasiIso (simplicialSingularComparison R (Λ[2, 0] : SSet.{0})) :=
+  simplicialSingularComparison_quasiIso_of_contractible R _
+    (isZero_horn_two_zero_homology R)
+
+instance normalizedSimplicialSingularComparison_horn_two_zero_quasiIso
+    (R : ModuleCat.{0} k) :
+    QuasiIso
+      (normalizedSimplicialSingularComparison R (Λ[2, 0] : SSet.{0})) :=
+  (normalizedSimplicialSingularComparison_quasiIso_iff R _).2 inferInstance
 
 /-- The normalized comparison is consequently a quasi-isomorphism on every
 representable simplex. -/

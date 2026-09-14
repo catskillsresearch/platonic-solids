@@ -9,6 +9,7 @@ import Mathlib.Algebra.Homology.HomologySequenceLemmas
 import Mathlib.Algebra.Homology.HomologicalComplexLimits
 import Mathlib.AlgebraicTopology.ExtraDegeneracy
 import Mathlib.AlgebraicTopology.SimplicialSet.Boundary
+import Mathlib.AlgebraicTopology.SimplicialSet.Horn
 import Mathlib.AlgebraicTopology.SimplicialSet.Homology.HomologyZero
 import Mathlib.AlgebraicTopology.SimplicialSet.Monoidal
 import Mathlib.AlgebraicTopology.SimplicialSet.Homology.Nondegenerate
@@ -232,6 +233,69 @@ noncomputable def boundaryTwoChainIsPushout (R : ModuleCat.{0} k) :
   subcomplexChainIsPushout R
     boundaryTwoFirstFace boundaryTwoRemainingFaces
 
+/-! ### Source facts for `∂Δ[2]` -/
+
+/-- The simplicial set underlying the boundary of the standard two-simplex. -/
+abbrev boundaryTwoSSet : SSet.{0} :=
+  (SSet.boundary 2 : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex)
+
+instance : boundaryTwoSSet.Nonempty :=
+  ⟨⟨SSet.stdSimplex.obj₀Equiv.symm 0, by
+      simp [SSet.boundary_obj_eq_univ]⟩⟩
+
+/-- The two remaining faces of `∂Δ[2]` are the horn `Λ[2, 0]`. -/
+lemma boundaryTwoRemainingFaces_eq_horn :
+    boundaryTwoRemainingFaces = Λ[2, 0] := by
+  rw [SSet.horn_eq_iSup]
+  refine le_antisymm ?_ ?_
+  · exact sup_le
+      (le_iSup_of_le ⟨(1 : Fin 3), by decide⟩ le_rfl)
+      (le_iSup_of_le ⟨(2 : Fin 3), by decide⟩ le_rfl)
+  · rw [iSup_le_iff]
+    intro ⟨j, hj⟩
+    fin_cases j
+    · exact (hj (by decide)).elim
+    · exact le_sup_left
+    · exact le_sup_right
+
+/-- The boundary of the standard two-simplex is connected. -/
+instance boundary_two_isConnected : boundaryTwoSSet.IsConnected := by
+  rw [SSet.isConnected_iff]
+  constructor
+  · constructor
+    intro a b
+    induction a using SSet.π₀.rec with
+    | mk x =>
+      induction b using SSet.π₀.rec with
+      | mk y =>
+        let z : boundaryTwoSSet _⦋0⦌ :=
+          ⟨SSet.stdSimplex.obj₀Equiv.symm 0, by
+            simp [SSet.boundary_obj_eq_univ]⟩
+        have connected_to_z (w : boundaryTwoSSet _⦋0⦌) :
+            SSet.π₀.mk z = SSet.π₀.mk w := by
+          let s : boundaryTwoSSet _⦋1⦌ :=
+            ⟨SSet.stdSimplex.edge 2 0
+                (SSet.stdSimplex.obj₀Equiv w.val) (Fin.zero_le _), by
+              simp [SSet.boundary_obj_eq_univ]⟩
+          have hsrc : boundaryTwoSSet.δ 1 s = z := by
+            apply Subtype.ext
+            apply SSet.stdSimplex.obj₀Equiv.injective
+            rfl
+          have htgt : boundaryTwoSSet.δ 0 s = w := by
+            apply Subtype.ext
+            apply SSet.stdSimplex.obj₀Equiv.injective
+            rfl
+          rw [← hsrc, ← htgt]
+          exact SSet.π₀.sound (SSet.Edge.mk' s)
+        exact (connected_to_z x).symm.trans (connected_to_z y)
+  · infer_instance
+
+/-- Simplicial homology of `∂Δ[2]` vanishes in degrees at least two. -/
+lemma isZero_boundary_two_homology_of_ge_two
+    (R : ModuleCat.{0} k) (n : ℕ) (hn : 2 ≤ n) :
+    IsZero (boundaryTwoSSet.homology R n) :=
+  SSet.isZero_homology_of_hasDimensionLT _ R n 2 hn
+
 /-! ## The representable-simplex case -/
 
 /-- Naturality of the canonical augmentation from simplicial homology in
@@ -375,6 +439,33 @@ instance normalizedSimplicialSingularComparison_stdSimplex_quasiIso
     QuasiIso
       (normalizedSimplicialSingularComparison R (SSet.stdSimplex.obj ⦋n⦌)) :=
   (normalizedSimplicialSingularComparison_quasiIso_iff R _).2 inferInstance
+
+/-- The comparison is a quasi-isomorphism for a simplicial set isomorphic
+to one on which it is already a quasi-isomorphism. -/
+lemma simplicialSingularComparison_quasiIso_of_iso
+    (R : ModuleCat.{0} k) {X Y : SSet.{0}} (f : X ⟶ Y) [IsIso f]
+    [QuasiIso (simplicialSingularComparison R X)] :
+    QuasiIso (simplicialSingularComparison R Y) := by
+  let F := (SSet.chainComplexFunctor (ModuleCat.{0} k)).obj R
+  haveI : IsIso (SSet.toTop.map f) := inferInstance
+  haveI : IsIso (TopCat.toSSet.map (SSet.toTop.map f)) := inferInstance
+  refine quasiIso_of_arrow_mk_iso
+    (simplicialSingularComparison R X)
+    (simplicialSingularComparison R Y)
+    (Arrow.isoMk (F.mapIso (asIso f))
+      (F.mapIso (asIso (TopCat.toSSet.map (SSet.toTop.map f)))) ?_)
+  simpa [F, SSet.chainComplexMap] using
+    simplicialSingularComparison_naturality R f
+
+/-- Each closed face of `Δ[2]` is isomorphic to `Δ[1]`, so the comparison
+is a quasi-isomorphism on every edge of `∂Δ[2]`. -/
+instance simplicialSingularComparison_boundaryTwoFace_quasiIso
+    (R : ModuleCat.{0} k) (i : Fin 3) :
+    QuasiIso
+      (simplicialSingularComparison R
+        (SSet.stdSimplex.face ({i}ᶜ : Finset (Fin 3)) : SSet.{0})) :=
+  simplicialSingularComparison_quasiIso_of_iso R
+    (SSet.stdSimplex.faceSingletonComplIso (n := 1) i).hom
 
 /-! ## A reusable attachment step -/
 

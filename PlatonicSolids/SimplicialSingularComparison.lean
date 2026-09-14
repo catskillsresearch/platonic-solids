@@ -15,6 +15,7 @@ import Mathlib.Algebra.Homology.HomologicalComplexLimits
 import Mathlib.AlgebraicTopology.ExtraDegeneracy
 import Mathlib.AlgebraicTopology.SimplicialSet.HornColimits
 import Mathlib.AlgebraicTopology.SimplicialSet.Boundary
+import Mathlib.AlgebraicTopology.SimplicialSet.Dimension
 import Mathlib.AlgebraicTopology.SimplicialSet.Horn
 import Mathlib.AlgebraicTopology.SimplicialSet.Homology.HomologyZero
 import Mathlib.AlgebraicTopology.SimplicialSet.Monoidal
@@ -604,6 +605,125 @@ lemma boundaryTwoRemainingFaces_inf :
   rw [SSet.stdSimplex.face_inter_face]
   congr 1
 
+/-- The last edge of `∂Δ[2]` meets the two-edge horn at the two endpoints. -/
+lemma boundaryTwoFirstFace_inf :
+    boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces =
+      SSet.stdSimplex.face ({1} : Finset (Fin 3)) ⊔
+        SSet.stdSimplex.face ({2} : Finset (Fin 3)) := by
+  unfold boundaryTwoFirstFace boundaryTwoRemainingFaces
+  rw [inf_comm, Subfunctor.max_min, inf_comm,
+    inf_comm (a := SSet.stdSimplex.face ({2}ᶜ : Finset (Fin 3)))]
+  rw [SSet.stdSimplex.face_inter_face, SSet.stdSimplex.face_inter_face]
+  have h2 : ({0}ᶜ ⊓ {1}ᶜ : Finset (Fin 3)) = {2} := by decide
+  have h1 : ({0}ᶜ ⊓ {2}ᶜ : Finset (Fin 3)) = {1} := by decide
+  rw [h2, h1, sup_comm]
+
+/-- The two endpoints of the last edge are disjoint as faces. -/
+lemma face_one_inf_face_two :
+    SSet.stdSimplex.face ({1} : Finset (Fin 3)) ⊓
+      SSet.stdSimplex.face ({2} : Finset (Fin 3)) = ⊥ := by
+  rw [SSet.stdSimplex.face_inter_face]
+  have : ({1} ⊓ {2} : Finset (Fin 3)) = ∅ := by decide
+  rw [this, SSet.stdSimplex.face_empty]
+
+/-- The two endpoints form a 0-dimensional subcomplex. -/
+instance hasDimensionLT_one_twoVertices :
+    SSet.HasDimensionLT
+      ((SSet.stdSimplex.face ({1} : Finset (Fin 3)) ⊔
+        SSet.stdSimplex.face ({2} : Finset (Fin 3)) :
+          (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0}) 1 := by
+  let A : Bool → (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex :=
+    fun b => if b then SSet.stdSimplex.face ({1} : Finset (Fin 3))
+      else SSet.stdSimplex.face ({2} : Finset (Fin 3))
+  have hA : ⨆ b, A b =
+      SSet.stdSimplex.face ({1} : Finset (Fin 3)) ⊔
+        SSet.stdSimplex.face ({2} : Finset (Fin 3)) := by
+    apply le_antisymm
+    · rw [iSup_le_iff]
+      intro b
+      cases b <;> simp [A]
+    · exact sup_le (le_iSup A true) (le_iSup A false)
+  rw [← hA]
+  exact (SSet.hasDimensionLT_iSup_iff A 1).2 fun b => by
+    cases b
+    · exact SSet.stdSimplex.hasDimensionLT_face _ 1 (by decide)
+    · exact SSet.stdSimplex.hasDimensionLT_face _ 1 (by decide)
+
+/-- The last-edge ∩ horn intersection has vanishing positive simplicial homology. -/
+lemma isZero_boundaryTwoFirstFace_inf_homology
+    (R : ModuleCat.{0} k) (n : ℕ) (hn : n ≠ 0) :
+    IsZero
+      (((boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces :
+          (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0}).homology R n) := by
+  rw [boundaryTwoFirstFace_inf]
+  exact SSet.isZero_homology_of_hasDimensionLT _ R n 1 (by omega)
+
+/-- As simplicial sets, `∂Δ[2]` is the union of the last edge and the horn. -/
+lemma boundaryTwoSSet_eq_sup :
+    boundaryTwoSSet =
+      ((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+        (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0}) :=
+  congrArg
+    (fun C : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex => (C : SSet.{0}))
+    boundary_two_eq_face_sup
+
+/-- The last-edge decomposition of `∂Δ[2]` is a pushout of simplicial sets. -/
+lemma boundaryTwo_isPushout :
+    IsPushout
+      (SSet.Subcomplex.homOfLE
+        (inf_le_left :
+          boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+            boundaryTwoFirstFace))
+      (SSet.Subcomplex.homOfLE
+        (inf_le_right :
+          boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+            boundaryTwoRemainingFaces))
+      (SSet.Subcomplex.homOfLE
+        (le_sup_left :
+          boundaryTwoFirstFace ≤
+            boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+      (SSet.Subcomplex.homOfLE
+        (le_sup_right :
+          boundaryTwoRemainingFaces ≤
+            boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)) :=
+  SSet.Subcomplex.BicartSq.isPushout
+    (⟨rfl, rfl⟩ : SSet.Subcomplex.BicartSq
+      (boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces)
+      boundaryTwoFirstFace boundaryTwoRemainingFaces
+      (boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+
+/-- Realization preserves the last-edge pushout of `∂Δ[2]`. -/
+lemma toTop_boundaryTwo_isPushout :
+    IsPushout
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (inf_le_left :
+            boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+              boundaryTwoFirstFace)))
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (inf_le_right :
+            boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+              boundaryTwoRemainingFaces)))
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_left :
+            boundaryTwoFirstFace ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)))
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_right :
+            boundaryTwoRemainingFaces ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))) :=
+  boundaryTwo_isPushout.map SSet.toTop
+
+/-- Mayer–Vietoris short exact sequence of simplicial chains for the
+last-edge decomposition of `∂Δ[2]`. -/
+lemma boundaryTwoChainShortExact (R : ModuleCat.{0} k) :
+    (subcomplexChainShortComplex R boundaryTwoFirstFace
+      boundaryTwoRemainingFaces).ShortExact :=
+  subcomplexChainShortComplex_shortExact R _ _
+
 /-- A map into a zero object is an epimorphism. -/
 lemma epi_of_isZero_target {C : Type*} [Category* C] [HasZeroMorphisms C]
     {X Y : C} (f : X ⟶ Y) (hY : IsZero Y) : Epi f :=
@@ -1115,6 +1235,16 @@ instance simplicialSingularComparison_boundaryTwoFace_quasiIso
         (SSet.stdSimplex.face ({i}ᶜ : Finset (Fin 3)) : SSet.{0})) :=
   simplicialSingularComparison_quasiIso_of_iso R
     (SSet.stdSimplex.faceSingletonComplIso (n := 1) i).hom
+
+/-- The two remaining faces are the horn, so the comparison is a
+quasi-isomorphism there as well. -/
+instance simplicialSingularComparison_boundaryTwoRemaining_quasiIso
+    (R : ModuleCat.{0} k) :
+    QuasiIso
+      (simplicialSingularComparison R
+        (boundaryTwoRemainingFaces : SSet.{0})) := by
+  rw [boundaryTwoRemainingFaces_eq_horn]
+  infer_instance
 
 /-! ## A reusable attachment step -/
 

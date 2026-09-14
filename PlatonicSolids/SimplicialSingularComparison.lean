@@ -869,6 +869,17 @@ lemma toTop_map_δ_one_comp_toTopObjIsoI :
   rw [SSet.stdSimplex.δ_one_toSSetObjI, sSetTopAdj_homEquiv_stdSimplex_zero]
   simp [TopCat.const_apply]
 
+/-- The face inclusion `δ₀ : Δ[0] ⟶ Δ[1]` realises as the endpoint `1` of `I`. -/
+lemma toTop_map_δ_zero_comp_toTopObjIsoI :
+    SSet.toTop.map (SSet.stdSimplex.δ (0 : Fin 2)) ≫
+      SSet.stdSimplex.toTopObjIsoI.hom =
+      TopCat.const (1 : TopCat.I.{0}) := by
+  apply (sSetTopAdj.homEquiv (Δ[0] : SSet.{0}) TopCat.I.{0}).injective
+  rw [Adjunction.homEquiv_naturality_left]
+  change SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.stdSimplex.toSSetObjI = _
+  rw [SSet.stdSimplex.δ_zero_toSSetObjI, sSetTopAdj_homEquiv_stdSimplex_zero]
+  simp [TopCat.const_apply]
+
 /-- `toTop` sends the two-edge horn pushout to a pushout of spaces. -/
 lemma toTop_horn₂₀_isPushout :
     IsPushout
@@ -1245,6 +1256,203 @@ instance simplicialSingularComparison_boundaryTwoRemaining_quasiIso
         (boundaryTwoRemainingFaces : SSet.{0})) := by
   rw [boundaryTwoRemainingFaces_eq_horn]
   infer_instance
+
+/-- Each vertex face of `Δ[n]` is isomorphic to `Δ[0]`, so the comparison
+is a quasi-isomorphism there. -/
+instance simplicialSingularComparison_faceSingleton_quasiIso
+    (R : ModuleCat.{0} k) {n : ℕ} (i : Fin (n + 1)) :
+    QuasiIso
+      (simplicialSingularComparison R
+        (SSet.stdSimplex.face ({i} : Finset (Fin (n + 1))) : SSet.{0})) :=
+  simplicialSingularComparison_quasiIso_of_iso R
+    (SSet.stdSimplex.faceSingletonIso i).hom
+
+/-- The two endpoints of the last edge of `∂Δ[2]`. -/
+abbrev boundaryTwoVertices :
+    (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex :=
+  SSet.stdSimplex.face ({1} : Finset (Fin 3)) ⊔
+    SSet.stdSimplex.face ({2} : Finset (Fin 3))
+
+lemma face_one_le_boundaryTwoFirstFace :
+    SSet.stdSimplex.face ({1} : Finset (Fin 3)) ≤ boundaryTwoFirstFace := by
+  rw [SSet.stdSimplex.face_le_face_iff]
+  decide
+
+lemma face_two_le_boundaryTwoFirstFace :
+    SSet.stdSimplex.face ({2} : Finset (Fin 3)) ≤ boundaryTwoFirstFace := by
+  rw [SSet.stdSimplex.face_le_face_iff]
+  decide
+
+/-- The inclusion of a vertex face into `Δ[n]` is the constant simplex at
+that vertex. -/
+lemma faceSingletonIso_hom_comp_ι {n : ℕ} (i : Fin (n + 1)) :
+    (SSet.stdSimplex.faceSingletonIso i).hom ≫
+      (SSet.stdSimplex.face ({i} : Finset (Fin (n + 1)))).ι =
+    SSet.const (SSet.stdSimplex.obj₀Equiv.symm i) := by
+  apply (SSet.yonedaEquiv (X := SSet.stdSimplex.obj ⦋n⦌) (n := ⦋0⦌)).injective
+  rw [SSet.yonedaEquiv_comp, SSet.yonedaEquiv_const]
+  set x := SSet.yonedaEquiv (SSet.stdSimplex.faceSingletonIso i).hom
+  have hx : x.val = SSet.stdSimplex.obj₀Equiv.symm i := by
+    apply SSet.stdSimplex.obj₀Equiv.injective
+    have mem := x.property
+    rw [SSet.stdSimplex.mem_face_iff] at mem
+    have : x.val 0 = i := by
+      simpa using mem 0
+    simpa [SSet.stdSimplex.obj₀Equiv] using this
+  exact hx
+
+/-- `δ₁ ≫ δ₀ : Δ[0] ⟶ Δ[2]` is the vertex `1`. -/
+lemma δ_one_comp_δ_zero_eq_const_one :
+    SSet.stdSimplex.δ (1 : Fin 2) ≫ SSet.stdSimplex.δ (0 : Fin 3) =
+      SSet.const (SSet.stdSimplex.obj₀Equiv.symm 1) := by
+  rw [SSet.stdSimplex.δ_one_eq_const, SSet.const_comp]
+  congr 1
+
+/-- `δ₀ ≫ δ₀ : Δ[0] ⟶ Δ[2]` is the vertex `2`. -/
+lemma δ_zero_comp_δ_zero_eq_const_two :
+    SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.stdSimplex.δ (0 : Fin 3) =
+      SSet.const (SSet.stdSimplex.obj₀Equiv.symm 2) := by
+  rw [SSet.stdSimplex.δ_zero_eq_const, SSet.const_comp]
+  congr 1
+
+/-- Vertex 1 of the last edge is the `δ₁` endpoint of `Δ[1]`. -/
+lemma lastEdge_vertex_one :
+    (SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE face_one_le_boundaryTwoFirstFace =
+    SSet.stdSimplex.δ (1 : Fin 2) ≫
+      (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).hom := by
+  rw [← cancel_mono (boundaryTwoFirstFace.ι)]
+  have hι :
+      SSet.Subcomplex.homOfLE face_one_le_boundaryTwoFirstFace ≫
+        boundaryTwoFirstFace.ι =
+      (SSet.stdSimplex.face ({1} : Finset (Fin 3))).ι := rfl
+  rw [Category.assoc, hι, Category.assoc,
+    SSet.stdSimplex.faceSingletonComplIso_hom_ι,
+    faceSingletonIso_hom_comp_ι, δ_one_comp_δ_zero_eq_const_one]
+
+/-- Vertex 2 of the last edge is the `δ₀` endpoint of `Δ[1]`. -/
+lemma lastEdge_vertex_two :
+    (SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE face_two_le_boundaryTwoFirstFace =
+    SSet.stdSimplex.δ (0 : Fin 2) ≫
+      (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).hom := by
+  rw [← cancel_mono (boundaryTwoFirstFace.ι)]
+  have hι :
+      SSet.Subcomplex.homOfLE face_two_le_boundaryTwoFirstFace ≫
+        boundaryTwoFirstFace.ι =
+      (SSet.stdSimplex.face ({2} : Finset (Fin 3))).ι := rfl
+  rw [Category.assoc, hι, Category.assoc,
+    SSet.stdSimplex.faceSingletonComplIso_hom_ι,
+    faceSingletonIso_hom_comp_ι, δ_zero_comp_δ_zero_eq_const_two]
+
+/-- The free endpoint of the first horn edge realises as `+1` on `[-1, 1]`. -/
+lemma hornIcc_inl_δ_zero :
+    SSet.toTop.map (SSet.stdSimplex.δ (0 : Fin 2)) ≫ hornIcc_inl =
+      TopCat.const (⟨1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) := by
+  ext x
+  have hx : SSet.stdSimplex.toTopObjIsoI.hom
+      (SSet.toTop.map (SSet.stdSimplex.δ (0 : Fin 2)) x) = 1 := by
+    simpa using congrArg (fun f : _ ⟶ TopCat.I.{0} => f x)
+      toTop_map_δ_zero_comp_toTopObjIsoI
+  simp [hornIcc_inl, hx, TopCat.I.homeomorph_one]
+  rfl
+
+/-- The free endpoint of the second horn edge realises as `-1` on `[-1, 1]`. -/
+lemma hornIcc_inr_δ_zero :
+    SSet.toTop.map (SSet.stdSimplex.δ (0 : Fin 2)) ≫ hornIcc_inr =
+      TopCat.const (⟨-1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) := by
+  ext x
+  have hx : SSet.stdSimplex.toTopObjIsoI.hom
+      (SSet.toTop.map (SSet.stdSimplex.δ (0 : Fin 2)) x) = 1 := by
+    simpa using congrArg (fun f : _ ⟶ TopCat.I.{0} => f x)
+      toTop_map_δ_zero_comp_toTopObjIsoI
+  simp [hornIcc_inr, hx, TopCat.I.homeomorph_one]
+  rfl
+
+/-- Vertex 1 of the horn realises as `+1` on `[-1, 1]`. -/
+lemma horn_two_zero_toIcc_δ_zero_inl :
+    SSet.toTop.map (SSet.stdSimplex.δ (0 : Fin 2)) ≫
+      SSet.toTop.map SSet.horn₂₀.ι₀₁ ≫ horn_two_zero_toIcc =
+      TopCat.const (⟨1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) := by
+  have h := toTop_horn₂₀_isPushout.inl_desc hornIcc_inl hornIcc_inr
+    hornIcc_inl_comp_δ
+  have h' : SSet.toTop.map SSet.horn₂₀.ι₀₁ ≫ horn_two_zero_toIcc = hornIcc_inl := by
+    change SSet.toTop.map SSet.horn₂₀.ι₀₁ ≫ horn_two_zero_toIcc = hornIcc_inl
+    rwa [horn_two_zero_toIcc]
+  rw [h', hornIcc_inl_δ_zero]
+
+/-- Vertex 2 of the horn realises as `-1` on `[-1, 1]`. -/
+lemma horn_two_zero_toIcc_δ_zero_inr :
+    SSet.toTop.map (SSet.stdSimplex.δ (0 : Fin 2)) ≫
+      SSet.toTop.map SSet.horn₂₀.ι₀₂ ≫ horn_two_zero_toIcc =
+      TopCat.const (⟨-1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) := by
+  have h := toTop_horn₂₀_isPushout.inr_desc hornIcc_inl hornIcc_inr
+    hornIcc_inl_comp_δ
+  have h' : SSet.toTop.map SSet.horn₂₀.ι₀₂ ≫ horn_two_zero_toIcc = hornIcc_inr := by
+    change SSet.toTop.map SSet.horn₂₀.ι₀₂ ≫ horn_two_zero_toIcc = hornIcc_inr
+    rwa [horn_two_zero_toIcc]
+  rw [h', hornIcc_inr_δ_zero]
+
+/-- Realization of the last edge of `∂Δ[2]` is the unit interval. -/
+noncomputable def lastEdgeIsoI :
+    |(boundaryTwoFirstFace : SSet.{0})| ≅ TopCat.I.{0} :=
+  (SSet.toTop.mapIso
+    (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).symm).trans
+    SSet.stdSimplex.toTopObjIsoI
+
+/-- Vertex 1 of the last edge realises as `0 ∈ I`. -/
+lemma lastEdgeIsoI_vertex_one :
+    SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE face_one_le_boundaryTwoFirstFace) ≫
+      lastEdgeIsoI.hom =
+    TopCat.const (0 : TopCat.I.{0}) := by
+  rw [lastEdge_vertex_one, lastEdgeIsoI, Iso.trans_hom, SSet.toTop.map_comp]
+  change SSet.toTop.map (SSet.stdSimplex.δ (1 : Fin 2)) ≫
+      SSet.toTop.map
+        (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).hom ≫
+      SSet.toTop.map
+        (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).inv ≫
+      SSet.stdSimplex.toTopObjIsoI.hom =
+    TopCat.const (0 : TopCat.I.{0})
+  have hcancel :
+      SSet.toTop.map
+          (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).hom ≫
+        SSet.toTop.map
+          (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).inv =
+        𝟙 _ := by
+    rw [← SSet.toTop.map_comp, Iso.hom_inv_id, SSet.toTop.map_id]
+  conv_lhs =>
+    enter [2]
+    rw [← Category.assoc, hcancel, Category.id_comp]
+  rw [toTop_map_δ_one_comp_toTopObjIsoI]
+
+/-- Vertex 2 of the last edge realises as `1 ∈ I`. -/
+lemma lastEdgeIsoI_vertex_two :
+    SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE face_two_le_boundaryTwoFirstFace) ≫
+      lastEdgeIsoI.hom =
+    TopCat.const (1 : TopCat.I.{0}) := by
+  rw [lastEdge_vertex_two, lastEdgeIsoI, Iso.trans_hom, SSet.toTop.map_comp]
+  change SSet.toTop.map (SSet.stdSimplex.δ (0 : Fin 2)) ≫
+      SSet.toTop.map
+        (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).hom ≫
+      SSet.toTop.map
+        (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).inv ≫
+      SSet.stdSimplex.toTopObjIsoI.hom =
+    TopCat.const (1 : TopCat.I.{0})
+  have hcancel :
+      SSet.toTop.map
+          (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).hom ≫
+        SSet.toTop.map
+          (SSet.stdSimplex.faceSingletonComplIso (n := 1) (0 : Fin 3)).inv =
+        𝟙 _ := by
+    rw [← SSet.toTop.map_comp, Iso.hom_inv_id, SSet.toTop.map_id]
+  conv_lhs =>
+    enter [2]
+    rw [← Category.assoc, hcancel, Category.id_comp]
+  rw [toTop_map_δ_zero_comp_toTopObjIsoI]
 
 /-! ## A reusable attachment step -/
 

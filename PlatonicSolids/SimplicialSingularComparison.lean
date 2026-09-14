@@ -4,10 +4,17 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib.Algebra.Category.ModuleCat.Abelian
 import Mathlib.Algebra.Category.ModuleCat.Colimits
+import Mathlib.Algebra.Homology.SingleHomology
+import Mathlib.Algebra.Homology.HomologySequenceLemmas
+import Mathlib.AlgebraicTopology.ExtraDegeneracy
+import Mathlib.AlgebraicTopology.SimplicialSet.Homology.HomologyZero
+import Mathlib.AlgebraicTopology.SimplicialSet.Monoidal
 import Mathlib.AlgebraicTopology.SimplicialSet.Homology.Nondegenerate
 import Mathlib.AlgebraicTopology.SimplicialSet.TopAdj
 import Mathlib.AlgebraicTopology.SingularHomology.Basic
+import Mathlib.Analysis.Convex.Contractible
 import Mathlib.CategoryTheory.Limits.Shapes.ConcreteCategory
+import PlatonicSolids.SingularHomology
 
 /-!
 The canonical chain map from the simplicial chains of a simplicial set to
@@ -21,10 +28,12 @@ needed by an attachment proof.
 
 noncomputable section
 
-open AlgebraicTopology CategoryTheory HomologicalComplex
-open scoped Simplicial
+open AlgebraicTopology CategoryTheory CategoryTheory.Limits HomologicalComplex Module
+open scoped Simplicial Topology
 
 variable {k : Type} [Ring k]
+
+universe u
 
 /-- Singular chains on the geometric realization of `X`. -/
 abbrev singularChainsOfRealization (R : ModuleCat.{0} k) (X : SSet.{0}) :
@@ -83,6 +92,187 @@ lemma normalizedSimplicialSingularComparison_quasiIso_iff
       QuasiIso (simplicialSingularComparison R X) := by
   exact quasiIso_iff_comp_left
     (X.fromNormalizedChainComplex R) (simplicialSingularComparison R X)
+
+/-! ## The representable-simplex case -/
+
+/-- Naturality of the canonical augmentation from simplicial homology in
+degree zero to the coefficient object. -/
+lemma sset_homology₀ε_natural
+    {C : Type u} [Category.{0} C] [HasCoproducts.{0} C]
+    [Preadditive C] [CategoryWithHomology C]
+    {X Y : SSet.{0}} (f : X ⟶ Y) (R : C) :
+    homologyMap (SSet.chainComplexMap f R) 0 ≫ Y.homology₀ε R =
+      X.homology₀ε R := by
+  let φ := SSet.chainComplexMap f R
+  let KX := X.chainComplex R
+  let KY := Y.chainComplex R
+  apply (cancel_epi (KX.homologyπ 0)).1
+  apply (cancel_epi (ChainComplex.cycles₀Iso KX).inv).1
+  apply SSet.chainComplex_hom_ext
+  intro x
+  have hx :
+      KX.liftCycles (X.ιChainComplex x) 0 (by simp) (by simp) =
+        X.ιChainComplex x ≫ (ChainComplex.cycles₀Iso KX).inv := by
+    rw [← cancel_mono (KX.iCycles 0)]
+    simp [ChainComplex.cycles₀Iso]
+    exact (Category.comp_id _).symm
+  have hnat := HomologicalComplex.homologyπ_naturality (φ := φ) (i := 0)
+  have hcycle := HomologicalComplex.liftCycles_comp_cyclesMap
+    (k := X.ιChainComplex x) (j := 0) (hj := by simp) (hk := by simp) φ
+  have hf : X.ιChainComplex x ≫ φ.f 0 = Y.ιChainComplex (f.app _ x) :=
+    SSet.ι_chainComplexMap_f (X := X) (Y := Y) (f := f) (R := R) x
+  have hY := SSet.liftCycles_ιChainComplex_homologyπ_homology₀ε Y R (f.app _ x)
+  have hX := SSet.liftCycles_ιChainComplex_homologyπ_homology₀ε X R x
+  have lhs :
+      X.ιChainComplex x ≫ (ChainComplex.cycles₀Iso KX).inv ≫
+        KX.homologyπ 0 ≫ homologyMap φ 0 ≫ Y.homology₀ε R = 𝟙 R := by
+    rw [← Category.assoc, ← hx, reassoc_of% hnat, reassoc_of% hcycle]
+    exact (congrArg (fun t =>
+      KY.liftCycles t 0 (by simp) (by simp) ≫
+        KY.homologyπ 0 ≫ Y.homology₀ε R) hf).trans hY
+  have rhs :
+      X.ιChainComplex x ≫ (ChainComplex.cycles₀Iso KX).inv ≫
+        KX.homologyπ 0 ≫ X.homology₀ε R = 𝟙 R := by
+    rw [← Category.assoc, ← hx]
+    exact hX
+  exact lhs.trans rhs.symm
+
+namespace SSet
+
+open stdSimplex
+
+/-- Every representable standard simplex is connected as a simplicial set. -/
+instance stdSimplex_isConnected (n : ℕ) : (Δ[n] : SSet.{0}).IsConnected := by
+  rw [isConnected_iff]
+  constructor
+  · constructor
+    intro a b
+    induction a using SSet.π₀.rec with
+    | mk x =>
+      induction b using SSet.π₀.rec with
+      | mk y =>
+        let z : Δ[n] _⦋0⦌ := obj₀Equiv.symm 0
+        have hx : SSet.π₀.mk z = SSet.π₀.mk x := by
+          let s := edge n 0 (obj₀Equiv x) (Fin.zero_le _)
+          have hsrc : (Δ[n] : SSet.{0}).δ 1 s = z := by
+            apply obj₀Equiv.injective
+            rfl
+          have htgt : (Δ[n] : SSet.{0}).δ 0 s = x := by
+            apply obj₀Equiv.injective
+            rfl
+          simpa [hsrc, htgt] using SSet.π₀.sound (SSet.Edge.mk' s)
+        have hy : SSet.π₀.mk z = SSet.π₀.mk y := by
+          let s := edge n 0 (obj₀Equiv y) (Fin.zero_le _)
+          have hsrc : (Δ[n] : SSet.{0}).δ 1 s = z := by
+            apply obj₀Equiv.injective
+            rfl
+          have htgt : (Δ[n] : SSet.{0}).δ 0 s = y := by
+            apply obj₀Equiv.injective
+            rfl
+          simpa [hsrc, htgt] using SSet.π₀.sound (SSet.Edge.mk' s)
+        exact hx.symm.trans hy
+  · infer_instance
+
+end SSet
+
+/-- The realization of every representable standard simplex is contractible. -/
+instance realization_stdSimplex_contractible (n : ℕ) :
+    ContractibleSpace |(SSet.stdSimplex.obj ⦋n⦌ : SSet.{0})| := by
+  letI : ContractibleSpace (_root_.stdSimplex ℝ (Fin (n + 1))) :=
+    (convex_stdSimplex ℝ (Fin (n + 1))).contractibleSpace
+      ⟨(_root_.stdSimplex.vertex 0).1, (_root_.stdSimplex.vertex 0).2⟩
+  exact (SimplexCategory.toTopHomeo ⦋n⦌).contractibleSpace
+
+/-- A standard simplex has zero simplicial homology in every positive degree.
+This is the chain-level contraction supplied by its extra degeneracy. -/
+lemma isZero_stdSimplex_homology
+    (R : ModuleCat.{0} k) (n i : ℕ) (hi : i ≠ 0) :
+    IsZero ((SSet.stdSimplex.obj ⦋n⦌).homology R i) := by
+  let ed := (SSet.Augmented.StandardSimplex.extraDegeneracy ⦋n⦌).map
+    (sigmaConst.obj R)
+  let he := ed.homotopyEquiv
+  letI : QuasiIso he.hom := he.quasiIso_hom
+  have hz := HomologicalComplex.isZero_single_obj_homology
+    (ComplexShape.down ℕ) 0
+    (SimplicialObject.Augmented.point.obj
+      (((SimplicialObject.Augmented.whiskering Type (ModuleCat.{0} k)).obj
+        (sigmaConst.obj R)).obj (SSet.Augmented.stdSimplex.obj ⦋n⦌))) i hi
+  exact hz.of_iso (isoOfQuasiIsoAt he.hom i)
+
+/-- The canonical adjunction-unit chain map is a quasi-isomorphism on every
+representable simplex. -/
+instance simplicialSingularComparison_stdSimplex_quasiIso
+    (R : ModuleCat.{0} k) (n : ℕ) :
+    QuasiIso (simplicialSingularComparison R (SSet.stdSimplex.obj ⦋n⦌)) := by
+  rw [quasiIso_iff]
+  intro i
+  rw [quasiIsoAt_iff_isIso_homologyMap]
+  by_cases hi : i = 0
+  · subst i
+    let unit := sSetTopAdj.unit.app (SSet.stdSimplex.obj ⦋n⦌)
+    have hnat := sset_homology₀ε_natural unit R
+    change IsIso (homologyMap (SSet.chainComplexMap unit R) 0)
+    letI : IsIso (((SSet.toTop ⋙ TopCat.toSSet).obj
+        (SSet.stdSimplex.obj ⦋n⦌)).homology₀ε R) := by
+      change IsIso ((TopCat.toSSet.obj |SSet.stdSimplex.obj ⦋n⦌|).homology₀ε R)
+      infer_instance
+    haveI : IsIso (homologyMap (SSet.chainComplexMap unit R) 0 ≫
+        ((SSet.toTop ⋙ TopCat.toSSet).obj
+          (SSet.stdSimplex.obj ⦋n⦌)).homology₀ε R) := by
+      rw [hnat]
+      change IsIso ((SSet.stdSimplex.obj ⦋n⦌).homology₀ε R)
+      infer_instance
+    exact IsIso.of_isIso_comp_right _
+      (((SSet.toTop ⋙ TopCat.toSSet).obj
+        (SSet.stdSimplex.obj ⦋n⦌)).homology₀ε R)
+  · apply IsZero.isIso
+      (isZero_stdSimplex_homology R n i hi)
+    exact isZero_singularHomology_of_contractible R hi
+
+/-- The normalized comparison is consequently a quasi-isomorphism on every
+representable simplex. -/
+instance normalizedSimplicialSingularComparison_stdSimplex_quasiIso
+    (R : ModuleCat.{0} k) (n : ℕ) :
+    QuasiIso
+      (normalizedSimplicialSingularComparison R (SSet.stdSimplex.obj ⦋n⦌)) :=
+  (normalizedSimplicialSingularComparison_quasiIso_iff R _).2 inferInstance
+
+/-! ## A reusable attachment step -/
+
+/-- The short-exact gluing step for the simplicial--singular comparison.
+
+If simplicial chains and singular chains form compatible short exact
+sequences, and the comparison is a quasi-isomorphism on the first two
+terms, then it is a quasi-isomorphism on the glued third term.  In an
+attachment induction, the remaining geometric work is therefore exactly
+to construct these two short exact sequences and the compatibility
+squares. -/
+theorem simplicialSingularComparison_quasiIso_of_shortExact
+    (R : ModuleCat.{0} k) (X₁ X₂ X₃ : SSet.{0})
+    (a : X₁.chainComplex R ⟶ X₂.chainComplex R)
+    (b : X₂.chainComplex R ⟶ X₃.chainComplex R)
+    (a' : singularChainsOfRealization R X₁ ⟶
+      singularChainsOfRealization R X₂)
+    (b' : singularChainsOfRealization R X₂ ⟶
+      singularChainsOfRealization R X₃)
+    (hab : a ≫ b = 0) (hab' : a' ≫ b' = 0)
+    (h₁ : simplicialSingularComparison R X₁ ≫ a' =
+      a ≫ simplicialSingularComparison R X₂)
+    (h₂ : simplicialSingularComparison R X₂ ≫ b' =
+      b ≫ simplicialSingularComparison R X₃)
+    (hsource : (ShortComplex.mk a b hab).ShortExact)
+    (htarget : (ShortComplex.mk a' b' hab').ShortExact)
+    [QuasiIso (simplicialSingularComparison R X₁)]
+    [QuasiIso (simplicialSingularComparison R X₂)] :
+    QuasiIso (simplicialSingularComparison R X₃) := by
+  let S := ShortComplex.mk a b hab
+  let T := ShortComplex.mk a' b' hab'
+  let φ : S ⟶ T := ShortComplex.Hom.mk
+    (simplicialSingularComparison R X₁)
+    (simplicialSingularComparison R X₂)
+    (simplicialSingularComparison R X₃) h₁ h₂
+  exact HomologicalComplex.HomologySequence.quasiIso_τ₃
+    φ hsource htarget inferInstance inferInstance
 
 /-! ## The zero-simplex base case -/
 

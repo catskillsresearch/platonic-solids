@@ -47,8 +47,8 @@ outside the deliberate holes in `Challenge.lean`.
 | `PROVENANCE.md` | Origin of this package and relationship to the template repos |
 | `PlatonicSolids.pdf` | Paper PDF (committed deliverable; synced from `view.pdf`) |
 | `view.pdf` | Official arXiv AutoTeX build (pdfLaTeX), once submitted |
-| `build_pdf.py` | `PlatonicSolids.md` → `PlatonicSolids.tex` → `PlatonicSolids.pdf`, Lean source inlined as an appendix |
-| `scripts/package_arxiv_submit.sh` | `dist/arxiv_submit.zip` for arXiv (pdfLaTeX + Lean listing) |
+| `build_pdf.py` | `PlatonicSolids.md` → `PlatonicSolids.tex` → `PlatonicSolids.pdf`; appendix links modules on GitHub |
+| `scripts/package_arxiv_submit.sh` | `dist/arxiv_submit.zip` for arXiv (pdfLaTeX + PNG figures + Lean sources) |
 | `scripts/tex_preamble_arxiv.tex` | Listings / unicode preamble used by the PDF build |
 | `scripts/palomar_preflight.sh` | Local / CI replica of Palomar mechanical verification |
 | `LICENSE` | Apache License 2.0 |
@@ -102,10 +102,10 @@ python3 build_pdf.py
 bash scripts/package_arxiv_submit.sh   # dist/arxiv_submit.zip (rebuilds the PDF first)
 ```
 
-`dist/arxiv_submit.zip` is the arXiv upload: `PlatonicSolids.tex`, the
-Lean sources (root import plus `PlatonicSolids/*.lean`, listed in the
-appendix), and `00README.json` so AutoTeX keeps those files and compiles
-with pdfLaTeX. On arXiv Add Files, Delete All before uploading; on Review
+`dist/arxiv_submit.zip` is the arXiv upload: `PlatonicSolids.tex`, PNG
+figures, Lean sources (for reproducibility), and `00README.json` so AutoTeX
+compiles with pdfLaTeX. The PDF appendix links each module on GitHub instead
+of inlining full source. On arXiv Add Files, Delete All before uploading; on Review
 Files, uncheck deletion if a `.lean` file is marked. After a successful
 arXiv compile, save the preview PDF as `view.pdf` and copy it to
 `PlatonicSolids.pdf` so the committed deliverable matches AutoTeX.

@@ -14,6 +14,9 @@ __pycache__/
 # Generated TeX (the PDF is the committed deliverable)
 PlatonicSolids.tex
 
+# Mermaid renders are committed as PNG (arXiv); PDF exports are not used
+figures/*.pdf
+
 # arXiv submission bundle (scripts/package_arxiv_submit.sh)
 dist/
 00README.json

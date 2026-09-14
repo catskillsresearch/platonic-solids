@@ -195,11 +195,11 @@ PLACEHOLDER = "PLATONICCODEBLOCK{}ENDBLOCK"
 
 
 def render_mermaid_figures() -> list[Path]:
-    """Render every ``figures/*.mmd`` blueprint to a PDF for ``\\includegraphics``."""
+    """Render every ``figures/*.mmd`` blueprint to PNG for ``\\includegraphics`` (arXiv)."""
     rendered: list[Path] = []
     puppeteer = FIGURES / "puppeteer.json"
     for src in sorted(FIGURES.glob("*.mmd")):
-        out = src.with_suffix(".pdf")
+        out = src.with_suffix(".png")
         cmd = [
             "mmdc",
             "-i",
@@ -210,7 +210,6 @@ def render_mermaid_figures() -> list[Path]:
             "neutral",
             "-b",
             "white",
-            "-f",
             "-p",
             str(puppeteer),
         ]
@@ -344,16 +343,21 @@ def build_title_page(title_tex: str, abstract_tex: str) -> str:
     )
 
 
-def listing_block(path: Path, caption: str) -> str:
+def github_blob_url(rel: str) -> str:
+    return f"{GITHUB_URL}/blob/main/{rel}"
+
+
+def appendix_module_entry(path: Path, caption: str) -> str:
     rel = path.relative_to(HERE).as_posix()
+    url = github_blob_url(rel)
+    tex_path = rel.replace("_", r"\_")
     n_lines = len(path.read_text(encoding="utf-8").splitlines())
     return "\n".join(
         [
-            f"\\subsection{{\\texttt{{{rel}}}}}",
+            rf"\subsection{{\href{{{url}}}{{\texttt{{{tex_path}}}}}}}",
             "",
-            f"{caption} ({n_lines} lines).",
+            f"{caption} ({n_lines} lines in the repository.)",
             "",
-            r"\lstinputlisting{" + rel + "}",
         ]
     )
 
@@ -362,16 +366,19 @@ def build_appendix() -> str:
     return "\n".join(
         [
             r"\appendix",
-            r"\section{Complete Lean source}",
+            r"\section{Lean module index}",
             "",
             r"Checked by \texttt{lake build} against Lean 4 and Mathlib. "
             r"The development contains no \texttt{sorry}, no \texttt{admit}, "
-            r"and no project-defined axiom. Palomar Comparator compares four theorems: "
+            r"and no project-defined axiom outside \texttt{Challenge.lean}. "
+            r"Palomar Comparator compares four theorems: "
             r"\texttt{platonic\_solids\_3d}, \texttt{edges\_pos\_of\_regular}, "
             r"\texttt{regular\_polychora\_classification}, and "
-            r"\texttt{simplicialSingularComparison\_boundaryTwo\_quasiIso}.",
+            r"\texttt{simplicialSingularComparison\_boundaryTwo\_quasiIso}. "
+            r"Each module below links to its file in "
+            rf"\url{{{GITHUB_URL}}}.",
             "",
-            *[listing_block(path, caption) for path, caption in LEAN_MODULES],
+            *[appendix_module_entry(path, caption) for path, caption in LEAN_MODULES],
         ]
     )
 

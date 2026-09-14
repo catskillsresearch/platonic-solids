@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Introduction: The Dimensional Hierarchy
+## Introduction: The Dimensional Hierarchy
 
 In Euclidean geometry, a regular polytope is a figure whose symmetry group acts transitively on its flags (incident chains of vertices, edges, faces, and higher-dimensional cells).
 
@@ -19,25 +19,25 @@ This paper addresses these questions through an analytical exposition coupled wi
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/overview.pdf}
+\includegraphics[width=\linewidth]{figures/overview.png}
 \caption{Coarse blueprint of the two classifications. In dimension $3$, the compared theorems assume $V+F=E+2$ and regularity incidence, which force $(p-2)(q-2)<4$ and the five Platonic solids. A fourth compared theorem proves the canonical comparison on $\partial\Delta[2]$; a general cellulation comparison is not claimed. In dimension $4$, $\chi(S^3)=0$ supplies no flag bound; the compared theorem sends Platonic-compatible triples with $\Delta>0$ to one of the six regular polychora.}
 \label{fig:overview}
 \end{figure}
 
 ---
 
-## 2. Dimension 3: Topology, Incidence, and the Non-Degeneracy Insight
+## Dimension 3: Topology, Incidence, and the Non-Degeneracy Insight
 
 Figure \ref{fig:dim3} expands the $3$D side of Figure \ref{fig:overview} to the Lean lemmas that turn a convex polyhedron into a Platonic pair.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/dim3-pipeline.pdf}
+\includegraphics[width=\linewidth]{figures/dim3-pipeline.png}
 \caption{Dimension-$3$ pipeline. A quasi-isomorphism from a finite cellular complex to singular chains of a model of $S^2$ yields the Betti profile $(1,0,1)$ and hence $V+F=E+2$. The canonical comparison is now constructed for the specific simplicial circle $\partial\Delta[2]$; arbitrary polyhedral cellulations remain separate. The compared 3D theorem continues to take Euler's formula as a hypothesis.}
 \label{fig:dim3}
 \end{figure}
 
-### 2.1. Topological Derivation of Euler’s Formula
+### Topological Derivation of Euler’s Formula
 The Lean gists for §2.1 are the modules under `PlatonicSolids/`: radial projection and Euler–Poincaré (`RadialProjection.lean`, `EulerPoincare.lean`); cellular and singular homology (`CellularHomology.lean`, `SingularHomology.lean`, `RelativeHomology.lean`, `MayerVietoris.lean`); the excision stack (`SingularExcision/`); the simplicial–singular comparison (`SimplicialSingularComparison.lean`, `SimplicialSingularBoundaryTwo.lean`); and the sphere calculations (`SphereSingularHomology.lean`, `Sphere2Homology.lean`, `EulerBetti.lean`). Figure \ref{fig:lean} lists every file.
 
 Let $P \subset \mathbb{R}^3$ be a convex polyhedron containing the origin in its interior. Radial projection $\pi: \partial P \to S^2$ onto the circumscribed 2-sphere is a homeomorphism (`frontier_convex_homeo_sphere`). This projection induces a finite CW-complex structure on $S^2$ with $V$ 0-cells (vertices), $E$ 1-cells (edges), and $F$ 2-cells (faces).
@@ -62,16 +62,30 @@ A fourth compared theorem records the canonical adjunction-unit comparison for t
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/excision-pipeline.pdf}
+\includegraphics[width=\linewidth]{figures/excision-pipeline.png}
 \caption{Singular-excision blueprint, finer than Figure \ref{fig:dim3}. Mesh shrinking and the prism homotopy feed the small-chain retract; the open-cover quasi-isomorphism discharges $\mathtt{IsExcisiveSubspaces}$ and yields $H_{n+1}(S^{n+1})\cong H_n(S^n)$.}
 \label{fig:excision}
 \end{figure}
 
 #### The canonical comparison on the simplicial circle
 
-For a simplicial set $X$, the chain map `simplicialSingularComparison` (applied at $R$ and $X$) is obtained by applying simplicial chains to the unit
+For a simplicial set $X$, the chain map obtained by applying simplicial chains to the unit
 $$X\longrightarrow \operatorname{Sing}(|X|)$$
-of the geometric-realization/singular-complex adjunction. `SimplicialSingularComparison.lean` proves the comparison for standard simplices, the horn $\Lambda[2,0]$, and the disconnected two-vertex edge--horn intersection.
+of the geometric-realization/singular-complex adjunction is formalized as follows (`SimplicialSingularComparison.lean` proves the simplex, horn $\Lambda[2,0]$, and two-vertex cases).
+
+```lean
+abbrev boundaryTwoSSet : SSet.{0} :=
+  (SSet.boundary 2 :
+    (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex)
+
+abbrev singularChainsOfRealization (R : ModuleCat.{0} k) (X : SSet.{0}) :
+    ChainComplex (ModuleCat.{0} k) ℕ :=
+  ((singularChainComplexFunctor (ModuleCat.{0} k)).obj R).obj |X|
+
+def simplicialSingularComparison (R : ModuleCat.{0} k) (X : SSet.{0}) :
+    X.chainComplex R ⟶ singularChainsOfRealization R X :=
+  SSet.chainComplexMap (sSetTopAdj.unit.app X) R
+```
 
 The boundary geometry is made concrete by the homeomorphism `homeomorph_boundaryTwo_addCircle`,
 $$|\partial\Delta[2]|\simeq \operatorname{AddCircle}(3).$$
@@ -84,6 +98,13 @@ The obvious decomposition into one closed edge and the complementary two-edge ho
 $$C_*^{\mathrm{simp}}(\partial\Delta[2];R)\longrightarrow C_*^{\mathrm{sing}}(|\partial\Delta[2]|;R)$$
 is a quasi-isomorphism.
 
+```lean
+theorem simplicialSingularComparison_boundaryTwo_quasiIso
+    (R : ModuleCat.{0} k) :
+    QuasiIso (simplicialSingularComparison R boundaryTwoSSet) := by
+  ...
+```
+
 The normalized-chain corollary is supporting material and is not compared. No theorem for arbitrary finite nonsingular simplicial sets or arbitrary polyhedral cellulations is claimed.
 
 The standard simplicial $2$-sphere is the surface of a tetrahedron: $4$ vertices, $6$ edges, $4$ triangles. Oriented incidence matrices $d_1:\mathbb{Q}^6\to\mathbb{Q}^4$ and $d_2:\mathbb{Q}^4\to\mathbb{Q}^6$ satisfy $d_1 d_2=0$. Each has a $3\times 3$ identity minor, so both ranks are at least $3$; the product-zero rank inequality on a $6$-dimensional middle term forces both ranks equal to $3$. Hence
@@ -94,9 +115,24 @@ Algebraic Euler–Poincaré (`euler_poincare`) is rank-nullity on any $2$-comple
 $$V - E + F = 2$$
 on the tetrahedron (`euler_tetrahedron`) and, for an arbitrary $2$-complex with the same Betti numbers, the general identity `euler_formula_of_sphere2`. The tetrahedron incidence structure is then Platonic (`tetrahedron_platonic`). Combining Euler–Poincaré with regularity incidence gives the classification from homology (`platonic_solids_3d_of_homology`).
 
-The two routes are now joined at the correct level of abstraction. Given a quasi-isomorphism from this finite cellular chain complex to singular chains, `cellular_betti_profile_of_quasiIso_sphere2` transports the independently computed singular homology of $S^2$ back to the matrix Betti numbers. The canonical comparison has been constructed for $\partial\Delta[2]$ as a first finite gluing case; extending it naturally to general finite simplicial cellulations, and then to the polyhedral cellulations needed here, remains open.
+The two routes are now joined at the correct level of abstraction. Given a quasi-isomorphism from a finite cellular chain complex to singular chains of a space homotopy-equivalent to $S^2$, the Betti profile is forced and the Platonic classification follows.
 
-### 2.2. Incidence Combinatorics
+```lean
+theorem cellular_betti_profile_of_quasiIso_sphere2
+    ... (φ : cellularChainComplex ... ⟶ singular chains of X) [QuasiIso φ]
+    (e : X ≃ₕ MetricSphere 2) :
+    betti0 d₁ = 1 ∧ betti1 d₂ d₁ = 0 ∧ betti2 d₂ = 1 := by
+  ...
+
+theorem platonic_solids_3d_of_sphere
+    ... [QuasiIso φ] (e : X ≃ₕ MetricSphere 2) :
+    IsPlatonicPair p q := by
+  ...
+```
+
+The canonical comparison has been constructed for $\partial\Delta[2]$ as a first finite gluing case; extending it naturally to general finite simplicial cellulations, and then to the polyhedral cellulations needed here, remains open.
+
+### Incidence Combinatorics
 The Lean gist is `PlatonicSolids/Incidence.lean` (with the pair predicate in `PlatonicSolids/PlatonicPair.lean`).
 A regular polyhedron has Schläfli symbol $\{p, q\}$, meaning:
 1. Every 2D face is an identical regular $p$-gon ($p \ge 3$). Each face contributes $p$ edge-face incidences. Since every edge is shared by exactly 2 faces:
@@ -104,7 +140,7 @@ A regular polyhedron has Schläfli symbol $\{p, q\}$, meaning:
 2. Every vertex meets $q$ faces and $q$ edges ($q \ge 3$). Each vertex contributes $q$ edge-vertex incidences. Since every edge connects exactly 2 vertices:
    $$q V = 2 E \implies V = \frac{2E}{q}$$
 
-### 2.3. The Diophantine Reduction
+### The Diophantine Reduction
 The Lean gist is `PlatonicSolids/PlatonicPair.lean`; the reciprocal form $1/p+1/q>1/2$ is `PlatonicSolids/Reciprocal.lean`.
 Substituting these incidence relations into Euler's formula:
 $$\frac{2E}{q} - E + \frac{2E}{p} = 2$$
@@ -125,7 +161,26 @@ Since $p \ge 3$ and $q \ge 3$, both $(p - 2)$ and $(q - 2)$ are strictly positiv
 | $1$ | $3$ | $3$ | **$(3, 5)$** | Icosahedron |
 | $3$ | $1$ | $3$ | **$(5, 3)$** | Dodecahedron |
 
-### 2.4. Formalization Insight: Elimination of the Non-Degeneracy Axiom
+The five pairs are bundled as a predicate on indices:
+
+```lean
+def IsPlatonicPair (p q : ℕ) : Prop :=
+  (p = 3 ∧ q = 3) ∨ (p = 3 ∧ q = 4) ∨ (p = 4 ∧ q = 3) ∨
+  (p = 3 ∧ q = 5) ∨ (p = 5 ∧ q = 3)
+```
+
+Incidence and Euler then yield the compared $3$D classification:
+
+```lean
+theorem platonic_solids_3d
+    (V E F p q : ℕ) (hp : 3 ≤ p) (hq : 3 ≤ q)
+    (h_edges_faces : p * F = 2 * E) (h_edges_verts : q * V = 2 * E)
+    (h_euler : V + F = E + 2) :
+    IsPlatonicPair p q := by
+  ...
+```
+
+### Formalization Insight: Elimination of the Non-Degeneracy Axiom
 The Lean gist is `edges_pos_of_regular` in `PlatonicSolids/Incidence.lean`.
 In informal presentations, dividing Euler’s equation by $2E$ to obtain:
 $$\frac{1}{p} + \frac{1}{q} = \frac{1}{2} + \frac{1}{E} > \frac{1}{2}$$
@@ -141,20 +196,29 @@ Because $p \ge 3$ and $q \ge 3$, we have $2pq \ge 18$, which contradicts $0 = 2p
 
 Therefore, **the topological Euler characteristic ($\chi = 2$) together with the local regularity conditions ($p, q \ge 3$) algebraically prohibits an edgeless configuration**. The condition $E \ge 1$ is an algebraic consequence of the system, not an extrinsic geometric requirement.
 
+```lean
+theorem edges_pos_of_regular
+    (V E F p q : ℕ) (hp : 3 ≤ p) (hq : 3 ≤ q)
+    (h_edges_faces : p * F = 2 * E) (h_edges_verts : q * V = 2 * E)
+    (h_euler : V + F = E + 2) :
+    0 < E := by
+  ...
+```
+
 ---
 
-## 3. Dimension 4: Why Topology Fails and the Gram Matrix Takes Over
+## Dimension 4: Why Topology Fails and the Gram Matrix Takes Over
 
 Figure \ref{fig:dim4} is the $4$D counterpart of Figure \ref{fig:dim3}: Platonic cells and vertex figures determine a Schläfli Gram matrix, and the sign of $\Delta=\det M$ sorts the eleven triples.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/dim4-pipeline.pdf}
+\includegraphics[width=\linewidth]{figures/dim4-pipeline.png}
 \caption{Dimension-$4$ pipeline. The eleven Platonic-compatible Schläfli triples are classified by the sign of $\Delta=\det(\mathtt{schlafliGram})$. Positive $\Delta$ is equivalent, by Sylvester, to positive-definiteness of the Gram matrix, and picks out the six regular convex polychora.}
 \label{fig:dim4}
 \end{figure}
 
-### 3.1. The Topological Barrier: $\chi(S^3) = 0$
+### The Topological Barrier: $\chi(S^3) = 0$
 The Lean gists are `PlatonicSolids/EulerPoincare.lean` (now also the $3$-complex identity `euler_poincare3`), `PlatonicSolids/Sphere3Homology.lean` (cellular $H_*(S^3;\mathbb{Q})$ of the $4$-simplex boundary), and `eulerChar_sphere3_betti` in `PlatonicSolids/EulerBetti.lean`.
 
 A convex $4$-polytope with nonempty interior has frontier homeomorphic to $S^3$ by the same radial projection as in §2.1. The standard simplicial $3$-sphere is the boundary of a $4$-simplex: $5$ vertices, $10$ edges, $10$ triangles, $5$ tetrahedra. Oriented incidence matrices $d_1:\mathbb{Q}^{10}\to\mathbb{Q}^5$, $d_2:\mathbb{Q}^{10}\to\mathbb{Q}^{10}$, $d_3:\mathbb{Q}^5\to\mathbb{Q}^{10}$ satisfy $d_1 d_2=0$ and $d_2 d_3=0$. Identity minors give $\mathrm{rank}\,d_1\ge 4$ and $\mathrm{rank}\,d_3\ge 4$; a $6\times 6$ minor of $d_2$ has determinant $1$, so $\mathrm{rank}\,d_2\ge 6$. The product-zero inequalities on the two middle dimensions of size $10$ then force the ranks to be exactly $4$, $6$, and $4$. Hence
@@ -165,7 +229,7 @@ Algebraic Euler–Poincaré in dimension $3$ (`euler_poincare3`) again equates c
 $$V - E + F - C = 0$$
 (`eulerChar_sphere3` on the $4$-simplex, and `euler_formula_of_sphere3` in general). Because the alternating sum is zero, dividing by any flag count yields an identity equal to zero rather than a positive reciprocal like $2/E$. **Topology alone does not impose an upper bound on $p, q,$ or $r$ in 4D.**
 
-### 3.2. Coxeter Systems and the Schläfli Gram Matrix
+### Coxeter Systems and the Schläfli Gram Matrix
 The Lean gist is `PlatonicSolids/GramMatrix.lean`.
 To obtain an upper bound, informal accounts invoke **Coxeter reflection groups**. The Lean development does not construct those groups; it works with the associated **Schläfli Gram matrix** and its determinant $\Delta$. A regular 4-polytope is described by its Schläfli symbol $\{p, q, r\}$:
 * The 3D cells are Platonic solids $\{p, q\}$.
@@ -184,7 +248,20 @@ $$M = \begin{pmatrix}
 0 & 0 & -\cos\frac{\pi}{r} & 1
 \end{pmatrix}$$
 
-### 3.3. Sylvester’s Criterion and Principal Minors
+In Lean the matrix and scalar determinant are named as follows:
+
+```lean
+noncomputable def schlafliGram (p q r : ℕ) : Matrix (Fin 4) (Fin 4) ℝ :=
+  !![1, -cos (π / p), 0, 0;
+     -cos (π / p), 1, -cos (π / q), 0;
+     0, -cos (π / q), 1, -cos (π / r);
+     0, 0, -cos (π / r), 1]
+
+noncomputable def schlafliDet (p q r : ℕ) : ℝ :=
+  sin (π / p) ^ 2 * sin (π / r) ^ 2 - cos (π / q) ^ 2
+```
+
+### Sylvester’s Criterion and Principal Minors
 The Lean gists are `PlatonicSolids/Angles.lean`, `LeadingMinors.lean`, `TrailingMinor.lean`, `D3IffPlatonic.lean`, `QuadForm.lean`, `CompletingSquare.lean`, and `Sylvester.lean`.
 By the Cartan–Killing–Coxeter classification:
 1. **$M$ is positive definite ($\det(M) > 0$) $\iff$ $W$ is a finite reflection group acting on $S^3$ (a finite regular convex 4-polytope).**
@@ -201,7 +278,7 @@ By Sylvester’s criterion, $M$ is positive definite if and only if all leading 
   $$\frac{1}{q} + \frac{1}{r} > \frac{1}{2}$$
   **Thus, the vertex figure $\{q, r\}$ must also be a Platonic solid.**
 
-### 3.4. The Critical Dimension-4 Minor: $D_4$
+### The Critical Dimension-4 Minor: $D_4$
 The Lean gist is `PlatonicSolids/DetFormula.lean`.
 Expanding $D_4 = \det(M)$ along the fourth row:
 $$D_4 = D_3 - \cos^2\left(\frac{\pi}{r}\right) D_2 = \left(\sin^2\frac{\pi}{p} - \cos^2\frac{\pi}{q}\right) - \cos^2\left(\frac{\pi}{r}\right) \sin^2\left(\frac{\pi}{p}\right)$$
@@ -213,7 +290,7 @@ $$\Delta(p, q, r) := \sin^2\left(\frac{\pi}{p}\right) \sin^2\left(\frac{\pi}{r}\
 
 ---
 
-## 4. Evaluation of the 11 Candidate Triples
+## Evaluation of the 11 Candidate Triples
 The Lean gists are `CompatibleTriples.lean`, `TrigValues.lean`, `SignTable.lean`, `Regular4.lean`, and `Classification.lean` in `PlatonicSolids/`.
 
 Because both $\{p, q\}$ and $\{q, r\}$ must be Platonic, the indices must satisfy $p, q, r \in \{3, 4, 5\}$. Among the $5 \times 5 = 25$ combinations, only **11 triples** have a compatible middle index $q$.
@@ -250,32 +327,79 @@ Evaluating $\Delta(p, q, r)$ across all 11 candidate triples:
 
 Thus, **precisely 6 triples yield positive-definite Gram matrices**.
 
+The six spherical triples are packaged as `IsRegular4Polytope`; the compared $4$D theorem is:
+
+```lean
+def IsRegular4Polytope (p q r : ℕ) : Prop :=
+  (p = 3 ∧ q = 3 ∧ r = 3) ∨ (p = 4 ∧ q = 3 ∧ r = 3) ∨
+  (p = 3 ∧ q = 3 ∧ r = 4) ∨ (p = 3 ∧ q = 4 ∧ r = 3) ∨
+  (p = 5 ∧ q = 3 ∧ r = 3) ∨ (p = 3 ∧ q = 3 ∧ r = 5)
+
+theorem regular_polychora_classification (p q r : ℕ)
+    (h_cell : IsPlatonicPair p q) (h_vf : IsPlatonicPair q r)
+    (h_det : 0 < schlafliDet p q r) :
+    IsRegular4Polytope p q r := by
+  ...
+```
+
 ---
 
-## 5. Complete Lean 4 Formal Verification
+## Complete Lean 4 Formal Verification
 
-The Lake package compiles against Lean 4 and Mathlib. It contains no project-defined axiom, no `admit`, and no `sorry` outside the deliberate holes in `Challenge.lean`. Compared theorems may still depend on Mathlib’s `propext`, `Classical.choice`, and `Quot.sound`. The development is split into section-sized modules under `PlatonicSolids/`, each meant to be copied as a gist next to the matching paragraph above. `PlatonicSolids.lean` is the root import. The full sources are reproduced in the appendix. Figures \ref{fig:lean} and \ref{fig:excision-mod} are the module-level blueprints: first the top-level `PlatonicSolids/*.lean` graph, then the `SingularExcision/` subgraph.
+The Lake package compiles against Lean 4 and Mathlib. It contains no project-defined axiom, no `admit`, and no `sorry` outside the deliberate holes in `Challenge.lean`. Compared theorems may still depend on Mathlib’s `propext`, `Classical.choice`, and `Quot.sound`. The development is split into section-sized modules under `PlatonicSolids/`; gists in the main text quote theorem headers and definitions, and the appendix indexes every module with a hyperlink to [the GitHub repository](https://github.com/catskillsresearch/platonic-solids). `PlatonicSolids.lean` is the root import. Figures \ref{fig:lean} and \ref{fig:excision-mod} are the module-level blueprints: first the top-level `PlatonicSolids/*.lean` graph, then the `SingularExcision/` subgraph.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/lean-modules.pdf}
+\includegraphics[width=\linewidth]{figures/lean-modules.png}
 \caption{Top-level Lean module graph. $\mathtt{CellularHomology}$ transports Betti finranks through quasi-isomorphisms; the two simplicial--singular modules prove the canonical comparison for $\partial\Delta[2]$ using open-cover excision. The Gram-matrix stack feeds the $4$D classification.}
 \label{fig:lean}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/excision-modules.pdf}
+\includegraphics[width=\linewidth]{figures/excision-modules.png}
 \caption{Finer blueprint of $\mathtt{PlatonicSolids/SingularExcision/}$. Affine subdivision, mesh geometry, and the prism homotopy assemble the small-chain retract; cover chains are identified with small singular chains; the open-cover quasi-isomorphism discharges excision.}
 \label{fig:excision-mod}
 \end{figure}
 
-The compared theorems are:
+The compared theorems are (Palomar statement of record in `Challenge.lean`; proofs in the modules cited above):
 
 - `platonic_solids_3d` — Euler $V+F=E+2$ (as a hypothesis) plus regularity incidence $pF=2E$, $qV=2E$ force a Platonic pair $(p,q)$.
+
+```lean
+theorem platonic_solids_3d
+    (V E F p q : ℕ) (hp : 3 ≤ p) (hq : 3 ≤ q)
+    (h_edges_faces : p * F = 2 * E) (h_edges_verts : q * V = 2 * E)
+    (h_euler : V + F = E + 2) :
+    IsPlatonicPair p q := by sorry
+```
+
 - `edges_pos_of_regular` — the same identities algebraically force $E>0$; non-degeneracy is a theorem, not an axiom.
+
+```lean
+theorem edges_pos_of_regular
+    (V E F p q : ℕ) (hp : 3 ≤ p) (hq : 3 ≤ q)
+    (h_edges_faces : p * F = 2 * E) (h_edges_verts : q * V = 2 * E)
+    (h_euler : V + F = E + 2) :
+    0 < E := by sorry
+```
+
 - `regular_polychora_classification` — Platonic cells and vertex figures with $\Delta(p,q,r)>0$ force one of the six regular convex $4$-polytopes.
-- `simplicialSingularComparison_boundaryTwo_quasiIso` — the canonical adjunction-unit chain map from simplicial chains of $\partial\Delta[2]$ to singular chains of its realization is a quasi-isomorphism.
+
+```lean
+theorem regular_polychora_classification (p q r : ℕ)
+    (h_cell : IsPlatonicPair p q) (h_vf : IsPlatonicPair q r)
+    (h_det : 0 < schlafliDet p q r) :
+    IsRegular4Polytope p q r := by sorry
+```
+
+- `simplicialSingularComparison_boundaryTwo_quasiIso` — the canonical adjunction-unit chain map on $\partial\Delta[2]$ is a quasi-isomorphism.
+
+```lean
+theorem simplicialSingularComparison_boundaryTwo_quasiIso
+    (R : ModuleCat.{0} k) :
+    QuasiIso (simplicialSingularComparison R boundaryTwoSSet) := by sorry
+```
 
 The converse $\Delta>0$ for each of the six is `schlafliDet_pos_of_regular`. The stronger equivalence `regular_polychora_iff` identifies those six with positive-definiteness of `schlafliGram` for $p,q,r\ge 3$, via Sylvester’s criterion (`PlatonicSolids/Sylvester.lean`). Neither is a Palomar compared declaration.
 
@@ -319,7 +443,7 @@ The remaining named lemmas are the computational steps of those paragraphs: `pla
 
 ---
 
-## 6. Pedagogical and Formalization Significance
+## Pedagogical and Formalization Significance
 
 1. **Foundational Consistency Across Dimensions:**
    The mathematical transition between 3D and 4D is made explicit: the compared $3$D theorems take Euler $V+F=E+2$ as a hypothesis, while the chain-level theorem derives it whenever the cellular complex is quasi-isomorphic to singular chains of an $S^2$ model. The fourth compared result verifies the canonical comparison in the first noncontractible finite simplicial gluing case, $\partial\Delta[2]$, without presenting it as the still-open general cellulation theorem. The compared $4$D theorem is instead bounded by the sign of $\Delta$; Sylvester’s criterion identifies the six with positive-definiteness of the Gram matrix in the uncompared `regular_polychora_iff`.

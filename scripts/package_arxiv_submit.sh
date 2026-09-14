@@ -2,11 +2,10 @@
 # Build PlatonicSolids.tex and zip everything arXiv needs to compile it (pdfLaTeX).
 #
 # Template: lrsodincic/scripts/package_arxiv_submit.sh. Dependency-graph
-# blueprints live in figures/*.mmd and are rendered to figures/*.pdf by
-# build_pdf.py. Lean is inlined via \lstinputlisting of PlatonicSolids.lean,
-# the gist-sized modules under PlatonicSolids/, and the SingularExcision/
-# subtree. The zip is 00README.json, the generated .tex, those Lean
-# sources, and the rendered figure PDFs.
+# blueprints live in figures/*.mmd and are rendered to figures/*.png by
+# build_pdf.py. The PDF appendix indexes modules with GitHub links; the zip
+# still ships Lean sources for reproducibility. Contents: 00README.json,
+# the generated .tex, Lean sources, and rendered figure PNGs (arXiv rejects PDF figures).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -20,11 +19,15 @@ mapfile -t LEAN_FILES < <(
   printf '%s\n' PlatonicSolids.lean Challenge.lean Solution.lean
   find PlatonicSolids -name '*.lean' | sort
 )
-mapfile -t FIGURE_PDFS < <(find figures -name '*.pdf' | sort)
-
 if [[ "${1:-}" != "--skip-tex-build" ]]; then
   echo "==> Regenerating ${TEX} + PlatonicSolids.pdf"
   python3 build_pdf.py
+fi
+
+mapfile -t FIGURE_PNGS < <(find figures -name '*.png' | sort)
+if [[ ${#FIGURE_PNGS[@]} -eq 0 ]]; then
+  echo "error: no figures/*.png (run python3 build_pdf.py to render from *.mmd)" >&2
+  exit 1
 fi
 
 missing=0
@@ -55,7 +58,7 @@ lean = [
     "Challenge.lean",
     "Solution.lean",
 ] + sorted(p.as_posix() for p in Path("PlatonicSolids").rglob("*.lean"))
-figures = sorted(p.as_posix() for p in Path("figures").glob("*.pdf"))
+figures = sorted(p.as_posix() for p in Path("figures").glob("*.png"))
 
 readme = {
     "process": {"compiler": "pdflatex"},
@@ -73,7 +76,7 @@ zip -r "$ZIP" \
   00README.json \
   "$TEX" \
   "${LEAN_FILES[@]}" \
-  "${FIGURE_PDFS[@]}"
+  "${FIGURE_PNGS[@]}"
 
 echo "wrote $ZIP ($(du -h "$ZIP" | cut -f1))"
 echo "Contents:"

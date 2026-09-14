@@ -4,10 +4,16 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Mathlib.Algebra.Category.ModuleCat.Abelian
 import Mathlib.Algebra.Category.ModuleCat.Colimits
+import Mathlib.Algebra.Category.ModuleCat.EpiMono
+import Mathlib.Algebra.Homology.CommSq
+import Mathlib.Algebra.Homology.HomologicalComplexAbelian
+import Mathlib.Algebra.Homology.HomologicalComplexBiprod
+import Mathlib.Algebra.Homology.ShortComplex.Abelian
 import Mathlib.Algebra.Homology.SingleHomology
 import Mathlib.Algebra.Homology.HomologySequenceLemmas
 import Mathlib.Algebra.Homology.HomologicalComplexLimits
 import Mathlib.AlgebraicTopology.ExtraDegeneracy
+import Mathlib.AlgebraicTopology.SimplicialSet.HornColimits
 import Mathlib.AlgebraicTopology.SimplicialSet.Boundary
 import Mathlib.AlgebraicTopology.SimplicialSet.Horn
 import Mathlib.AlgebraicTopology.SimplicialSet.Homology.HomologyZero
@@ -243,6 +249,76 @@ instance : boundaryTwoSSet.Nonempty :=
   ⟨⟨SSet.stdSimplex.obj₀Equiv.symm 0, by
       simp [SSet.boundary_obj_eq_univ]⟩⟩
 
+/-- Connectedness of simplicial sets is invariant under isomorphism. -/
+lemma isConnected_of_sset_iso {X Y : SSet.{0}} (e : X ≅ Y) [X.IsConnected] :
+    Y.IsConnected := by
+  rw [SSet.isConnected_iff]
+  refine ⟨?_, ⟨e.hom.app _ (Classical.arbitrary (X _⦋0⦌))⟩⟩
+  have hsub : Subsingleton (SSet.π₀ X) :=
+    ((SSet.isConnected_iff (X := X)).mp inferInstance).1
+  haveI : IsIso (SSet.π₀Functor.map e.hom) := inferInstance
+  have eπ : SSet.π₀ X ≃ SSet.π₀ Y :=
+    (asIso (SSet.π₀Functor.map e.hom)).toEquiv
+  exact @Equiv.subsingleton (SSet.π₀ Y) (SSet.π₀ X) eπ.symm hsub
+
+/-- The union of two connected subcomplexes that share a vertex is connected. -/
+lemma subcomplex_sup_isConnected {X : SSet.{0}} (A B : X.Subcomplex)
+    [hA : (A : SSet.{0}).IsConnected] [hB : (B : SSet.{0}).IsConnected]
+    (hAB : ((A ⊓ B : X.Subcomplex) : SSet.{0}).Nonempty) :
+    ((A ⊔ B : X.Subcomplex) : SSet.{0}).IsConnected := by
+  rw [SSet.isConnected_iff]
+  constructor
+  · constructor
+    intro a b
+    induction a using SSet.π₀.rec with
+    | mk x =>
+      induction b using SSet.π₀.rec with
+      | mk y =>
+        obtain ⟨z₀⟩ := hAB
+        let z : ((A ⊔ B : X.Subcomplex) : SSet.{0}) _⦋0⦌ :=
+          ⟨z₀.val, (inf_le_left : A ⊓ B ≤ A).trans le_sup_left _ z₀.property⟩
+        let inclA : (A : SSet.{0}) ⟶ (A ⊔ B : X.Subcomplex) :=
+          SSet.Subcomplex.homOfLE le_sup_left
+        let inclB : (B : SSet.{0}) ⟶ (A ⊔ B : X.Subcomplex) :=
+          SSet.Subcomplex.homOfLE le_sup_right
+        have mem_sup {s : ((A ⊔ B : X.Subcomplex) : SSet.{0}) _⦋0⦌} :
+            s.val ∈ A.obj _ ∨ s.val ∈ B.obj _ := by
+          rw [← Set.mem_union, ← Subfunctor.max_obj]
+          exact s.property
+        have eq_of_mem_left {s : ((A ⊔ B : X.Subcomplex) : SSet.{0}) _⦋0⦌}
+            (hs : s.val ∈ A.obj _) :
+            SSet.π₀.mk s = SSet.π₀.mk z := by
+          let sA : (A : SSet.{0}) _⦋0⦌ := ⟨s.val, hs⟩
+          let zA : (A : SSet.{0}) _⦋0⦌ :=
+            ⟨z₀.val, (inf_le_left : A ⊓ B ≤ A) _ z₀.property⟩
+          have hπ : SSet.π₀.mk sA = SSet.π₀.mk zA := Subsingleton.elim _ _
+          have hsA : inclA.app _ sA = s := Subtype.ext rfl
+          have hzA : inclA.app _ zA = z := Subtype.ext rfl
+          simpa [SSet.mapπ₀_mk, hsA, hzA] using congrArg (SSet.mapπ₀ inclA) hπ
+        have eq_of_mem_right {s : ((A ⊔ B : X.Subcomplex) : SSet.{0}) _⦋0⦌}
+            (hs : s.val ∈ B.obj _) :
+            SSet.π₀.mk s = SSet.π₀.mk z := by
+          let sB : (B : SSet.{0}) _⦋0⦌ := ⟨s.val, hs⟩
+          let zB : (B : SSet.{0}) _⦋0⦌ :=
+            ⟨z₀.val, (inf_le_right : A ⊓ B ≤ B) _ z₀.property⟩
+          have hπ : SSet.π₀.mk sB = SSet.π₀.mk zB := Subsingleton.elim _ _
+          have hsB : inclB.app _ sB = s := Subtype.ext rfl
+          have hzB : inclB.app _ zB = z := Subtype.ext rfl
+          simpa [SSet.mapπ₀_mk, hsB, hzB] using congrArg (SSet.mapπ₀ inclB) hπ
+        have hx := mem_sup (s := x)
+        have hy := mem_sup (s := y)
+        cases hx with
+        | inl hx =>
+          cases hy with
+          | inl hy => exact (eq_of_mem_left hx).trans (eq_of_mem_left hy).symm
+          | inr hy => exact (eq_of_mem_left hx).trans (eq_of_mem_right hy).symm
+        | inr hx =>
+          cases hy with
+          | inl hy => exact (eq_of_mem_right hx).trans (eq_of_mem_left hy).symm
+          | inr hy => exact (eq_of_mem_right hx).trans (eq_of_mem_right hy).symm
+  · obtain ⟨z₀⟩ := hAB
+    exact ⟨⟨z₀.val, (inf_le_left : A ⊓ B ≤ A).trans le_sup_left _ z₀.property⟩⟩
+
 /-- The two remaining faces of `∂Δ[2]` are the horn `Λ[2, 0]`. -/
 lemma boundaryTwoRemainingFaces_eq_horn :
     boundaryTwoRemainingFaces = Λ[2, 0] := by
@@ -376,7 +452,113 @@ instance stdSimplex_isConnected (n : ℕ) : (Δ[n] : SSet.{0}).IsConnected := by
         exact hx.symm.trans hy
   · infer_instance
 
+/-- A vertex face of `Δ[n]` is connected. -/
+instance stdSimplex_faceSingleton_isConnected {n : ℕ} (i : Fin (n + 1)) :
+    (stdSimplex.face ({i} : Finset (Fin (n + 1))) : SSet.{0}).IsConnected :=
+  isConnected_of_sset_iso (stdSimplex.faceSingletonIso i)
+
+/-- An edge face of `Δ[n]` is connected. -/
+instance stdSimplex_facePair_isConnected {n : ℕ} (i j : Fin (n + 1)) (hij : i < j) :
+    (stdSimplex.face ({i, j} : Finset (Fin (n + 1))) : SSet.{0}).IsConnected :=
+  isConnected_of_sset_iso (stdSimplex.facePairIso i j hij)
+
+/-- Each complementary edge of `Δ[2]` is connected. -/
+instance stdSimplex_faceSingletonCompl_isConnected (i : Fin 3) :
+    (stdSimplex.face ({i}ᶜ : Finset (Fin 3)) : SSet.{0}).IsConnected :=
+  isConnected_of_sset_iso (stdSimplex.faceSingletonComplIso (n := 1) i)
+
 end SSet
+
+/-- The two-edge horn `Λ[2, 0]` is connected. -/
+instance horn_two_zero_isConnected : (Λ[2, 0] : SSet.{0}).IsConnected := by
+  rw [← boundaryTwoRemainingFaces_eq_horn]
+  refine subcomplex_sup_isConnected
+    (SSet.stdSimplex.face ({1}ᶜ : Finset (Fin 3)))
+    (SSet.stdSimplex.face ({2}ᶜ : Finset (Fin 3))) ?_
+  rw [SSet.stdSimplex.face_inter_face]
+  exact ⟨⟨SSet.stdSimplex.obj₀Equiv.symm 0, by
+    rw [SSet.stdSimplex.obj₀Equiv_symm_mem_face_iff]
+    decide⟩⟩
+
+/-- Reindexing the coproduct of copies of `R` along an injection is monic. -/
+lemma sigmaConst_map_mono_of_injective
+    (R : ModuleCat.{0} k) {α β : Type} (f : α ⟶ β) (hf : Function.Injective f) :
+    Mono ((sigmaConst.obj R).map f) := by
+  let e := Equiv.ofInjective f hf
+  let reindex : ∐ (fun _ : α ↦ R) ≅ ∐ (fun _ : Set.range f ↦ R) :=
+    Sigma.whiskerEquiv e (fun _ ↦ Iso.refl R)
+  let incl : ∐ (fun _ : Set.range f ↦ R) ⟶ ∐ (fun _ : β ↦ R) :=
+    Sigma.map' (Subtype.val : Set.range f → β) fun _ ↦ 𝟙 R
+  classical
+  let retr : ∐ (fun _ : β ↦ R) ⟶ ∐ (fun _ : Set.range f ↦ R) :=
+    Sigma.desc fun b ↦
+      if h : b ∈ Set.range f then
+        Sigma.ι (fun _ : Set.range f ↦ R) ⟨b, h⟩
+      else
+        0
+  have hretr : incl ≫ retr = 𝟙 _ := by
+    apply colimit.hom_ext
+    rintro ⟨⟨b, hb⟩⟩
+    dsimp [incl, retr]
+    rw [Sigma.ι_comp_map'_assoc, Category.id_comp, Sigma.ι_desc, dif_pos hb,
+      Category.comp_id]
+  haveI : Mono incl := mono_of_mono_fac hretr
+  have hmap : (sigmaConst.obj R).map f = reindex.hom ≫ incl := by
+    dsimp [reindex, incl, sigmaConst]
+    rw [Sigma.map'_comp_map']
+    refine Sigma.map'_eq ?_ fun _ ↦ Category.id_comp _
+    ext a
+    rfl
+  rw [hmap]
+  exact mono_comp reindex.hom incl
+
+/-- A monomorphism of simplicial sets remains monic on simplicial chains. -/
+lemma chainComplexMap_mono_of_mono {X Y : SSet.{0}} (f : X ⟶ Y) [Mono f]
+    (R : ModuleCat.{0} k) :
+    Mono (SSet.chainComplexMap f R) := by
+  refine HomologicalComplex.mono_of_mono_f _ fun n ↦ ?_
+  have : Mono (f.app (Opposite.op ⦋n⦌)) := inferInstance
+  have hf : Function.Injective (f.app (Opposite.op ⦋n⦌)) :=
+    (ConcreteCategory.mono_iff_injective_of_preservesPullback _).1 this
+  change Mono ((sigmaConst.obj R).map (f.app (Opposite.op ⦋n⦌)))
+  exact sigmaConst_map_mono_of_injective R (f.app (Opposite.op ⦋n⦌)) hf
+
+/-- The Mayer–Vietoris short exact sequence of simplicial chains for a
+union of two subcomplexes. -/
+noncomputable def subcomplexChainShortComplex
+    (R : ModuleCat.{0} k) {X : SSet.{0}} (A B : X.Subcomplex) :
+    ShortComplex (ChainComplex (ModuleCat.{0} k) ℕ) :=
+  (subcomplexChainIsPushout R A B).shortComplex
+
+lemma subcomplexChainShortComplex_shortExact
+    (R : ModuleCat.{0} k) {X : SSet.{0}} (A B : X.Subcomplex) :
+    (subcomplexChainShortComplex R A B).ShortExact := by
+  let h := subcomplexChainIsPushout R A B
+  let S := subcomplexChainShortComplex R A B
+  let iA := SSet.Subcomplex.homOfLE (inf_le_left : A ⊓ B ≤ A)
+  haveI : Mono iA := inferInstance
+  let iB := SSet.Subcomplex.homOfLE (inf_le_right : A ⊓ B ≤ B)
+  have hmonoIA : Mono (SSet.chainComplexMap iA R) :=
+    chainComplexMap_mono_of_mono iA R
+  have hfst : S.f ≫ biprod.fst = SSet.chainComplexMap iA R :=
+    biprod.lift_fst (SSet.chainComplexMap iA R) (-SSet.chainComplexMap iB R)
+  haveI : Mono S.f :=
+    ⟨fun {Z} a b eq ↦ by
+      haveI := hmonoIA
+      apply (cancel_mono (SSet.chainComplexMap iA R)).1
+      simpa [← hfst, ← Category.assoc] using
+        congrArg (fun k => k ≫ biprod.fst) eq⟩
+  haveI : Epi S.g := h.epi_shortComplex_g
+  letI : CategoryWithHomology (ChainComplex (ModuleCat.{0} k) ℕ) :=
+    CategoryTheory.categoryWithHomology_of_abelian
+  exact ShortComplex.ShortExact.mk' (S.exact_of_g_is_cokernel h.isColimitCokernelCofork)
+    inferInstance inferInstance
+
+/-- Simplicial homology of `Λ[2, 0]` vanishes in degrees at least two. -/
+lemma isZero_horn_two_zero_homology_of_ge_two
+    (R : ModuleCat.{0} k) (n : ℕ) (hn : 2 ≤ n) :
+    IsZero ((Λ[2, 0] : SSet.{0}).homology R n) :=
+  SSet.isZero_homology_of_hasDimensionLT _ R n 2 hn
 
 /-- The realization of every representable standard simplex is contractible. -/
 instance realization_stdSimplex_contractible (n : ℕ) :
@@ -401,6 +583,30 @@ lemma isZero_stdSimplex_homology
       (((SimplicialObject.Augmented.whiskering Type (ModuleCat.{0} k)).obj
         (sigmaConst.obj R)).obj (SSet.Augmented.stdSimplex.obj ⦋n⦌))) i hi
   exact hz.of_iso (isoOfQuasiIsoAt he.hom i)
+
+/-- An isomorphism with a standard simplex identifies positive-degree
+simplicial homology. -/
+lemma isZero_homology_of_stdSimplex_iso
+    (R : ModuleCat.{0} k) {X : SSet.{0}} {n : ℕ}
+    (e : SSet.stdSimplex.obj ⦋n⦌ ≅ X) (i : ℕ) (hi : i ≠ 0) :
+    IsZero (X.homology R i) := by
+  haveI : IsIso (SSet.chainComplexMap e.hom R) :=
+    Functor.map_isIso _ _
+  exact (isZero_stdSimplex_homology R n i hi).of_iso
+    (asIso (homologyMap (SSet.chainComplexMap e.hom R) i)).symm
+
+/-- The two remaining faces of `∂Δ[2]` meet at the vertex `0`. -/
+lemma boundaryTwoRemainingFaces_inf :
+    SSet.stdSimplex.face ({1}ᶜ : Finset (Fin 3)) ⊓
+      SSet.stdSimplex.face ({2}ᶜ : Finset (Fin 3)) =
+    SSet.stdSimplex.face ({0} : Finset (Fin 3)) := by
+  rw [SSet.stdSimplex.face_inter_face]
+  congr 1
+
+/-- A map into a zero object is an epimorphism. -/
+lemma epi_of_isZero_target {C : Type*} [Category* C] [HasZeroMorphisms C]
+    {X Y : C} (f : X ⟶ Y) (hY : IsZero Y) : Epi f :=
+  ⟨fun _ _ _ => hY.eq_of_src _ _⟩
 
 /-- The canonical adjunction-unit chain map is a quasi-isomorphism on every
 representable simplex. -/
@@ -430,6 +636,35 @@ instance simplicialSingularComparison_stdSimplex_quasiIso
         (SSet.stdSimplex.obj ⦋n⦌)).homology₀ε R)
   · apply IsZero.isIso
       (isZero_stdSimplex_homology R n i hi)
+    exact isZero_singularHomology_of_contractible R hi
+
+/-- If `X` is connected, `|X|` is contractible, and the simplicial homology
+of `X` vanishes in positive degree, then the canonical comparison is a
+quasi-isomorphism. -/
+lemma simplicialSingularComparison_quasiIso_of_contractible
+    (R : ModuleCat.{0} k) (X : SSet.{0})
+    [X.IsConnected] [ContractibleSpace |X|]
+    (hpos : ∀ n, n ≠ 0 → IsZero (X.homology R n)) :
+    QuasiIso (simplicialSingularComparison R X) := by
+  rw [quasiIso_iff]
+  intro i
+  rw [quasiIsoAt_iff_isIso_homologyMap]
+  by_cases hi : i = 0
+  · subst i
+    let unit := sSetTopAdj.unit.app X
+    have hnat := sset_homology₀ε_natural unit R
+    change IsIso (homologyMap (SSet.chainComplexMap unit R) 0)
+    letI : IsIso (((SSet.toTop ⋙ TopCat.toSSet).obj X).homology₀ε R) := by
+      change IsIso ((TopCat.toSSet.obj |X|).homology₀ε R)
+      infer_instance
+    haveI : IsIso (homologyMap (SSet.chainComplexMap unit R) 0 ≫
+        ((SSet.toTop ⋙ TopCat.toSSet).obj X).homology₀ε R) := by
+      rw [hnat]
+      change IsIso (X.homology₀ε R)
+      infer_instance
+    exact IsIso.of_isIso_comp_right _
+      (((SSet.toTop ⋙ TopCat.toSSet).obj X).homology₀ε R)
+  · apply IsZero.isIso (hpos i hi)
     exact isZero_singularHomology_of_contractible R hi
 
 /-- The normalized comparison is consequently a quasi-isomorphism on every

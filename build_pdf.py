@@ -95,7 +95,7 @@ EXTRA_LITERATE = r"""    {ä}{{\"{a}}}1
     {é}{{\'{e}}}1
     {²}{{\textsuperscript{2}}}1
     {₄}{{\textsubscript{4}}}1
-    {√}{{\ensuremath{\sqrt{}}}}1
+    {√5}{{\ensuremath{\sqrt{5}}}}2
     {Δ}{{\ensuremath{\Delta}}}1
     {ℝ}{{\ensuremath{\mathbb{R}}}}1
     {ℕ}{{\ensuremath{\mathbb{N}}}}1
@@ -145,7 +145,7 @@ EXTRA_UNICODECHAR = r"""
 \newunicodechar{é}{\'{e}}
 \newunicodechar{²}{\textsuperscript{2}}
 \newunicodechar{₄}{\textsubscript{4}}
-\newunicodechar{√}{\ensuremath{\sqrt{}}}
+\newunicodechar{√}{\ensuremath{\sqrt{5}}}
 \newunicodechar{Δ}{\ensuremath{\Delta}}
 \newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
 \newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
@@ -289,13 +289,16 @@ def split_front_matter(md: str) -> tuple[str, str, str]:
 
 
 def break_texttt_paths(latex: str) -> str:
-    """Allow line breaks after `/` in \\texttt paths."""
+    """Allow line breaks after `/` and `_` in \\texttt paths and identifiers."""
 
     def fix(match: re.Match[str]) -> str:
         inner = match.group(1)
-        if "/" not in inner:
-            return match.group(0)
-        return "\\texttt{" + inner.replace("/", "/\\allowbreak{}") + "}"
+        inner = inner.replace("/", "/\\allowbreak{}")
+        inner = inner.replace(r"\_", r"\_\allowbreak{}")
+        inner = re.sub(r"(?<=[a-z])(?=[A-Z])", r"\\allowbreak{}", inner)
+        inner = re.sub(r"(?<=[A-Z])(?=[A-Z][a-z])", r"\\allowbreak{}", inner)
+        inner = inner.replace(".lean", ".\\allowbreak{}lean")
+        return "\\texttt{" + inner + "}"
 
     return re.sub(r"\\texttt\{([^{}]*)\}", fix, latex)
 
@@ -363,7 +366,7 @@ def build_appendix() -> str:
             "",
             r"Checked by \texttt{lake build} against Lean 4 and Mathlib. "
             r"The development contains no \texttt{sorry}, no \texttt{admit}, "
-            r"and no project-defined axiom. Palomar Comparator compares "
+            r"and no project-defined axiom. Palomar Comparator compares four theorems: "
             r"\texttt{platonic\_solids\_3d}, \texttt{edges\_pos\_of\_regular}, "
             r"\texttt{regular\_polychora\_classification}, and "
             r"\texttt{simplicialSingularComparison\_boundaryTwo\_quasiIso}.",
@@ -403,7 +406,14 @@ def main() -> int:
     print(f"wrote {OUT_TEX.name} ({OUT_TEX.stat().st_size:,} bytes)")
 
     proc = subprocess.run(
-        ["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error", OUT_TEX.name],
+        [
+            "latexmk",
+            "-pdf",
+            "-pdflatex=pdflatex -interaction=nonstopmode -halt-on-error",
+            "-interaction=nonstopmode",
+            "-halt-on-error",
+            OUT_TEX.name,
+        ],
         cwd=HERE,
         capture_output=True,
         text=True,
@@ -424,6 +434,24 @@ def main() -> int:
     ).stdout
     n_pages = next((l.split()[1] for l in pages.splitlines() if l.startswith("Pages:")), "?")
     print(f"wrote {OUT_PDF.name} ({OUT_PDF.stat().st_size:,} bytes, {n_pages} pages)")
+
+    log = OUT_TEX.with_suffix(".log")
+    if log.is_file():
+        overfull = [
+            line
+            for line in log.read_text(encoding="utf-8", errors="replace").splitlines()
+            if "Overfull \\hbox" in line
+        ]
+        if overfull:
+            sys.stderr.write(
+                f"error: {len(overfull)} Overfull \\hbox line(s) in {log.name}\n"
+            )
+            for line in overfull[:20]:
+                sys.stderr.write(line + "\n")
+            if len(overfull) > 20:
+                sys.stderr.write(f"  ... and {len(overfull) - 20} more\n")
+            return 1
+
     return 0
 
 

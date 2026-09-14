@@ -24,14 +24,15 @@
 \usepackage{listings}
 \usepackage{soul}
 \usepackage[colorlinks=true,linkcolor=blue!40!black,citecolor=blue!40!black,urlcolor=blue!40!black]{hyperref}
+\usepackage{microtype}
+\usepackage{xurl}
 
 % Let long \texttt{...} identifiers (e.g. lindenbaum_next_subset) break after each
 % underscore so they wrap inside narrow table cells instead of overflowing the column.
 \let\origtextunderscore\_
 \renewcommand{\_}{\origtextunderscore\allowbreak}
 
-% Long inlined Lean listings can exhaust pdfTeX main memory; build with
-% LuaLaTeX (see .latexmkrc).
+% Long Lean appendix listings are built with pdfLaTeX (arXiv-compatible).
 %
 % The listings are kept as real UTF-8 Lean source: every Lean operator is rendered
 % through a `literate` replacement to a proper LaTeX symbol, so the code displays with
@@ -50,11 +51,19 @@
   inputencoding=utf8,
   literate=
     {§}{{\S}}1
+    {±}{{\ensuremath{\pm}}}1
+    {ä}{{\"a}}1
+    {é}{{\'e}}1
+    {’}{{\textquotesingle}}1
+    {•}{{\textbullet}}1
+    {−}{{\ensuremath{-}}}1
+    {⬝}{{\ensuremath{\cdot}}}1
     {¬}{{\ensuremath{\neg}}}1
     {·}{{\ensuremath{\cdot}}}1
     {×}{{\ensuremath{\times}}}1
     {Γ}{{\ensuremath{\Gamma}}}1
     {Δ}{{\ensuremath{\Delta}}}1
+    {Λ}{{\ensuremath{\Lambda}}}1
     {Η}{{\ensuremath{H}}}1
     {Θ}{{\ensuremath{\Theta}}}1
     {Κ}{{\ensuremath{K}}}1
@@ -68,7 +77,11 @@
     {♯}{{\ensuremath{\sharp}}}1
     {ᗮ}{{\ensuremath{^{\perp}}}}1
     {β}{{\ensuremath{\beta}}}1
+    {γ}{{\ensuremath{\gamma}}}1
+    {ε}{{\ensuremath{\varepsilon}}}1
     {λ}{{\ensuremath{\lambda}}}1
+    {π}{{\ensuremath{\pi}}}1
+    {ρ}{{\ensuremath{\rho}}}1
     {σ}{{\ensuremath{\sigma}}}1
     {τ}{{\ensuremath{\tau}}}1
     {φ}{{\ensuremath{\varphi}}}1
@@ -84,6 +97,13 @@
     {⁻}{{\textsuperscript{\ensuremath{-}}}}1
     {ⁱ}{{\textsuperscript{i}}}1
     {¹}{{\textsuperscript{1}}}1
+    {²}{{\textsuperscript{2}}}1
+    {³}{{\textsuperscript{3}}}1
+    {⁰}{{\textsuperscript{0}}}1
+    {ᵒ}{{\textsuperscript{o}}}1
+    {ᵖ}{{\textsuperscript{p}}}1
+    {ᵥ}{{\textsuperscript{v}}}1
+    {ⁿ}{{\textsuperscript{n}}}1
     {₀}{{\textsubscript{0}}}1
     {₁}{{\textsubscript{1}}}1
     {₂}{{\textsubscript{2}}}1
@@ -94,6 +114,8 @@
     {ₖ}{{\textsubscript{k}}}1
     {ₘ}{{\textsubscript{m}}}1
     {ₜ}{{\textsubscript{t}}}1
+    {ₕ}{{\textsubscript{h}}}1
+    {ₗ}{{\textsubscript{l}}}1
     {ι}{{\ensuremath{\iota}}}1
     {ω}{{\ensuremath{\omega}}}1
     {ḡ}{{\={g}}}1
@@ -102,9 +124,15 @@
     {ˢ}{{\textsuperscript{s}}}1
     {⦃}{{\textbraceleft\textbraceleft}}2
     {⦄}{{\textbraceright\textbraceright}}2
+    {⦋}{{\ensuremath{\llbracket}}}1
+    {⦌}{{\ensuremath{\rrbracket}}}1
     {𝒵}{{\ensuremath{\mathcal{Z}}}}1
     {𝓕}{{\ensuremath{\mathcal{F}}}}1
     {ℕ}{{\ensuremath{\mathbb{N}}}}1
+    {ℚ}{{\ensuremath{\mathbb{Q}}}}1
+    {ℝ}{{\ensuremath{\mathbb{R}}}}1
+    {ℤ}{{\ensuremath{\mathbb{Z}}}}1
+    {𝟙}{{\ensuremath{\mathbb{1}}}}1
     {←}{{\ensuremath{\leftarrow}}}1
     {↑}{{\ensuremath{\uparrow}}}1
     {→}{{\ensuremath{\rightarrow}}}1
@@ -128,6 +156,9 @@
     {∋}{{\ensuremath{\ni}}}1
     {∩}{{\ensuremath{\cap}}}1
     {∏}{{\ensuremath{\prod}}}1
+    {∐}{{\ensuremath{\coprod}}}1
+    {∑}{{\ensuremath{\sum}}}1
+    {∂}{{\ensuremath{\partial}}}1
     {∞}{{\ensuremath{\infty}}}1
     {⋂}{{\ensuremath{\bigcap}}}1
     {⋃}{{\ensuremath{\bigcup}}}1
@@ -139,9 +170,13 @@
     {≤}{{\ensuremath{\leq}}}1
     {≥}{{\ensuremath{\geq}}}1
     {≪}{{\ensuremath{\ll}}}1
+    {≫}{{\ensuremath{\gg}}}1
+    {⋙}{{\ensuremath{\ggg}}}1
     {≃}{{\ensuremath{\simeq}}}1
     {≅}{{\ensuremath{\cong}}}1
+    {⊂}{{\ensuremath{\subset}}}1
     {⊆}{{\ensuremath{\subseteq}}}1
+    {⊕}{{\ensuremath{\oplus}}}1
     {⊑}{{\ensuremath{\sqsubseteq}}}1
     {⊔}{{\ensuremath{\sqcup}}}1
     {⊓}{{\ensuremath{\sqcap}}}1
@@ -168,6 +203,9 @@
     {⟹}{{\ensuremath{\Longrightarrow}}}2
 }
 \lstset{style=leanbox}
+
+% Allow slight stretch in prose and tables; listings rely on breaklines above.
+\emergencystretch=2em
 
 % --- Unicode used in the prose (pdfLaTeX needs every non-ASCII glyph declared) ---
 % Greek

@@ -38,7 +38,7 @@ Figure \ref{fig:dim3} expands the $3$D side of Figure \ref{fig:overview} to the 
 \end{figure}
 
 ### 2.1. Topological Derivation of Euler’s Formula
-The Lean gists are `PlatonicSolids/RadialProjection.lean` (frontier of a convex body $\simeq S^{n-1}$), `PlatonicSolids/EulerPoincare.lean` (algebraic Euler–Poincaré: $\chi(C)=\chi(H_*)$ by rank-nullity), `PlatonicSolids/CellularHomology.lean` (the categorical chain complex of $d_2,d_1$, its Betti finranks, and quasi-isomorphism transport), `PlatonicSolids/SingularHomology.lean` (homotopy invariance, $H_0$ of path-connected spheres, and $H_*(S^0)$), `PlatonicSolids/RelativeHomology.lean` and `PlatonicSolids/MayerVietoris.lean` (pair and triad exact sequences of singular chains), `PlatonicSolids/SingularExcision.lean` (affine barycentric subdivision, the singular chain map, and the open-cover quasi-isomorphism), `PlatonicSolids/SimplicialSingularComparison.lean` and `PlatonicSolids/SimplicialSingularBoundaryTwo.lean` (the adjunction-unit comparison and its proof for $\partial\Delta[2]$), `PlatonicSolids/SphereSingularHomology.lean` (stereographic $U\cap V\simeq_h S^{n-1}$, $H_n(S^n;R)\cong R$ for $n>0$, and the cellular--singular $S^2$ bridge), `PlatonicSolids/Sphere2Homology.lean` (cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface), and `PlatonicSolids/EulerBetti.lean` (the numbers $\chi(S^2)=2$ and $\chi(S^3)=0$).
+The Lean gists for §2.1 are the modules under `PlatonicSolids/`: radial projection and Euler–Poincaré (`RadialProjection.lean`, `EulerPoincare.lean`); cellular and singular homology (`CellularHomology.lean`, `SingularHomology.lean`, `RelativeHomology.lean`, `MayerVietoris.lean`); the excision stack (`SingularExcision/`); the simplicial–singular comparison (`SimplicialSingularComparison.lean`, `SimplicialSingularBoundaryTwo.lean`); and the sphere calculations (`SphereSingularHomology.lean`, `Sphere2Homology.lean`, `EulerBetti.lean`). Figure \ref{fig:lean} lists every file.
 
 Let $P \subset \mathbb{R}^3$ be a convex polyhedron containing the origin in its interior. Radial projection $\pi: \partial P \to S^2$ onto the circumscribed 2-sphere is a homeomorphism (`frontier_convex_homeo_sphere`). This projection induces a finite CW-complex structure on $S^2$ with $V$ 0-cells (vertices), $E$ 1-cells (edges), and $F$ 2-cells (faces).
 
@@ -54,7 +54,11 @@ For a commuting square of spaces $W\to U,V\to X$, the same argument on $C_*(W)\t
 
 The stereographic cover of $S^n$ is the standard pair of charts $U=S^n\setminus\{N\}$, $V=S^n\setminus\{S\}$. Each is homeomorphic to a hyperplane (`homeoPuncturedNorth`, `homeoPuncturedSouth`), hence contractible, so $H_k(U)=H_k(V)=0$ for $k>0$. They cover $S^n$ (`punctured_cover`) and meet in $S^n\setminus\{N,S\}$. Stereographic projection from the north pole sends the south pole to the origin, so $U\cap V$ is homeomorphic to the punctured hyperplane and therefore homotopy-equivalent to $S^{n-1}$ (`homotopyEquiv_puncturedInter_sphere`).
 
-The open-cover quasi-isomorphism is proved in `PlatonicSolids/SingularExcision/`, not imported from Mathlib. Finite ordered affine chains carry a cone-point barycentric subdivision `subdivide` and prism `prism` with $\partial\,\mathrm{Sd}=\mathrm{Sd}\,\partial$ and $\partial T+T\partial=\mathrm{id}-\mathrm{Sd}$ (`boundary_subdivide`, `boundary_prism`). Realization of an affine simplex in $\Delta^q$ is functorial on faces (`realize_face`) and on vertex-wise maps (`realize_map`), so the generators assemble to a morphism of singular chain complexes `singularSubdivision` (`ι_singularSubdivisionHom`, `singularSubdivideGenerator_d`). The prism identity is a chain homotopy $\mathrm{id}\simeq\mathrm{Sd}$ (`singularPrismHomotopy`). Cover chains of a two-set open cover are identified with the small-simplex subcomplex (`coverChainsIsoSmall`). Mesh shrinking is proved: each barycentric piece has diameter at most $n/(n+1)$ times its parent (`barycentricMeshRatio`, `diam_range_subdivideStd_le`), so iterated subdivision plus the Lebesgue-number lemma (`exists_subdivideStd_iterate_image_subset_left_or_right`) puts every finite `ModuleCat` chain into the small-chain subgroup (`eventual_small_of_chain`). The algebraic deformation retract on that subgroup is instantiated (`small_cycles_and_boundaries_singular`). The small-subcomplex inclusion is a quasi-isomorphism (`smallι_quasiIso`), so `coverComparison` is a quasi-isomorphism and every two-set open cover is excisive (`IsExcisiveSubspaces_of_openCover`). The stereographic pair is therefore excisive; after the charts vanish in positive degree, Mayer–Vietoris supplies $H_{n+1}(S^{n+1})\cong H_n(U\cap V)\cong H_n(S^n)$ for $n\ge 1$ (`singularHomology_sphere_succ_iso`). Degree-zero Mayer–Vietoris on $S^1$ identifies $H_1(S^1;R)$ with $\ker\varepsilon_{S^0}\cong R$ (`singularHomology_sphere1`), so $H_n(S^n;R)\cong R$ for every $n>0$ (`singularHomology_sphere`) and vanishes in the other positive degrees (`isZero_singularHomology_sphere`). The compared 3D classification still takes $V+F=E+2$ as a hypothesis. The optional theorem `cellular_betti_profile_of_quasiIso_sphere2` instead starts with a chain map from a finite $2$-complex to the singular chains of a space $X\simeq_h S^2$ and a proof that this map is a quasi-isomorphism. `CellularHomology.lean` identifies categorical homology finranks with `betti0`, `betti1`, and `betti2`; homotopy invariance and the three singular $S^2$ calculations then derive $(b_0,b_1,b_2)=(1,0,1)`. The corollary `platonic_solids_3d_of_sphere` supplies Euler--Poincaré and the incidence argument. Thus the $S^2$ bridge no longer assumes the three Betti numbers, although constructing that comparison from a concrete polyhedral cellulation remains an explicit input. The original three Palomar types stay combinatorial. A fourth compared theorem, `simplicialSingularComparison_boundaryTwo_quasiIso`, records the canonical adjunction-unit comparison for the specific simplicial circle $\partial\Delta[2]$. Figure \ref{fig:excision} records the singular-homology dependency stack.
+The open-cover quasi-isomorphism is proved in `PlatonicSolids/SingularExcision/`, not imported from Mathlib. Finite ordered affine chains carry a cone-point barycentric subdivision `subdivide` and prism `prism` with $\partial\,\mathrm{Sd}=\mathrm{Sd}\,\partial$ and $\partial T+T\partial=\mathrm{id}-\mathrm{Sd}$ (`boundary_subdivide`, `boundary_prism`). Realization of an affine simplex in $\Delta^q$ is functorial on faces (`realize_face`) and on vertex-wise maps (`realize_map`), so the generators assemble to a morphism of singular chain complexes `singularSubdivision` (`ι_singularSubdivisionHom`, `singularSubdivideGenerator_d`). The prism identity is a chain homotopy $\mathrm{id}\simeq\mathrm{Sd}$ (`singularPrismHomotopy`). Cover chains of a two-set open cover are identified with the small-simplex subcomplex (`coverChainsIsoSmall`). Mesh shrinking is proved: each barycentric piece has diameter at most $n/(n+1)$ times its parent (`barycentricMeshRatio`, `diam_range_subdivideStd_le`), so iterated subdivision plus the Lebesgue-number lemma (`exists_subdivideStd_iterate_image_subset_left_or_right`) puts every finite `ModuleCat` chain into the small-chain subgroup (`eventual_small_of_chain`). The algebraic deformation retract on that subgroup is instantiated (`small_cycles_and_boundaries_singular`). The small-subcomplex inclusion is a quasi-isomorphism (`smallι_quasiIso`), so `coverComparison` is a quasi-isomorphism and every two-set open cover is excisive (`IsExcisiveSubspaces_of_openCover`). The stereographic pair is therefore excisive; after the charts vanish in positive degree, Mayer–Vietoris supplies $H_{n+1}(S^{n+1})\cong H_n(U\cap V)\cong H_n(S^n)$ for $n\ge 1$ (`singularHomology_sphere_succ_iso`). Degree-zero Mayer–Vietoris on $S^1$ identifies $H_1(S^1;R)$ with $\ker\varepsilon_{S^0}\cong R$ (`singularHomology_sphere1`), so $H_n(S^n;R)\cong R$ for every $n>0$ (`singularHomology_sphere`) and vanishes in the other positive degrees (`isZero_singularHomology_sphere`).
+
+The compared 3D classification still takes $V+F=E+2$ as a hypothesis. The optional theorem `cellular_betti_profile_of_quasiIso_sphere2` instead starts with a chain map from a finite $2$-complex to the singular chains of a space $X\simeq_h S^2$ and a proof that this map is a quasi-isomorphism. `CellularHomology.lean` identifies categorical homology finranks with `betti0`, `betti1`, and `betti2`; homotopy invariance and the three singular $S^2$ calculations then derive the Betti profile $(1,0,1)$. The corollary `platonic_solids_3d_of_sphere` supplies Euler--Poincaré and the incidence argument. Thus the $S^2$ bridge no longer assumes the three Betti numbers, although constructing that comparison from a concrete polyhedral cellulation remains an explicit input. The original three Palomar types stay combinatorial.
+
+A fourth compared theorem records the canonical adjunction-unit comparison for the specific simplicial circle $\partial\Delta[2]$ (Palomar name: `simplicialSingularComparison_boundaryTwo_quasiIso`). Figure \ref{fig:excision} records the singular-homology dependency stack.
 
 \begin{figure}[htbp]
 \centering
@@ -65,12 +69,16 @@ The open-cover quasi-isomorphism is proved in `PlatonicSolids/SingularExcision/`
 
 #### The canonical comparison on the simplicial circle
 
-For a simplicial set $X$, `simplicialSingularComparison R X` is the chain map obtained by applying simplicial chains to the unit
+For a simplicial set $X$, the chain map `simplicialSingularComparison` (applied at $R$ and $X$) is obtained by applying simplicial chains to the unit
 $$X\longrightarrow \operatorname{Sing}(|X|)$$
-of the geometric-realization/singular-complex adjunction. `PlatonicSolids/SimplicialSingularComparison.lean` proves the comparison for standard simplices, the horn $\Lambda[2,0]$, and the disconnected two-vertex edge--horn intersection. The boundary geometry is made concrete by the homeomorphism `homeomorph_boundaryTwo_addCircle`,
+of the geometric-realization/singular-complex adjunction. `SimplicialSingularComparison.lean` proves the comparison for standard simplices, the horn $\Lambda[2,0]$, and the disconnected two-vertex edge--horn intersection.
+
+The boundary geometry is made concrete by the homeomorphism `homeomorph_boundaryTwo_addCircle`,
 $$|\partial\Delta[2]|\simeq \operatorname{AddCircle}(3).$$
 
-The obvious decomposition into one closed edge and the complementary two-edge horn gives a short exact sequence on simplicial chains, but the analogous sequence of all singular chains on the two closed arcs is not short exact: a singular simplex in the circle need not lie wholly in either closed arc. `PlatonicSolids/SimplicialSingularBoundaryTwo.lean` therefore enlarges the arcs to two punctured-circle open neighborhoods. Each neighborhood deformation retracts to its edge or horn, while their intersection deformation retracts to the two shared vertices. These three equivalences give quasi-isomorphisms on singular chains. The source simplicial Mayer--Vietoris sequence is then mapped to the target open-cover short exact sequence; two-out-of-three proves the induced map to cover chains is a quasi-isomorphism, and open-cover excision identifies cover chains with the singular chains of the whole circle. The resulting compared theorem is as follows.
+The obvious decomposition into one closed edge and the complementary two-edge horn gives a short exact sequence on simplicial chains, but the analogous sequence of all singular chains on the two closed arcs is not short exact: a singular simplex in the circle need not lie wholly in either closed arc.
+
+`SimplicialSingularBoundaryTwo.lean` enlarges the arcs to two punctured-circle open neighborhoods. Each neighborhood deformation retracts to its edge or horn, while their intersection deformation retracts to the two shared vertices. These three equivalences give quasi-isomorphisms on singular chains. The source simplicial Mayer--Vietoris sequence is then mapped to the target open-cover short exact sequence; two-out-of-three proves the induced map to cover chains is a quasi-isomorphism, and open-cover excision identifies cover chains with the singular chains of the whole circle. The resulting compared theorem is as follows.
 
 **Compared theorem (`simplicialSingularComparison_boundaryTwo_quasiIso`).** For any coefficient module $R$, the chain map induced by the realization–singular adjunction unit
 $$C_*^{\mathrm{simp}}(\partial\Delta[2];R)\longrightarrow C_*^{\mathrm{sing}}(|\partial\Delta[2]|;R)$$
@@ -206,7 +214,7 @@ $$\Delta(p, q, r) := \sin^2\left(\frac{\pi}{p}\right) \sin^2\left(\frac{\pi}{r}\
 ---
 
 ## 4. Evaluation of the 11 Candidate Triples
-The Lean gists are `PlatonicSolids/CompatibleTriples.lean` (the eleven triples), `TrigValues.lean` (exact $\sin^2$ and $\cos^2$), `SignTable.lean` (sign of $\Delta$), `Regular4.lean` (the six), and `Classification.lean` (the capstone).
+The Lean gists are `CompatibleTriples.lean`, `TrigValues.lean`, `SignTable.lean`, `Regular4.lean`, and `Classification.lean` in `PlatonicSolids/`.
 
 Because both $\{p, q\}$ and $\{q, r\}$ must be Platonic, the indices must satisfy $p, q, r \in \{3, 4, 5\}$. Among the $5 \times 5 = 25$ combinations, only **11 triples** have a compatible middle index $q$.
 
@@ -271,7 +279,7 @@ The compared theorems are:
 
 The converse $\Delta>0$ for each of the six is `schlafliDet_pos_of_regular`. The stronger equivalence `regular_polychora_iff` identifies those six with positive-definiteness of `schlafliGram` for $p,q,r\ge 3$, via Sylvester’s criterion (`PlatonicSolids/Sylvester.lean`). Neither is a Palomar compared declaration.
 
-`Challenge.lean` restates the compared family with deliberate `sorry`s so Palomar Comparator can check types against `Solution.lean`. Supporting definitions are `IsPlatonicPair`, `IsRegular4Polytope`, `schlafliGram`, `schlafliDet`, `boundaryTwoSSet`, `singularChainsOfRealization`, and `simplicialSingularComparison`.
+`Challenge.lean` restates the compared family with deliberate `sorry`s so Palomar Comparator can check types against `Solution.lean`. Supporting definitions include `IsPlatonicPair`, `IsRegular4Polytope`, `schlafliGram`, and `schlafliDet`, together with the boundary-comparison helpers `boundaryTwoSSet`, `singularChainsOfRealization`, and `simplicialSingularComparison`.
 
 | File | Paper | Content |
 |---|---|---|
@@ -283,11 +291,11 @@ The converse $\Delta>0$ for each of the six is `schlafliDet_pos_of_regular`. The
 | `PlatonicSolids/MayerVietoris.lean` | §2.1 | Triad SES, excision predicate, stereographic cover of $S^n$ |
 | `PlatonicSolids/SingularExcision.lean` | §2.1 | Root of the barycentric / small-chain stack |
 | `PlatonicSolids/SingularExcision/*.lean` | §2.1 | Mesh shrinking, prism homotopy, small retract, cover $=$ small, open-cover QI |
-| `PlatonicSolids/SimplicialSingularComparison.lean` | §2.1 | Canonical adjunction-unit chain map; simplex, horn, and two-vertex cases |
-| `PlatonicSolids/SimplicialSingularBoundaryTwo.lean` | §2.1 | Open-cover gluing proof of the canonical comparison for $\partial\Delta[2]$ |
-| `PlatonicSolids/SphereSingularHomology.lean` | §2.1 | $H_n(S^n;R)\cong R$ for $n>0$; quasi-isomorphic cellular $S^2$ bridge |
-| `PlatonicSolids/Sphere2Homology.lean` | §2.1 | Cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface |
-| `PlatonicSolids/Sphere3Homology.lean` | §3.1 | Cellular $H_*(S^3;\mathbb{Q})$ of the $4$-simplex boundary |
+| `SimplicialSingularComparison.lean` | §2.1 | Adjunction-unit comparison; simplex, horn, two-vertex cases |
+| `SimplicialSingularBoundaryTwo.lean` | §2.1 | Open-cover proof for $\partial\Delta[2]$ |
+| `SphereSingularHomology.lean` | §2.1 | $H_n(S^n;R)\cong R$; cellular $S^2$ bridge |
+| `Sphere2Homology.lean` | §2.1 | Cellular $H_*(S^2;\mathbb{Q})$ of tetrahedron surface |
+| `Sphere3Homology.lean` | §3.1 | Cellular $H_*(S^3;\mathbb{Q})$ of $4$-simplex boundary |
 | `PlatonicSolids/EulerBetti.lean` | §§2.1, 3.1 | $\chi(S^2)=2$, $\chi(S^3)=0$ |
 | `PlatonicSolids/PlatonicPair.lean` | §2.3 | Five solutions of $(p-2)(q-2)<4$ |
 | `PlatonicSolids/Reciprocal.lean` | §§2.3, 3.3 | $1/p+1/q>1/2$ |
@@ -342,9 +350,9 @@ In accordance with the Committee on Publication Ethics (COPE) position statement
 2. Schläfli, L. *Theorie der vielfachen Kontinuität*. Zürcher & Furrer, 1852.
 3. Euclid. *The Thirteen Books of the Elements*, Vol. 3 (Books X–XIII). Translated by T. L. Heath, Cambridge University Press, 1908.
 4. Humphreys, J. E. *Reflection Groups and Coxeter Groups*. Cambridge Studies in Advanced Mathematics, Cambridge University Press, 1990.
-5. The Mathlib Community. *The Lean 4 Mathematical Library*. https://github.com/leanprover-community/mathlib4
-6. Committee on Publication Ethics (COPE). *Authorship and AI Tools: COPE Position Statement*. https://publicationethics.org/guidance/guidelines/authorship-and-ai-tools
-7. OpenAI. *GPT-5.6: Frontier Intelligence That Scales with Your Ambition*. 2026. https://openai.com/index/gpt-5-6/
-8. Honner, P. "There Are Just Five Perfect Shapes in Math—Here’s Why." *Scientific American*, 2023. https://www.scientificamerican.com/article/there-are-just-five-perfect-shapes-in-math-heres-why/
+5. The Mathlib Community. *The Lean 4 Mathematical Library*. <https://github.com/leanprover-community/mathlib4>
+6. Committee on Publication Ethics (COPE). *Authorship and AI Tools: COPE Position Statement*. <https://publicationethics.org/guidance/guidelines/authorship-and-ai-tools>
+7. OpenAI. *GPT-5.6: Frontier Intelligence That Scales with Your Ambition*. 2026. <https://openai.com/index/gpt-5-6/>
+8. Honner, P. "There Are Just Five Perfect Shapes in Math—Here’s Why." *Scientific American*, 2023. <https://www.scientificamerican.com/article/there-are-just-five-perfect-shapes-in-math-heres-why/>
 9. Thought Thrill. "The Five Platonic Solids and Why There Can Only Be Five." YouTube video, 2026.
-10. Quick, M. "Regular 4-Polytopes (Polychora) Overview and Interactive Visualizations." *Quick's 4D Space*. https://www.qfbox.info/4d/index
+10. Quick, M. "Regular 4-Polytopes (Polychora) Overview and Interactive Visualizations." *Quick's 4D Space*. <https://www.qfbox.info/4d/index>

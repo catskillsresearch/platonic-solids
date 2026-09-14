@@ -52,6 +52,8 @@ LEAN_MODULES = [
     (LEAN_DIR / "SingularExcision" / "CoverChains.lean", r"Cover chains isomorphic to small singular chains"),
     (LEAN_DIR / "SingularExcision" / "SmallChains.lean", r"Small-chain subgroup, invariance, and the retract"),
     (LEAN_DIR / "SingularExcision" / "OpenCoverQI.lean", r"Open-cover quasi-isomorphism and $\mathtt{IsExcisiveSubspaces}$"),
+    (LEAN_DIR / "SimplicialSingularComparison.lean", r"Canonical realization--singular comparison; simplex, horn, and two-vertex cases"),
+    (LEAN_DIR / "SimplicialSingularBoundaryTwo.lean", r"Open-cover gluing proof of the canonical comparison for $\partial\Delta[2]$"),
     (LEAN_DIR / "SphereSingularHomology.lean", r"Stereographic $U\cap V\simeq_h S^{n-1}$ and $H_{n+1}(S^{n+1})\cong H_n(S^n)$"),
     (LEAN_DIR / "Sphere2Homology.lean", r"Cellular $H_*(S^2;\mathbb{Q})$ of the tetrahedron surface"),
     (LEAN_DIR / "Sphere3Homology.lean", r"Cellular $H_*(S^3;\mathbb{Q})$ of the $4$-simplex boundary"),
@@ -363,7 +365,8 @@ def build_appendix() -> str:
             r"The development contains no \texttt{sorry}, no \texttt{admit}, "
             r"and no project-defined axiom. Palomar Comparator compares "
             r"\texttt{platonic\_solids\_3d}, \texttt{edges\_pos\_of\_regular}, "
-            r"and \texttt{regular\_polychora\_classification}.",
+            r"\texttt{regular\_polychora\_classification}, and "
+            r"\texttt{simplicialSingularComparison\_boundaryTwo\_quasiIso}.",
             "",
             *[listing_block(path, caption) for path, caption in LEAN_MODULES],
         ]

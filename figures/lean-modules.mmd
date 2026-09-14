@@ -6,6 +6,8 @@ flowchart TB
     Rel["RelativeHomology"]
     MV["MayerVietoris"]
     SE["SingularExcision"]
+    SSC["SimplicialSingularComparison"]
+    SSB["SimplicialSingularBoundaryTwo"]
     SSH["SphereSingularHomology"]
     CH["CellularHomology"]
     S2["Sphere2Homology"]
@@ -18,6 +20,10 @@ flowchart TB
     SE --> MV
     SE --> SSH
     MV --> SSH
+    SH --> SSC
+    SSC --> SSB
+    SE --> SSB
+    MV --> SSB
     EP --> CH
     CH --> SSH
     S2 --> EB

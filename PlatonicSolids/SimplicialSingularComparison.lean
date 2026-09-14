@@ -2587,3 +2587,468 @@ instance (R : ModuleCat.{0} k) :
       (simplicialSingularComparison R (SSet.stdSimplex.obj ⦋0⦌)) :=
   quasiIso_of_isIso _
 
+/-! ## The disconnected two-vertex base case -/
+
+/-- The realization of the empty subcomplex is initial. -/
+def isInitial_toTop_boundaryTwoBot :
+    IsInitial
+      |((⊥ : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| :=
+  SSet.Subcomplex.isInitialBot.isInitialObj SSet.toTop
+
+/-- The two realized vertices, labelled by `Bool`. -/
+noncomputable def boundaryTwoVerticesToBool :
+    |(boundaryTwoVertices : SSet.{0})| ⟶ TopCat.of Bool :=
+  toTop_boundaryTwoVertices_isPushout.desc
+    (TopCat.const false) (TopCat.const true)
+    (isInitial_toTop_boundaryTwoBot.hom_ext _ _)
+
+noncomputable def boundaryTwoVertexOnePoint :
+    |(boundaryTwoVertices : SSet.{0})| :=
+  SSet.toTop.map
+    ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE
+        (le_sup_left :
+          SSet.stdSimplex.face ({1} : Finset (Fin 3)) ≤ boundaryTwoVertices))
+    (default : |(Δ[0] : SSet.{0})|)
+
+noncomputable def boundaryTwoVertexTwoPoint :
+    |(boundaryTwoVertices : SSet.{0})| :=
+  SSet.toTop.map
+    ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE
+        (le_sup_right :
+          SSet.stdSimplex.face ({2} : Finset (Fin 3)) ≤ boundaryTwoVertices))
+    (default : |(Δ[0] : SSet.{0})|)
+
+/-- The inverse labelling map from the discrete two-point space. -/
+noncomputable def boolToBoundaryTwoVertices :
+    TopCat.of Bool ⟶ |(boundaryTwoVertices : SSet.{0})| :=
+  TopCat.ofHom
+    { toFun := fun b => if b then boundaryTwoVertexTwoPoint
+        else boundaryTwoVertexOnePoint
+      continuous_toFun := continuous_of_discreteTopology }
+
+lemma boundaryTwoVerticesToBool_vertex_one :
+    SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE
+            (le_sup_left :
+              SSet.stdSimplex.face ({1} : Finset (Fin 3)) ≤
+                boundaryTwoVertices)) ≫
+      boundaryTwoVerticesToBool =
+    (TopCat.const false :
+      |(Δ[0] : SSet.{0})| ⟶ TopCat.of Bool) := by
+  unfold boundaryTwoVerticesToBool
+  rw [SSet.toTop.map_comp]
+  simp only [Category.assoc]
+  rw [
+    toTop_boundaryTwoVertices_isPushout.inl_desc]
+  ext
+  rfl
+
+lemma boundaryTwoVerticesToBool_vertex_two :
+    SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE
+            (le_sup_right :
+              SSet.stdSimplex.face ({2} : Finset (Fin 3)) ≤
+                boundaryTwoVertices)) ≫
+      boundaryTwoVerticesToBool =
+    (TopCat.const true :
+      |(Δ[0] : SSet.{0})| ⟶ TopCat.of Bool) := by
+  unfold boundaryTwoVerticesToBool
+  rw [SSet.toTop.map_comp]
+  simp only [Category.assoc]
+  rw [
+    toTop_boundaryTwoVertices_isPushout.inr_desc]
+  ext
+  rfl
+
+lemma boolToBoundaryTwoVertices_comp_boundaryTwoVerticesToBool :
+    boolToBoundaryTwoVertices ≫ boundaryTwoVerticesToBool = 𝟙 _ := by
+  ext b
+  cases b
+  · change boundaryTwoVerticesToBool boundaryTwoVertexOnePoint = false
+    have h := congrArg
+      (fun f : |(Δ[0] : SSet.{0})| ⟶ TopCat.of Bool =>
+        f (default : |(Δ[0] : SSet.{0})|))
+      boundaryTwoVerticesToBool_vertex_one
+    simpa [boundaryTwoVertexOnePoint] using h
+  · change boundaryTwoVerticesToBool boundaryTwoVertexTwoPoint = true
+    have h := congrArg
+      (fun f : |(Δ[0] : SSet.{0})| ⟶ TopCat.of Bool =>
+        f (default : |(Δ[0] : SSet.{0})|))
+      boundaryTwoVerticesToBool_vertex_two
+    simpa [boundaryTwoVertexTwoPoint] using h
+
+lemma toTop_stdSimplex_zero_eq_default
+    (x : |(Δ[0] : SSet.{0})|) : x = default := by
+  have h := isTerminal_toTop_stdSimplex_zero.hom_ext
+    (TopCat.const x : TopCat.of PUnit ⟶ |(Δ[0] : SSet.{0})|)
+    (TopCat.const default : TopCat.of PUnit ⟶ |(Δ[0] : SSet.{0})|)
+  simpa using congrArg
+    (fun f : TopCat.of PUnit ⟶ |(Δ[0] : SSet.{0})| => f PUnit.unit) h
+
+lemma boundaryTwoVerticesToBool_comp_boolToBoundaryTwoVertices :
+    boundaryTwoVerticesToBool ≫ boolToBoundaryTwoVertices = 𝟙 _ := by
+  apply toTop_boundaryTwoVertices_isPushout.hom_ext
+  · rw [← cancel_epi
+      (SSet.toTop.map
+        (SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom)]
+    simp only [← Category.assoc]
+    rw [← SSet.toTop.map_comp]
+    rw [boundaryTwoVerticesToBool_vertex_one]
+    ext x
+    change boundaryTwoVertexOnePoint =
+      SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE le_sup_left) x
+    rw [toTop_stdSimplex_zero_eq_default x]
+    rfl
+  · rw [← cancel_epi
+      (SSet.toTop.map
+        (SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom)]
+    simp only [← Category.assoc]
+    rw [← SSet.toTop.map_comp]
+    rw [boundaryTwoVerticesToBool_vertex_two]
+    ext x
+    change boundaryTwoVertexTwoPoint =
+      SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE le_sup_right) x
+    rw [toTop_stdSimplex_zero_eq_default x]
+    rfl
+
+/-- The two-vertex realization is a discrete two-point space. -/
+noncomputable def homeomorph_boundaryTwoVertices_bool :
+    |(boundaryTwoVertices : SSet.{0})| ≃ₜ Bool :=
+  TopCat.homeoOfIso
+    { hom := boundaryTwoVerticesToBool
+      inv := boolToBoundaryTwoVertices
+      hom_inv_id := boundaryTwoVerticesToBool_comp_boolToBoundaryTwoVertices
+      inv_hom_id := boolToBoundaryTwoVertices_comp_boundaryTwoVerticesToBool }
+
+/-- The constant simplicial set on the two-element type. -/
+abbrev boolSSet : SSet.{0} :=
+  (Functor.const SimplexCategoryᵒᵖ).obj Bool
+
+/-- Label the two vertex components simplicially. -/
+noncomputable def boundaryTwoVerticesToBoolSSet :
+    (boundaryTwoVertices : SSet.{0}) ⟶ boolSSet :=
+  boundaryTwoVertices_isPushout.desc
+    (SSet.const false) (SSet.const true)
+    (SSet.Subcomplex.isInitialBot.hom_ext _ _)
+
+lemma boundaryTwoVerticesToBoolSSet_face_one :
+    SSet.Subcomplex.homOfLE
+        (le_sup_left :
+          SSet.stdSimplex.face ({1} : Finset (Fin 3)) ≤ boundaryTwoVertices) ≫
+      boundaryTwoVerticesToBoolSSet =
+    SSet.const false := by
+  exact boundaryTwoVertices_isPushout.inl_desc _ _ _
+
+lemma boundaryTwoVerticesToBoolSSet_face_two :
+    SSet.Subcomplex.homOfLE
+        (le_sup_right :
+          SSet.stdSimplex.face ({2} : Finset (Fin 3)) ≤ boundaryTwoVertices) ≫
+      boundaryTwoVerticesToBoolSSet =
+    SSet.const true := by
+  exact boundaryTwoVertices_isPushout.inr_desc _ _ _
+
+noncomputable def boundaryTwoVertexOneSimplex :
+    (boundaryTwoVertices : SSet.{0}) _⦋0⦌ :=
+  (((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE le_sup_left).app _)
+    (SSet.stdSimplex.obj₀Equiv.symm 0)
+
+noncomputable def boundaryTwoVertexTwoSimplex :
+    (boundaryTwoVertices : SSet.{0}) _⦋0⦌ :=
+  (((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE le_sup_right).app _)
+    (SSet.stdSimplex.obj₀Equiv.symm 0)
+
+/-- Reinsert a Boolean-labelled constant simplex as the corresponding
+vertex of `boundaryTwoVertices`. -/
+noncomputable def boolSSetToBoundaryTwoVertices :
+    boolSSet ⟶ (boundaryTwoVertices : SSet.{0}) where
+  app n := TypeCat.ofHom (fun b => by
+    change Bool at b
+    exact if b then
+        (SSet.const (X := boolSSet) boundaryTwoVertexTwoSimplex).app n b
+      else
+        (SSet.const (X := boolSSet) boundaryTwoVertexOneSimplex).app n b)
+  naturality X Y f := by
+    ext b
+    change Bool at b
+    cases b
+    · have h := congrArg
+        (fun g => g false)
+        ((SSet.const (X := boolSSet)
+          boundaryTwoVertexOneSimplex).naturality f)
+      simpa using h
+    · have h := congrArg
+        (fun g => g true)
+        ((SSet.const (X := boolSSet)
+          boundaryTwoVertexTwoSimplex).naturality f)
+      simpa using h
+
+lemma boolSSetToBoundaryTwoVertices_comp_boundaryTwoVerticesToBoolSSet :
+    boolSSetToBoundaryTwoVertices ≫ boundaryTwoVerticesToBoolSSet = 𝟙 _ := by
+  have h₁ :
+      SSet.const boundaryTwoVertexOneSimplex ≫
+          boundaryTwoVerticesToBoolSSet =
+        (SSet.const false : boolSSet ⟶ boolSSet) := by
+    rw [SSet.const_comp]
+    congr 1
+    have h := congrArg
+      (fun f : (SSet.stdSimplex.face
+          ({1} : Finset (Fin 3)) : SSet.{0}) ⟶ boolSSet =>
+        f.app _ (((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom.app _)
+          (SSet.stdSimplex.obj₀Equiv.symm 0)))
+      boundaryTwoVerticesToBoolSSet_face_one
+    simpa [boundaryTwoVertexOneSimplex] using h
+  have h₂ :
+      SSet.const boundaryTwoVertexTwoSimplex ≫
+          boundaryTwoVerticesToBoolSSet =
+        (SSet.const true : boolSSet ⟶ boolSSet) := by
+    rw [SSet.const_comp]
+    congr 1
+    have h := congrArg
+      (fun f : (SSet.stdSimplex.face
+          ({2} : Finset (Fin 3)) : SSet.{0}) ⟶ boolSSet =>
+        f.app _ (((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom.app _)
+          (SSet.stdSimplex.obj₀Equiv.symm 0)))
+      boundaryTwoVerticesToBoolSSet_face_two
+    simpa [boundaryTwoVertexTwoSimplex] using h
+  ext n b
+  cases b
+  · change
+      ((SSet.const (X := boolSSet) boundaryTwoVertexOneSimplex ≫
+          boundaryTwoVerticesToBoolSSet).app n) false =
+        (((𝟙 boolSSet) : boolSSet ⟶ boolSSet).app n) false
+    rw [h₁]
+    rfl
+  · change
+      ((SSet.const (X := boolSSet) boundaryTwoVertexTwoSimplex ≫
+          boundaryTwoVerticesToBoolSSet).app n) true =
+        (((𝟙 boolSSet) : boolSSet ⟶ boolSSet).app n) true
+    rw [h₂]
+    rfl
+
+lemma boundaryTwoVerticesToBoolSSet_comp_boolSSetToBoundaryTwoVertices :
+    boundaryTwoVerticesToBoolSSet ≫ boolSSetToBoundaryTwoVertices = 𝟙 _ := by
+  apply boundaryTwoVertices_isPushout.hom_ext
+  · rw [← Category.assoc, boundaryTwoVerticesToBoolSSet_face_one]
+    rw [Category.comp_id]
+    have hconst :
+        (SSet.const false :
+            (SSet.stdSimplex.face
+              ({1} : Finset (Fin 3)) : SSet.{0}) ⟶ boolSSet) ≫
+          boolSSetToBoundaryTwoVertices =
+        SSet.const boundaryTwoVertexOneSimplex := by
+      rw [SSet.const_comp]
+      congr 1
+    rw [hconst]
+    rw [← cancel_mono boundaryTwoVertices.ι,
+      SSet.Subcomplex.homOfLE_ι, SSet.const_comp]
+    rw [← cancel_epi
+      (SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom]
+    rw [SSet.comp_const, faceSingletonIso_hom_comp_ι]
+    congr 1
+  · rw [← Category.assoc, boundaryTwoVerticesToBoolSSet_face_two]
+    rw [Category.comp_id]
+    have hconst :
+        (SSet.const true :
+            (SSet.stdSimplex.face
+              ({2} : Finset (Fin 3)) : SSet.{0}) ⟶ boolSSet) ≫
+          boolSSetToBoundaryTwoVertices =
+        SSet.const boundaryTwoVertexTwoSimplex := by
+      rw [SSet.const_comp]
+      congr 1
+    rw [hconst]
+    rw [← cancel_mono boundaryTwoVertices.ι,
+      SSet.Subcomplex.homOfLE_ι, SSet.const_comp]
+    rw [← cancel_epi
+      (SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom]
+    rw [SSet.comp_const, faceSingletonIso_hom_comp_ι]
+    congr 1
+
+/-- The two-vertex simplicial set is the constant simplicial set on `Bool`. -/
+noncomputable def boundaryTwoVerticesIsoBoolSSet :
+    (boundaryTwoVertices : SSet.{0}) ≅ boolSSet where
+  hom := boundaryTwoVerticesToBoolSSet
+  inv := boolSSetToBoundaryTwoVertices
+  hom_inv_id := boundaryTwoVerticesToBoolSSet_comp_boolSSetToBoundaryTwoVertices
+  inv_hom_id := boolSSetToBoundaryTwoVertices_comp_boundaryTwoVerticesToBoolSSet
+
+noncomputable instance boundaryTwoVertices_totallyDisconnectedSpace :
+    TotallyDisconnectedSpace |(boundaryTwoVertices : SSet.{0})| :=
+  homeomorph_boundaryTwoVertices_bool.symm.totallyDisconnectedSpace
+
+/-- Identify the singular simplicial set of the realized two vertices with
+the same constant Boolean simplicial set. -/
+noncomputable def singularBoundaryTwoVerticesIsoBoolSSet :
+    TopCat.toSSet.obj |(boundaryTwoVertices : SSet.{0})| ≅ boolSSet :=
+  (TopCat.toSSet.mapIso
+      (TopCat.isoOfHomeo homeomorph_boundaryTwoVertices_bool)).trans
+    (TopCat.toSSetIsoConst (TopCat.of Bool))
+
+lemma singularBoundaryTwoVerticesIsoBoolSSet_app_zero
+    (q : (TopCat.toSSet.obj |(boundaryTwoVertices : SSet.{0})|) _⦋0⦌) :
+    singularBoundaryTwoVerticesIsoBoolSSet.hom.app _ q =
+      homeomorph_boundaryTwoVertices_bool
+        (TopCat.toSSetObj₀Equiv q) := by
+  dsimp [singularBoundaryTwoVerticesIsoBoolSSet,
+    TopCat.toSSetIsoConst]
+  change homeomorph_boundaryTwoVertices_bool
+      ((TopCat.toSSetObjEquiv _ _ q) (Classical.arbitrary _)) =
+    homeomorph_boundaryTwoVertices_bool
+      ((TopCat.toSSetObjEquiv _ _ q) default)
+  rw [Subsingleton.elim (Classical.arbitrary _) default]
+
+lemma toSSetObj₀Equiv_unit_app
+    (X : SSet.{0}) (x : X _⦋0⦌) :
+    TopCat.toSSetObj₀Equiv
+        ((sSetTopAdj.unit.app X).app _ x) =
+      SSet.toTop.map (SSet.yonedaEquiv.symm x)
+        (default : |(Δ[0] : SSet.{0})|) := by
+  let f : (Δ[0] : SSet.{0}) ⟶ X := SSet.yonedaEquiv.symm x
+  have h :
+      f ≫ sSetTopAdj.unit.app X =
+        SSet.const (TopCat.toSSetObj₀Equiv.symm
+          (SSet.toTop.map f (default : |(Δ[0] : SSet.{0})|))) := by
+    calc
+      f ≫ sSetTopAdj.unit.app X =
+          f ≫ (sSetTopAdj.homEquiv X |X|) (𝟙 |X|) := by
+            rw [Adjunction.homEquiv_unit]
+            simp
+      _ = (sSetTopAdj.homEquiv Δ[0] |X|)
+          (SSet.toTop.map f ≫ 𝟙 |X|) :=
+        (sSetTopAdj.homEquiv_naturality_left f (𝟙 |X|)).symm
+      _ = (sSetTopAdj.homEquiv Δ[0] |X|)
+          (SSet.toTop.map f) := by simp
+      _ = _ := sSetTopAdj_homEquiv_stdSimplex_zero _
+  have hx := congrArg
+    (fun g : (Δ[0] : SSet.{0}) ⟶ TopCat.toSSet.obj |X| =>
+      g.app _ (SSet.stdSimplex.obj₀Equiv.symm 0)) h
+  have hx' := congrArg TopCat.toSSetObj₀Equiv hx
+  simpa [f] using hx'
+
+lemma boundaryTwoVertices_unit_comp_bool :
+    sSetTopAdj.unit.app (boundaryTwoVertices : SSet.{0}) ≫
+      singularBoundaryTwoVerticesIsoBoolSSet.hom =
+    boundaryTwoVerticesIsoBoolSSet.hom := by
+  apply boundaryTwoVertices_isPushout.hom_ext
+  · change
+      SSet.Subcomplex.homOfLE le_sup_left ≫
+          sSetTopAdj.unit.app (boundaryTwoVertices : SSet.{0}) ≫
+          singularBoundaryTwoVerticesIsoBoolSSet.hom =
+        SSet.Subcomplex.homOfLE le_sup_left ≫
+          boundaryTwoVerticesToBoolSSet
+    rw [boundaryTwoVerticesToBoolSSet_face_one]
+    rw [← cancel_epi
+      (SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom]
+    apply (SSet.yonedaEquiv (X := boolSSet) (n := ⦋0⦌)).injective
+    change
+      (singularBoundaryTwoVerticesIsoBoolSSet.hom.app _)
+        ((sSetTopAdj.unit.app (boundaryTwoVertices : SSet.{0})).app _
+          boundaryTwoVertexOneSimplex) = false
+    rw [singularBoundaryTwoVerticesIsoBoolSSet_app_zero]
+    rw [toSSetObj₀Equiv_unit_app]
+    have hg :
+        SSet.yonedaEquiv.symm boundaryTwoVertexOneSimplex =
+          (SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+            SSet.Subcomplex.homOfLE le_sup_left := by
+      change
+        (SSet.yonedaEquiv
+          (X := (boundaryTwoVertices : SSet.{0})) (n := ⦋0⦌)).symm
+            ((SSet.yonedaEquiv
+              (X := (boundaryTwoVertices : SSet.{0})) (n := ⦋0⦌))
+              ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+                SSet.Subcomplex.homOfLE le_sup_left)) =
+          _
+      exact Equiv.symm_apply_apply _ _
+    rw [hg]
+    change boundaryTwoVerticesToBool boundaryTwoVertexOnePoint = false
+    have h := congrArg
+      (fun f : |(Δ[0] : SSet.{0})| ⟶ TopCat.of Bool =>
+        f (default : |(Δ[0] : SSet.{0})|))
+      boundaryTwoVerticesToBool_vertex_one
+    simpa [boundaryTwoVertexOnePoint] using h
+  · change
+      SSet.Subcomplex.homOfLE le_sup_right ≫
+          sSetTopAdj.unit.app (boundaryTwoVertices : SSet.{0}) ≫
+          singularBoundaryTwoVerticesIsoBoolSSet.hom =
+        SSet.Subcomplex.homOfLE le_sup_right ≫
+          boundaryTwoVerticesToBoolSSet
+    rw [boundaryTwoVerticesToBoolSSet_face_two]
+    rw [← cancel_epi
+      (SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom]
+    apply (SSet.yonedaEquiv (X := boolSSet) (n := ⦋0⦌)).injective
+    change
+      (singularBoundaryTwoVerticesIsoBoolSSet.hom.app _)
+        ((sSetTopAdj.unit.app (boundaryTwoVertices : SSet.{0})).app _
+          boundaryTwoVertexTwoSimplex) = true
+    rw [singularBoundaryTwoVerticesIsoBoolSSet_app_zero]
+    rw [toSSetObj₀Equiv_unit_app]
+    have hg :
+        SSet.yonedaEquiv.symm boundaryTwoVertexTwoSimplex =
+          (SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+            SSet.Subcomplex.homOfLE le_sup_right := by
+      change
+        (SSet.yonedaEquiv
+          (X := (boundaryTwoVertices : SSet.{0})) (n := ⦋0⦌)).symm
+            ((SSet.yonedaEquiv
+              (X := (boundaryTwoVertices : SSet.{0})) (n := ⦋0⦌))
+              ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+                SSet.Subcomplex.homOfLE le_sup_right)) =
+          _
+      exact Equiv.symm_apply_apply _ _
+    rw [hg]
+    change boundaryTwoVerticesToBool boundaryTwoVertexTwoPoint = true
+    have h := congrArg
+      (fun f : |(Δ[0] : SSet.{0})| ⟶ TopCat.of Bool =>
+        f (default : |(Δ[0] : SSet.{0})|))
+      boundaryTwoVerticesToBool_vertex_two
+    simpa [boundaryTwoVertexTwoPoint] using h
+
+/-- The adjunction unit is an isomorphism for the disconnected pair of
+vertices. -/
+noncomputable instance isIso_sSetTopAdj_unit_boundaryTwoVertices :
+    IsIso (sSetTopAdj.unit.app (boundaryTwoVertices : SSet.{0})) := by
+  letI : IsIso
+      (sSetTopAdj.unit.app (boundaryTwoVertices : SSet.{0}) ≫
+        singularBoundaryTwoVerticesIsoBoolSSet.hom) := by
+    rw [boundaryTwoVertices_unit_comp_bool]
+    infer_instance
+  exact IsIso.of_isIso_comp_right
+    (sSetTopAdj.unit.app (boundaryTwoVertices : SSet.{0}))
+    singularBoundaryTwoVerticesIsoBoolSSet.hom
+
+/-- The canonical simplicial--singular comparison is a quasi-isomorphism
+on the two endpoints of the last edge. -/
+noncomputable instance simplicialSingularComparison_boundaryTwoVertices_quasiIso
+    (R : ModuleCat.{0} k) :
+    QuasiIso
+      (simplicialSingularComparison R (boundaryTwoVertices : SSet.{0})) := by
+  letI : IsIso
+      (simplicialSingularComparison R
+        (boundaryTwoVertices : SSet.{0})) := by
+    change IsIso
+      (((SSet.chainComplexFunctor (ModuleCat.{0} k)).obj R).map
+        (sSetTopAdj.unit.app (boundaryTwoVertices : SSet.{0})))
+    exact Functor.map_isIso _ _
+  exact quasiIso_of_isIso _
+
+/-- The same base case, transported to the actual edge--horn
+intersection. -/
+noncomputable instance
+    simplicialSingularComparison_boundaryTwoIntersection_quasiIso
+    (R : ModuleCat.{0} k) :
+    QuasiIso
+      (simplicialSingularComparison R
+        ((boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces : _) :
+          SSet.{0})) := by
+  rw [boundaryTwoFirstFace_inf]
+  infer_instance
+

@@ -10,6 +10,9 @@ flowchart TD
   Inc["pF = 2E and qV = 2E"]
   Pair["IsPlatonicPair p q"]
   Epos["edges_pos_of_regular"]
+  Circle["simplicial circle ∂Δ[2]"]
+  OpenMV["punctured-open Mayer–Vietoris"]
+  UnitQI["canonical adjunction-unit QuasiIso"]
   Cell --> QI
   QI --> Betti
   Rad --> Betti
@@ -21,3 +24,5 @@ flowchart TD
   Inc --> Pair
   Chi --> Epos
   Inc --> Epos
+  Circle --> OpenMV
+  OpenMV --> UnitQI

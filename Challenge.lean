@@ -4,11 +4,18 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Lars Warren Ericson.
 -/
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.Algebra.Category.ModuleCat.Abelian
+import Mathlib.Algebra.Category.ModuleCat.Colimits
+import Mathlib.Algebra.Homology.QuasiIso
+import Mathlib.AlgebraicTopology.SimplicialSet.Boundary
+import Mathlib.AlgebraicTopology.SimplicialSet.TopAdj
+import Mathlib.AlgebraicTopology.SingularHomology.Basic
 import Mathlib.LinearAlgebra.Matrix.Notation
 import Mathlib.Tactic
 
 /-!
-# Palomar statement of record (Platonic solids and regular polychora)
+# Palomar statement of record (Platonic solids, regular polychora,
+# and the simplicial-circle comparison)
 
 This module states the **compared Palomar family** and the Mathlib type
 surface it depends on. Challenge may use `sorry`; Solution supplies the
@@ -24,6 +31,9 @@ The selected theorems are:
    with positive Schläfli Gram determinant force one of the six regular
    convex 4-polytopes (the PosDef equivalence is `regular_polychora_iff`,
    not compared).
+4. `simplicialSingularComparison_boundaryTwo_quasiIso` — the canonical
+   realization--singular adjunction-unit map is a quasi-isomorphism for
+   the simplicial circle `∂Δ[2]`.
 
 ## How to read this file
 
@@ -37,6 +47,10 @@ paragraph of `PlatonicSolids.md`.
 
 open scoped Matrix
 open Real Matrix
+open AlgebraicTopology CategoryTheory HomologicalComplex
+open scoped Simplicial
+
+noncomputable section
 
 /-- The 5 Platonic pairs (p, q):
     (3, 3): Tetrahedron
@@ -111,4 +125,34 @@ theorem regular_polychora_classification (p q r : ℕ)
     (h_vf : IsPlatonicPair q r)
     (h_det : 0 < schlafliDet p q r) :
     IsRegular4Polytope p q r := by
+  sorry
+
+/-! ### Canonical simplicial--singular comparison for `∂Δ[2]` -/
+
+variable {k : Type} [Ring k]
+
+/-- The simplicial set underlying the boundary of the standard
+two-simplex. -/
+abbrev boundaryTwoSSet : SSet.{0} :=
+  (SSet.boundary 2 :
+    (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex)
+
+/-- Singular chains on the geometric realization of `X`. -/
+abbrev singularChainsOfRealization
+    (R : ModuleCat.{0} k) (X : SSet.{0}) :
+    ChainComplex (ModuleCat.{0} k) ℕ :=
+  ((singularChainComplexFunctor (ModuleCat.{0} k)).obj R).obj |X|
+
+/-- The canonical chain map induced by the
+realization--singular adjunction unit. -/
+def simplicialSingularComparison
+    (R : ModuleCat.{0} k) (X : SSet.{0}) :
+    X.chainComplex R ⟶ singularChainsOfRealization R X :=
+  SSet.chainComplexMap (sSetTopAdj.unit.app X) R
+
+/-- The canonical comparison is a quasi-isomorphism for the simplicial
+circle `∂Δ[2]`. -/
+theorem simplicialSingularComparison_boundaryTwo_quasiIso
+    (R : ModuleCat.{0} k) :
+    QuasiIso (simplicialSingularComparison R boundaryTwoSSet) := by
   sorry

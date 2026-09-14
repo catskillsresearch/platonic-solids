@@ -4,13 +4,17 @@
   "theorem_names": [
     "platonic_solids_3d",
     "edges_pos_of_regular",
-    "regular_polychora_classification"
+    "regular_polychora_classification",
+    "simplicialSingularComparison_boundaryTwo_quasiIso"
   ],
   "definition_names": [
     "IsPlatonicPair",
     "IsRegular4Polytope",
     "schlafliGram",
-    "schlafliDet"
+    "schlafliDet",
+    "boundaryTwoSSet",
+    "singularChainsOfRealization",
+    "simplicialSingularComparison"
   ],
   "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"]
 }

@@ -24,6 +24,7 @@ import PlatonicSolids.Reciprocal
 import PlatonicSolids.Regular4
 import PlatonicSolids.RelativeHomology
 import PlatonicSolids.SignTable
+import PlatonicSolids.SimplicialSingularBoundaryTwo
 import PlatonicSolids.SingularExcision
 import PlatonicSolids.SingularHomology
 import PlatonicSolids.SphereSingularHomology

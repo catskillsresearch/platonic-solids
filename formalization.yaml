@@ -12,6 +12,9 @@ project:
     axiom. A chain-level bridge proves that any finite 2-complex
     quasi-isomorphic to singular chains of an S^2 model has Betti
     profile 1,0,1 and hence satisfies the homological classification.
+    For the simplicial circle ∂Δ[2], the canonical adjunction-unit
+    comparison is proved to be a quasi-isomorphism by an explicit
+    open-cover Mayer--Vietoris argument.
     In dimension 4, χ(S^3)=0 supplies no bound; the six spherical
     triples are those Platonic-cell / Platonic-vertex-figure combinations
     whose Schläfli Gram determinant is strictly positive. The informal
@@ -34,9 +37,10 @@ classification:
 
 status:
   scope: >-
-    Complete, with no unproved step. Palomar Comparator selects three
+    Complete, with no unproved step. Palomar Comparator selects four
     theorems: platonic_solids_3d, edges_pos_of_regular, and
-    regular_polychora_classification. The 3D theorems take a polyhedron
+    regular_polychora_classification, together with
+    simplicialSingularComparison_boundaryTwo_quasiIso. The 3D theorems take a polyhedron
     with p,q ≥ 3, incidence pF=2E and qV=2E, and Euler V+F=E+2. The 4D
     theorem takes Platonic cells and vertex figures together with a
     strictly positive Schläfli Gram determinant Δ, defined from
@@ -44,7 +48,11 @@ status:
     Gram matrix is positive definite iff the triple is one of the six.
     Outside the compared surface, platonic_solids_3d_of_sphere derives
     Euler's formula from a chain-level quasi-isomorphism to singular
-    chains of a space homotopy-equivalent to S^2.
+    chains of a space homotopy-equivalent to S^2. Separately, the fourth
+    compared theorem proves that the canonical realization--singular
+    adjunction-unit map is a quasi-isomorphism for the specific finite
+    simplicial set ∂Δ[2], not for arbitrary finite cellulations. The
+    original three combinatorial types are unchanged.
     Nothing in the compared statement is imported from a prior Palomar
     entry.
   sorry_count: 0
@@ -69,6 +77,12 @@ status:
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator.json"
       literature_dependencies: []
+    - declaration: "simplicialSingularComparison_boundaryTwo_quasiIso"
+      file: "Solution.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator.json"
+      literature_dependencies: []
 
 fidelity:
   divergences: >-
@@ -88,6 +102,12 @@ fidelity:
     is excisive. Stereographic U ∩ V is homotopy-equivalent to S^{n-1},
     and Mayer–Vietoris yields H_n(S^n; R) ≅ R for n>0
     (and vanishing in the other positive degrees).
+    The canonical realization--singular adjunction-unit chain map is
+    additionally proved to be a quasi-isomorphism for simplices, the
+    horn Λ[2,0], the two-vertex edge--horn intersection, and ∂Δ[2].
+    For ∂Δ[2], an explicit homeomorphism to AddCircle 3 and punctured
+    open neighborhoods bridge the simplicial and singular
+    Mayer--Vietoris short complexes.
     The algebraic Euler–Poincaré identities and the radial-projection
     homeomorphism are proved. The compared 3D theorem still takes
     V+F=E+2 so that Palomar Comparator types stay combinatorial;
@@ -114,7 +134,8 @@ sources:
       formalized. Relationship is `other` because Palomar reserves
       `formalizes` for following an existing source. Challenge.lean is
       checked against the 3D Euler classification, the non-degeneracy
-      theorem, and the 4D Schläfli Gram / determinant classification
+      theorem, the 4D Schläfli Gram / determinant classification, and
+      the canonical simplicial--singular comparison for ∂Δ[2]
       boxed in that note. Each paper paragraph points at a gist-sized
       Lean module under PlatonicSolids/.
 
@@ -195,10 +216,13 @@ review:
 
 known_gaps:
   - >-
-    The development does not yet construct the cellular-to-singular
-    quasi-isomorphism from a finite simplicial cellulation and its
-    geometric realization. The optional S^2 bridge takes this
-    chain-level comparison as an explicit hypothesis.
+    The canonical simplicial-to-singular quasi-isomorphism is now
+    constructed for the specific simplicial circle ∂Δ[2]. The
+    development does not yet prove a general theorem for arbitrary
+    finite nonsingular simplicial sets or construct the corresponding
+    comparison for arbitrary finite polyhedral cellulations. The
+    optional S^2 bridge therefore still takes its chain-level
+    comparison as an explicit hypothesis.
 
 limitations:
   - >-
@@ -219,7 +243,9 @@ limitations:
     categorically, its homology finranks are proved equal to
     betti0/betti1/betti2, and a quasi-isomorphism to an S^2 model
     yields Betti profile 1,0,1. Constructing that quasi-isomorphism
-    naturally from a polyhedral cellulation remains separate.
+    naturally from an arbitrary polyhedral cellulation remains
+    separate; only the canonical ∂Δ[2] simplicial-circle case is
+    established.
   - >-
     The compared 4D theorem sends a Platonic-compatible triple with
     Δ > 0 to one of the six regular convex 4-polytopes. The
@@ -253,6 +279,11 @@ alignment:
       module: "PlatonicSolids/SphereSingularHomology (supporting, not compared)"
       status: proved
 
+    - source: "The canonical realization--singular comparison is a quasi-isomorphism for the simplicial circle ∂Δ[2] (PlatonicSolids.md, §2.1)"
+      lean: "simplicialSingularComparison_boundaryTwo_quasiIso"
+      module: "Challenge (statement), Solution / PlatonicSolids/SimplicialSingularBoundaryTwo (proof)"
+      status: proved
+
     - source: "Platonic cells and vertex figures with Δ>0 are one of the six regular convex 4-polytopes (PlatonicSolids.md, §§3–4)"
       lean: "regular_polychora_classification"
       module: "Challenge (statement), Solution / PlatonicSolids (proof)"
@@ -276,4 +307,19 @@ alignment:
     - source: "The rank-4 Schläfli Gram matrix of {p,q,r}"
       lean: "schlafliGram"
       module: "Challenge (statement), PlatonicSolids/GramMatrix (definition)"
+      status: proved
+
+    - source: "The simplicial set ∂Δ[2] (PlatonicSolids.md, §2.1)"
+      lean: "boundaryTwoSSet"
+      module: "Challenge (statement), PlatonicSolids/SimplicialSingularComparison (definition)"
+      status: proved
+
+    - source: "Singular chains of the geometric realization (PlatonicSolids.md, §2.1)"
+      lean: "singularChainsOfRealization"
+      module: "Challenge (statement), PlatonicSolids/SimplicialSingularComparison (definition)"
+      status: proved
+
+    - source: "The canonical realization--singular adjunction-unit chain map (PlatonicSolids.md, §2.1)"
+      lean: "simplicialSingularComparison"
+      module: "Challenge (statement), PlatonicSolids/SimplicialSingularComparison (definition)"
       status: proved

@@ -15,8 +15,11 @@ The supporting topology proves singular \(H_n(S^n;R)\cong R\) for \(n>0\)
 from open-cover excision. A chain-level bridge additionally proves that any
 finite \(2\)-complex quasi-isomorphic to singular chains of a space of the
 homotopy type of \(S^2\) has Betti profile \((1,0,1)\), and therefore yields
-the Platonic classification. Constructing that comparison from a concrete
-polyhedral cellulation is a separate geometric input.
+the Platonic classification. The canonical realization–singular
+adjunction-unit comparison is now proved to be a quasi-isomorphism for the
+simplicial circle \(\partial\Delta[2]\), using an explicit open-cover
+Mayer–Vietoris bridge. A general comparison theorem for arbitrary finite
+simplicial or polyhedral cellulations remains separate.
 
 In dimension 4, \(\chi(S^3) = 0\) supplies no bound. The six regular convex
 4-polytopes are the Platonic-cell / Platonic-vertex-figure triples whose
@@ -25,7 +28,8 @@ Schläfli Gram determinant
 positive.
 
 The **Palomar compared family** is `platonic_solids_3d`,
-`edges_pos_of_regular`, and `regular_polychora_classification`. The
+`edges_pos_of_regular`, `regular_polychora_classification`, and
+`simplicialSingularComparison_boundaryTwo_quasiIso`. The
 development contains **zero axioms, zero admits, and zero `sorry`s**
 outside the deliberate holes in `Challenge.lean`.
 
@@ -38,7 +42,7 @@ outside the deliberate holes in `Challenge.lean`.
 | `PlatonicSolids/*.lean` | Gist-sized proofs, one file per paper paragraph |
 | `Challenge.lean` | Palomar statement of record: the compared family with deliberate `sorry`s |
 | `Solution.lean` | Palomar solution module: imports `PlatonicSolids` |
-| `comparator.json` | Comparator config naming the three theorems and supporting definitions |
+| `comparator.json` | Comparator config naming the four theorems and supporting definitions |
 | `formalization.yaml` | Palomar / formalization.yaml v0.4 metadata and disclosures |
 | `PROVENANCE.md` | Origin of this package and relationship to the template repos |
 | `PlatonicSolids.pdf` | Paper PDF (committed deliverable; synced from `view.pdf`) |
@@ -69,7 +73,7 @@ package's `lakefile.toml`. `lake build` also typechecks `Challenge.lean` and
 `Solution.lean`.
 
 `Challenge.lean` is the statement of record: it imports only Mathlib,
-declares the definitions the family uses, and leaves the three compared
+declares the definitions the family uses, and leaves the four compared
 theorems as `sorry`. A reader who wants to check *what* has been proved
 should read that file. The proofs are the gist-sized modules under
 `PlatonicSolids/`, imported by `PlatonicSolids.lean` and exposed to

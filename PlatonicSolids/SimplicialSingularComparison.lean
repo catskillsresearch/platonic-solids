@@ -27,6 +27,7 @@ import Mathlib.Analysis.Convex.Contractible
 import Mathlib.CategoryTheory.Adjunction.Limits
 import Mathlib.CategoryTheory.Limits.Shapes.ConcreteCategory
 import Mathlib.CategoryTheory.Limits.Preserves.SigmaConst
+import Mathlib.Topology.Instances.AddCircle.Real
 import PlatonicSolids.SingularHomology
 
 /-!
@@ -1315,6 +1316,20 @@ lemma δ_zero_comp_δ_zero_eq_const_two :
   rw [SSet.stdSimplex.δ_zero_eq_const, SSet.const_comp]
   congr 1
 
+/-- `δ₀ ≫ δ₂ : Δ[0] ⟶ Δ[2]` is the vertex `1`. -/
+lemma δ_zero_comp_δ_two_eq_const_one :
+    SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.stdSimplex.δ (2 : Fin 3) =
+      SSet.const (SSet.stdSimplex.obj₀Equiv.symm 1) := by
+  rw [SSet.stdSimplex.δ_zero_eq_const, SSet.const_comp]
+  congr 1
+
+/-- `δ₀ ≫ δ₁ : Δ[0] ⟶ Δ[2]` is the vertex `2`. -/
+lemma δ_zero_comp_δ_one_eq_const_two :
+    SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.stdSimplex.δ (1 : Fin 3) =
+      SSet.const (SSet.stdSimplex.obj₀Equiv.symm 2) := by
+  rw [SSet.stdSimplex.δ_zero_eq_const, SSet.const_comp]
+  congr 1
+
 /-- Vertex 1 of the last edge is the `δ₁` endpoint of `Δ[1]`. -/
 lemma lastEdge_vertex_one :
     (SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
@@ -1453,6 +1468,1045 @@ lemma lastEdgeIsoI_vertex_two :
     enter [2]
     rw [← Category.assoc, hcancel, Category.id_comp]
   rw [toTop_map_δ_zero_comp_toTopObjIsoI]
+
+/-! ### The circle obtained from the last-edge decomposition -/
+
+/-- A concrete circle of circumference three. -/
+abbrev boundaryCircle : TopCat.{0} :=
+  TopCat.of (AddCircle (3 : ℝ))
+
+/-- Map the horn coordinate `[-1, 1]` to the arc `[0, 2]` of the circle. -/
+def hornIccToBoundaryCircle : hornIcc ⟶ boundaryCircle :=
+  TopCat.ofHom
+    { toFun := fun t => ((t.1 + 1 : ℝ) : AddCircle (3 : ℝ))
+      continuous_toFun :=
+        (AddCircle.continuous_mk' (3 : ℝ)).comp
+          (continuous_subtype_val.add continuous_const) }
+
+/-- Map the last-edge coordinate `I` to the complementary arc `[2, 3]`. -/
+def unitIntervalToBoundaryCircle : TopCat.I.{0} ⟶ boundaryCircle :=
+  TopCat.ofHom
+    { toFun := fun t =>
+        ((2 + (TopCat.I.homeomorph t : ℝ) : ℝ) : AddCircle (3 : ℝ))
+      continuous_toFun :=
+        (AddCircle.continuous_mk' (3 : ℝ)).comp
+          (continuous_const.add
+            (continuous_subtype_val.comp TopCat.I.homeomorph.continuous)) }
+
+/-- The horn as the first closed arc of the concrete circle. -/
+noncomputable def hornToBoundaryCircle :
+    |(Λ[2, 0] : SSet.{0})| ⟶ boundaryCircle :=
+  horn_two_zero_toIcc ≫ hornIccToBoundaryCircle
+
+/-- The last edge as the complementary closed arc of the concrete circle. -/
+noncomputable def lastEdgeToBoundaryCircle :
+    |(boundaryTwoFirstFace : SSet.{0})| ⟶ boundaryCircle :=
+  lastEdgeIsoI.hom ≫ unitIntervalToBoundaryCircle
+
+lemma hornIccToBoundaryCircle_one :
+    (TopCat.const (⟨1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) :
+      |(Δ[0] : SSet.{0})| ⟶ hornIcc) ≫
+      hornIccToBoundaryCircle =
+    (TopCat.const ((2 : ℝ) : AddCircle (3 : ℝ)) :
+      |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) := by
+  ext x
+  change (((1 : ℝ) + 1 : ℝ) : AddCircle (3 : ℝ)) = (2 : ℝ)
+  norm_num
+
+lemma hornIccToBoundaryCircle_neg_one :
+    (TopCat.const (⟨-1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) :
+      |(Δ[0] : SSet.{0})| ⟶ hornIcc) ≫
+      hornIccToBoundaryCircle =
+    (TopCat.const (0 : AddCircle (3 : ℝ)) :
+      |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) := by
+  ext x
+  change (((-1 : ℝ) + 1 : ℝ) : AddCircle (3 : ℝ)) = 0
+  norm_num
+
+lemma unitIntervalToBoundaryCircle_zero :
+    (TopCat.const (0 : TopCat.I.{0}) :
+      |(Δ[0] : SSet.{0})| ⟶ TopCat.I.{0}) ≫ unitIntervalToBoundaryCircle =
+      (TopCat.const ((2 : ℝ) : AddCircle (3 : ℝ)) :
+        |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) := by
+  ext x
+  change
+    ((2 + (TopCat.I.homeomorph (0 : TopCat.I.{0}) : ℝ) : ℝ) :
+      AddCircle (3 : ℝ)) = (2 : ℝ)
+  simp
+
+lemma unitIntervalToBoundaryCircle_one :
+    (TopCat.const (1 : TopCat.I.{0}) :
+      |(Δ[0] : SSet.{0})| ⟶ TopCat.I.{0}) ≫ unitIntervalToBoundaryCircle =
+      (TopCat.const (0 : AddCircle (3 : ℝ)) :
+        |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) := by
+  ext x
+  change
+    ((2 + (TopCat.I.homeomorph (1 : TopCat.I.{0}) : ℝ) : ℝ) :
+      AddCircle (3 : ℝ)) = 0
+  rw [TopCat.I.homeomorph_one]
+  norm_num
+
+lemma face_one_le_boundaryTwoRemainingFaces :
+    SSet.stdSimplex.face ({1} : Finset (Fin 3)) ≤
+      boundaryTwoRemainingFaces := by
+  apply le_sup_of_le_right
+  rw [SSet.stdSimplex.face_le_face_iff]
+  decide
+
+lemma face_two_le_boundaryTwoRemainingFaces :
+    SSet.stdSimplex.face ({2} : Finset (Fin 3)) ≤
+      boundaryTwoRemainingFaces := by
+  apply le_sup_of_le_left
+  rw [SSet.stdSimplex.face_le_face_iff]
+  decide
+
+/-- The identification of the two remaining faces with `Λ[2,0]`. -/
+noncomputable def boundaryTwoRemainingFacesIsoHorn :
+    (boundaryTwoRemainingFaces : SSet.{0}) ≅ (Λ[2, 0] : SSet.{0}) :=
+  SSet.Subcomplex.eqToIso boundaryTwoRemainingFaces_eq_horn
+
+lemma boundaryTwoRemainingFacesIsoHorn_hom_ι :
+    boundaryTwoRemainingFacesIsoHorn.hom ≫ Λ[2, 0].ι =
+      boundaryTwoRemainingFaces.ι := by
+  change
+    SSet.Subcomplex.homOfLE boundaryTwoRemainingFaces_eq_horn.le ≫
+      Λ[2, 0].ι = boundaryTwoRemainingFaces.ι
+  rfl
+
+/-- Vertex 1 of the horn is the free endpoint of its first edge. -/
+lemma horn_vertex_one :
+    (SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE face_one_le_boundaryTwoRemainingFaces ≫
+      boundaryTwoRemainingFacesIsoHorn.hom =
+    SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.horn₂₀.ι₀₁ := by
+  rw [← cancel_mono Λ[2, 0].ι]
+  have hι :
+      SSet.Subcomplex.homOfLE face_one_le_boundaryTwoRemainingFaces ≫
+        boundaryTwoRemainingFaces.ι =
+      (SSet.stdSimplex.face ({1} : Finset (Fin 3))).ι := rfl
+  rw [Category.assoc, Category.assoc,
+    boundaryTwoRemainingFacesIsoHorn_hom_ι, hι, Category.assoc,
+    SSet.horn.ι_ι, faceSingletonIso_hom_comp_ι,
+    δ_zero_comp_δ_two_eq_const_one]
+
+/-- Vertex 2 of the horn is the free endpoint of its second edge. -/
+lemma horn_vertex_two :
+    (SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE face_two_le_boundaryTwoRemainingFaces ≫
+      boundaryTwoRemainingFacesIsoHorn.hom =
+    SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.horn₂₀.ι₀₂ := by
+  rw [← cancel_mono Λ[2, 0].ι]
+  have hι :
+      SSet.Subcomplex.homOfLE face_two_le_boundaryTwoRemainingFaces ≫
+        boundaryTwoRemainingFaces.ι =
+      (SSet.stdSimplex.face ({2} : Finset (Fin 3))).ι := rfl
+  rw [Category.assoc, Category.assoc,
+    boundaryTwoRemainingFacesIsoHorn_hom_ι, hι, Category.assoc,
+    SSet.horn.ι_ι, faceSingletonIso_hom_comp_ι,
+    δ_zero_comp_δ_one_eq_const_two]
+
+/-- The two vertex faces form a coproduct square under the empty
+subcomplex. -/
+lemma boundaryTwoVertices_isPushout :
+    IsPushout
+      (SSet.Subcomplex.homOfLE
+        (bot_le :
+          (⊥ : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) ≤
+            SSet.stdSimplex.face ({1} : Finset (Fin 3))))
+      (SSet.Subcomplex.homOfLE
+        (bot_le :
+          (⊥ : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) ≤
+            SSet.stdSimplex.face ({2} : Finset (Fin 3))))
+      (SSet.Subcomplex.homOfLE
+        (le_sup_left :
+          SSet.stdSimplex.face ({1} : Finset (Fin 3)) ≤ boundaryTwoVertices))
+      (SSet.Subcomplex.homOfLE
+        (le_sup_right :
+          SSet.stdSimplex.face ({2} : Finset (Fin 3)) ≤ boundaryTwoVertices)) :=
+  SSet.Subcomplex.BicartSq.isPushout
+    ({ sup_eq := rfl
+       inf_eq := face_one_inf_face_two } :
+      SSet.Subcomplex.BicartSq
+        (⊥ : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex)
+        (SSet.stdSimplex.face ({1} : Finset (Fin 3)))
+        (SSet.stdSimplex.face ({2} : Finset (Fin 3)))
+        boundaryTwoVertices)
+
+/-- Realization preserves the coproduct decomposition of the two vertices. -/
+lemma toTop_boundaryTwoVertices_isPushout :
+    IsPushout
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (bot_le :
+            (⊥ : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) ≤
+              SSet.stdSimplex.face ({1} : Finset (Fin 3)))))
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (bot_le :
+            (⊥ : (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) ≤
+              SSet.stdSimplex.face ({2} : Finset (Fin 3)))))
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_left :
+            SSet.stdSimplex.face ({1} : Finset (Fin 3)) ≤ boundaryTwoVertices)))
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_right :
+            SSet.stdSimplex.face ({2} : Finset (Fin 3)) ≤ boundaryTwoVertices))) :=
+  boundaryTwoVertices_isPushout.map SSet.toTop
+
+/-- The two-edge horn, transported from `boundaryTwoRemainingFaces`, as the
+first arc of the concrete circle. -/
+noncomputable def boundaryTwoRemainingFacesToBoundaryCircle :
+    |(boundaryTwoRemainingFaces : SSet.{0})| ⟶ boundaryCircle :=
+  SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom ≫
+    hornToBoundaryCircle
+
+lemma lastEdgeToBoundaryCircle_vertex_one :
+    SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE face_one_le_boundaryTwoFirstFace) ≫
+      lastEdgeToBoundaryCircle =
+    (TopCat.const ((2 : ℝ) : AddCircle (3 : ℝ)) :
+      |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) := by
+  rw [lastEdgeToBoundaryCircle, ← Category.assoc,
+    lastEdgeIsoI_vertex_one, unitIntervalToBoundaryCircle_zero]
+
+lemma lastEdgeToBoundaryCircle_vertex_two :
+    SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE face_two_le_boundaryTwoFirstFace) ≫
+      lastEdgeToBoundaryCircle =
+    (TopCat.const (0 : AddCircle (3 : ℝ)) :
+      |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) := by
+  rw [lastEdgeToBoundaryCircle, ← Category.assoc,
+    lastEdgeIsoI_vertex_two, unitIntervalToBoundaryCircle_one]
+
+lemma boundaryTwoRemainingFacesToBoundaryCircle_vertex_one :
+    SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE face_one_le_boundaryTwoRemainingFaces) ≫
+      boundaryTwoRemainingFacesToBoundaryCircle =
+    (TopCat.const ((2 : ℝ) : AddCircle (3 : ℝ)) :
+      |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) := by
+  rw [boundaryTwoRemainingFacesToBoundaryCircle, hornToBoundaryCircle]
+  rw [← Category.assoc, ← SSet.toTop.map_comp]
+  simp only [Category.assoc]
+  rw [horn_vertex_one]
+  have h := congrArg
+    (fun f : |(Δ[0] : SSet.{0})| ⟶ hornIcc =>
+      f ≫ hornIccToBoundaryCircle)
+    horn_two_zero_toIcc_δ_zero_inl
+  exact (by
+    simpa only [SSet.toTop.map_comp, Category.assoc] using
+      h.trans hornIccToBoundaryCircle_one)
+
+lemma boundaryTwoRemainingFacesToBoundaryCircle_vertex_two :
+    SSet.toTop.map
+        ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+          SSet.Subcomplex.homOfLE face_two_le_boundaryTwoRemainingFaces) ≫
+      boundaryTwoRemainingFacesToBoundaryCircle =
+    (TopCat.const (0 : AddCircle (3 : ℝ)) :
+      |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) := by
+  rw [boundaryTwoRemainingFacesToBoundaryCircle, hornToBoundaryCircle]
+  rw [← Category.assoc, ← SSet.toTop.map_comp]
+  simp only [Category.assoc]
+  rw [horn_vertex_two]
+  have h := congrArg
+    (fun f : |(Δ[0] : SSet.{0})| ⟶ hornIcc =>
+      f ≫ hornIccToBoundaryCircle)
+    horn_two_zero_toIcc_δ_zero_inr
+  exact (by
+    simpa only [SSet.toTop.map_comp, Category.assoc] using
+      h.trans hornIccToBoundaryCircle_neg_one)
+
+lemma boundaryTwoVertices_le_firstFace :
+    boundaryTwoVertices ≤ boundaryTwoFirstFace :=
+  sup_le face_one_le_boundaryTwoFirstFace face_two_le_boundaryTwoFirstFace
+
+lemma boundaryTwoVertices_le_remainingFaces :
+    boundaryTwoVertices ≤ boundaryTwoRemainingFaces :=
+  sup_le face_one_le_boundaryTwoRemainingFaces
+    face_two_le_boundaryTwoRemainingFaces
+
+lemma faceOne_boundaryCircle_arc_agreement :
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE face_one_le_boundaryTwoFirstFace) ≫
+      lastEdgeToBoundaryCircle =
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE face_one_le_boundaryTwoRemainingFaces) ≫
+      boundaryTwoRemainingFacesToBoundaryCircle := by
+  apply (cancel_epi
+    (SSet.toTop.map (SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom)).1
+  calc
+    _ = SSet.toTop.map
+          ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+            SSet.Subcomplex.homOfLE face_one_le_boundaryTwoFirstFace) ≫
+          lastEdgeToBoundaryCircle := by
+      rw [SSet.toTop.map_comp, Category.assoc]
+    _ = (TopCat.const ((2 : ℝ) : AddCircle (3 : ℝ)) :
+          |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) :=
+      lastEdgeToBoundaryCircle_vertex_one
+    _ = SSet.toTop.map
+          ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+            SSet.Subcomplex.homOfLE face_one_le_boundaryTwoRemainingFaces) ≫
+          boundaryTwoRemainingFacesToBoundaryCircle :=
+      boundaryTwoRemainingFacesToBoundaryCircle_vertex_one.symm
+    _ = _ := by
+      rw [SSet.toTop.map_comp, Category.assoc]
+
+lemma faceTwo_boundaryCircle_arc_agreement :
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE face_two_le_boundaryTwoFirstFace) ≫
+      lastEdgeToBoundaryCircle =
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE face_two_le_boundaryTwoRemainingFaces) ≫
+      boundaryTwoRemainingFacesToBoundaryCircle := by
+  apply (cancel_epi
+    (SSet.toTop.map (SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom)).1
+  calc
+    _ = SSet.toTop.map
+          ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+            SSet.Subcomplex.homOfLE face_two_le_boundaryTwoFirstFace) ≫
+          lastEdgeToBoundaryCircle := by
+      rw [SSet.toTop.map_comp, Category.assoc]
+    _ = (TopCat.const (0 : AddCircle (3 : ℝ)) :
+          |(Δ[0] : SSet.{0})| ⟶ boundaryCircle) :=
+      lastEdgeToBoundaryCircle_vertex_two
+    _ = SSet.toTop.map
+          ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+            SSet.Subcomplex.homOfLE face_two_le_boundaryTwoRemainingFaces) ≫
+          boundaryTwoRemainingFacesToBoundaryCircle :=
+      boundaryTwoRemainingFacesToBoundaryCircle_vertex_two.symm
+    _ = _ := by
+      rw [SSet.toTop.map_comp, Category.assoc]
+
+/-- The two circle arcs agree on the two-vertex intersection. -/
+lemma boundaryTwoVertices_boundaryCircle_arc_agreement :
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE boundaryTwoVertices_le_firstFace) ≫
+      lastEdgeToBoundaryCircle =
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE boundaryTwoVertices_le_remainingFaces) ≫
+      boundaryTwoRemainingFacesToBoundaryCircle := by
+  apply toTop_boundaryTwoVertices_isPushout.hom_ext
+  · simp only [← Category.assoc, ← SSet.toTop.map_comp]
+    exact faceOne_boundaryCircle_arc_agreement
+  · simp only [← Category.assoc, ← SSet.toTop.map_comp]
+    exact faceTwo_boundaryCircle_arc_agreement
+
+/-- The actual last-edge/horn intersection identified with its two vertex
+faces. -/
+noncomputable def boundaryTwoIntersectionIsoVertices :
+    ((boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces :
+      (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0}) ≅
+      (boundaryTwoVertices : SSet.{0}) :=
+  SSet.Subcomplex.eqToIso boundaryTwoFirstFace_inf
+
+lemma boundaryTwoIntersectionIsoVertices_inv_comp_first :
+    boundaryTwoIntersectionIsoVertices.inv ≫
+      SSet.Subcomplex.homOfLE
+        (inf_le_left :
+          boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+            boundaryTwoFirstFace) =
+    SSet.Subcomplex.homOfLE boundaryTwoVertices_le_firstFace := by
+  ext n x
+  rfl
+
+lemma boundaryTwoIntersectionIsoVertices_inv_comp_remaining :
+    boundaryTwoIntersectionIsoVertices.inv ≫
+      SSet.Subcomplex.homOfLE
+        (inf_le_right :
+          boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+            boundaryTwoRemainingFaces) =
+    SSet.Subcomplex.homOfLE boundaryTwoVertices_le_remainingFaces := by
+  ext n x
+  rfl
+
+/-- The last edge and horn circle maps agree on their actual intersection. -/
+lemma boundaryTwo_boundaryCircle_arc_agreement :
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (inf_le_left :
+            boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+              boundaryTwoFirstFace)) ≫
+      lastEdgeToBoundaryCircle =
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (inf_le_right :
+            boundaryTwoFirstFace ⊓ boundaryTwoRemainingFaces ≤
+              boundaryTwoRemainingFaces)) ≫
+      boundaryTwoRemainingFacesToBoundaryCircle := by
+  apply (cancel_epi
+    (SSet.toTop.map boundaryTwoIntersectionIsoVertices.inv)).1
+  calc
+    _ = SSet.toTop.map
+          (boundaryTwoIntersectionIsoVertices.inv ≫
+            SSet.Subcomplex.homOfLE inf_le_left) ≫
+          lastEdgeToBoundaryCircle := by
+      rw [SSet.toTop.map_comp, Category.assoc]
+    _ = SSet.toTop.map
+          (SSet.Subcomplex.homOfLE boundaryTwoVertices_le_firstFace) ≫
+          lastEdgeToBoundaryCircle := by
+      rw [boundaryTwoIntersectionIsoVertices_inv_comp_first]
+    _ = SSet.toTop.map
+          (SSet.Subcomplex.homOfLE boundaryTwoVertices_le_remainingFaces) ≫
+          boundaryTwoRemainingFacesToBoundaryCircle :=
+      boundaryTwoVertices_boundaryCircle_arc_agreement
+    _ = SSet.toTop.map
+          (boundaryTwoIntersectionIsoVertices.inv ≫
+            SSet.Subcomplex.homOfLE inf_le_right) ≫
+          boundaryTwoRemainingFacesToBoundaryCircle := by
+      rw [boundaryTwoIntersectionIsoVertices_inv_comp_remaining]
+    _ = _ := by
+      rw [SSet.toTop.map_comp, Category.assoc]
+
+/-- The map from the last-edge pushout to the concrete circle. -/
+noncomputable def boundaryTwoSupToBoundaryCircle :
+    |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+      (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| ⟶
+      boundaryCircle :=
+  toTop_boundaryTwo_isPushout.desc
+    lastEdgeToBoundaryCircle
+    boundaryTwoRemainingFacesToBoundaryCircle
+    boundaryTwo_boundaryCircle_arc_agreement
+
+/-- The boundary subcomplex identified with its last-edge decomposition. -/
+noncomputable def boundaryTwoIsoSup :
+    boundaryTwoSSet ≅
+      ((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+        (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0}) :=
+  SSet.Subcomplex.eqToIso boundary_two_eq_face_sup
+
+/-- The canonical piecewise-linear map from `|∂Δ[2]|` to a concrete
+additive circle. -/
+noncomputable def boundaryTwoToBoundaryCircle :
+    |boundaryTwoSSet| ⟶ boundaryCircle :=
+  SSet.toTop.map boundaryTwoIsoSup.hom ≫ boundaryTwoSupToBoundaryCircle
+
+@[reassoc]
+lemma boundaryTwoSupToBoundaryCircle_firstFace :
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_left :
+            boundaryTwoFirstFace ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)) ≫
+      boundaryTwoSupToBoundaryCircle =
+    lastEdgeToBoundaryCircle := by
+  apply toTop_boundaryTwo_isPushout.inl_desc
+
+@[reassoc]
+lemma boundaryTwoSupToBoundaryCircle_remainingFaces :
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_right :
+            boundaryTwoRemainingFaces ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)) ≫
+      boundaryTwoSupToBoundaryCircle =
+    boundaryTwoRemainingFacesToBoundaryCircle := by
+  apply toTop_boundaryTwo_isPushout.inr_desc
+
+lemma lastEdgeIsoI_inv_zero :
+    (TopCat.const (0 : TopCat.I.{0}) :
+      |(Δ[0] : SSet.{0})| ⟶ TopCat.I.{0}) ≫ lastEdgeIsoI.inv =
+    SSet.toTop.map
+      ((SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+        SSet.Subcomplex.homOfLE face_one_le_boundaryTwoFirstFace) := by
+  have h := congrArg
+    (fun f : |(Δ[0] : SSet.{0})| ⟶ TopCat.I.{0} => f ≫ lastEdgeIsoI.inv)
+    lastEdgeIsoI_vertex_one
+  simpa only [Category.assoc, Iso.hom_inv_id, Category.comp_id] using h.symm
+
+lemma lastEdgeIsoI_inv_one :
+    (TopCat.const (1 : TopCat.I.{0}) :
+      |(Δ[0] : SSet.{0})| ⟶ TopCat.I.{0}) ≫ lastEdgeIsoI.inv =
+    SSet.toTop.map
+      ((SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+        SSet.Subcomplex.homOfLE face_two_le_boundaryTwoFirstFace) := by
+  have h := congrArg
+    (fun f : |(Δ[0] : SSet.{0})| ⟶ TopCat.I.{0} => f ≫ lastEdgeIsoI.inv)
+    lastEdgeIsoI_vertex_two
+  simpa only [Category.assoc, Iso.hom_inv_id, Category.comp_id] using h.symm
+
+lemma hornIcc_from_one :
+    (TopCat.const (⟨1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) :
+      |(Δ[0] : SSet.{0})| ⟶ hornIcc) ≫ hornIcc_from =
+    SSet.toTop.map
+      (SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.horn₂₀.ι₀₁) := by
+  have h := congrArg
+    (fun f : |(Δ[0] : SSet.{0})| ⟶ hornIcc => f ≫ hornIcc_from)
+    horn_two_zero_toIcc_δ_zero_inl
+  simpa only [SSet.toTop.map_comp, Category.assoc,
+    horn_two_zero_toIcc_from, Category.comp_id] using h.symm
+
+lemma hornIcc_from_neg_one :
+    (TopCat.const (⟨-1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) :
+      |(Δ[0] : SSet.{0})| ⟶ hornIcc) ≫ hornIcc_from =
+    SSet.toTop.map
+      (SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.horn₂₀.ι₀₂) := by
+  have h := congrArg
+    (fun f : |(Δ[0] : SSet.{0})| ⟶ hornIcc => f ≫ hornIcc_from)
+    horn_two_zero_toIcc_δ_zero_inr
+  simpa only [SSet.toTop.map_comp, Category.assoc,
+    horn_two_zero_toIcc_from, Category.comp_id] using h.symm
+
+/-- Put the unit interval back into the last-edge summand of the pushout. -/
+noncomputable def unitIntervalToBoundaryTwoSup :
+    TopCat.I.{0} ⟶
+      |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+        (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| :=
+  lastEdgeIsoI.inv ≫
+    SSet.toTop.map
+      (SSet.Subcomplex.homOfLE
+        (le_sup_left :
+          boundaryTwoFirstFace ≤
+            boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+
+/-- Put `[-1,1]` back into the horn summand of the pushout. -/
+noncomputable def hornIccToBoundaryTwoSup :
+    hornIcc ⟶
+      |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+        (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| :=
+  hornIcc_from ≫ SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv ≫
+    SSet.toTop.map
+      (SSet.Subcomplex.homOfLE
+        (le_sup_right :
+          boundaryTwoRemainingFaces ≤
+            boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+
+lemma horn_vertex_one_comp_iso_inv :
+    (SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.horn₂₀.ι₀₁) ≫
+      boundaryTwoRemainingFacesIsoHorn.inv =
+    (SSet.stdSimplex.faceSingletonIso (1 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE face_one_le_boundaryTwoRemainingFaces := by
+  have h := congrArg
+    (fun f : (Δ[0] : SSet.{0}) ⟶ (Λ[2, 0] : SSet.{0}) =>
+      f ≫ boundaryTwoRemainingFacesIsoHorn.inv)
+    horn_vertex_one
+  simpa only [Category.assoc, Iso.hom_inv_id, Category.comp_id] using h.symm
+
+lemma horn_vertex_two_comp_iso_inv :
+    (SSet.stdSimplex.δ (0 : Fin 2) ≫ SSet.horn₂₀.ι₀₂) ≫
+      boundaryTwoRemainingFacesIsoHorn.inv =
+    (SSet.stdSimplex.faceSingletonIso (2 : Fin 3)).hom ≫
+      SSet.Subcomplex.homOfLE face_two_le_boundaryTwoRemainingFaces := by
+  have h := congrArg
+    (fun f : (Δ[0] : SSet.{0}) ⟶ (Λ[2, 0] : SSet.{0}) =>
+      f ≫ boundaryTwoRemainingFacesIsoHorn.inv)
+    horn_vertex_two
+  simpa only [Category.assoc, Iso.hom_inv_id, Category.comp_id] using h.symm
+
+/-- At vertex 1, the last-edge coordinate `0` and horn coordinate `1`
+give the same point of the pushout. -/
+lemma unitIntervalToBoundaryTwoSup_zero :
+    (TopCat.const (0 : TopCat.I.{0}) :
+      |(Δ[0] : SSet.{0})| ⟶ TopCat.I.{0}) ≫
+      unitIntervalToBoundaryTwoSup =
+    (TopCat.const (⟨1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) :
+      |(Δ[0] : SSet.{0})| ⟶ hornIcc) ≫
+      hornIccToBoundaryTwoSup := by
+  rw [unitIntervalToBoundaryTwoSup, hornIccToBoundaryTwoSup,
+    ← Category.assoc, lastEdgeIsoI_inv_zero,
+    ← Category.assoc, hornIcc_from_one]
+  simp only [Category.assoc, ← SSet.toTop.map_comp]
+  have hv := congrArg
+    (fun f : (Δ[0] : SSet.{0}) ⟶
+        (boundaryTwoRemainingFaces : SSet.{0}) =>
+      f ≫ SSet.Subcomplex.homOfLE
+        (le_sup_right :
+          boundaryTwoRemainingFaces ≤
+            boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+    horn_vertex_one_comp_iso_inv
+  simp only [Category.assoc] at hv
+  rw [hv]
+  congr 1
+
+/-- At vertex 2, the last-edge coordinate `1` and horn coordinate `-1`
+give the same point of the pushout. -/
+lemma unitIntervalToBoundaryTwoSup_one :
+    (TopCat.const (1 : TopCat.I.{0}) :
+      |(Δ[0] : SSet.{0})| ⟶ TopCat.I.{0}) ≫
+      unitIntervalToBoundaryTwoSup =
+    (TopCat.const (⟨-1, by norm_num⟩ : Set.Icc (-1 : ℝ) 1) :
+      |(Δ[0] : SSet.{0})| ⟶ hornIcc) ≫
+      hornIccToBoundaryTwoSup := by
+  rw [unitIntervalToBoundaryTwoSup, hornIccToBoundaryTwoSup,
+    ← Category.assoc, lastEdgeIsoI_inv_one,
+    ← Category.assoc, hornIcc_from_neg_one]
+  simp only [Category.assoc, ← SSet.toTop.map_comp]
+  have hv := congrArg
+    (fun f : (Δ[0] : SSet.{0}) ⟶
+        (boundaryTwoRemainingFaces : SSet.{0}) =>
+      f ≫ SSet.Subcomplex.homOfLE
+        (le_sup_right :
+          boundaryTwoRemainingFaces ≤
+            boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+    horn_vertex_two_comp_iso_inv
+  simp only [Category.assoc] at hv
+  rw [hv]
+  congr 1
+
+/-- A path through the two pushout arcs, parametrized by `[0,3]` and
+extended continuously to all of `ℝ` using interval projections. -/
+noncomputable def boundaryCircleLiftPath (x : ℝ) :
+    |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+      (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| :=
+  if x ≤ 2 then
+    hornIccToBoundaryTwoSup
+      (Set.projIcc (-1 : ℝ) 1 (by norm_num) (x - 1))
+  else
+    unitIntervalToBoundaryTwoSup
+      (TopCat.I.homeomorph.symm
+        (Set.projIcc (0 : ℝ) 1 zero_le_one (x - 2)))
+
+lemma continuous_boundaryCircleLiftPath :
+    Continuous boundaryCircleLiftPath := by
+  refine Continuous.if_le
+    (f' := fun x : ℝ =>
+      hornIccToBoundaryTwoSup
+        (Set.projIcc (-1 : ℝ) 1 (by norm_num) (x - 1)))
+    (g' := fun x : ℝ =>
+      unitIntervalToBoundaryTwoSup
+        (TopCat.I.homeomorph.symm
+          (Set.projIcc (0 : ℝ) 1 zero_le_one (x - 2))))
+    (f := fun x : ℝ => x) (g := fun _ => (2 : ℝ))
+    ?_ ?_ continuous_id continuous_const ?_
+  · fun_prop
+  · fun_prop
+  · intro x hx
+    have hx2 : x = 2 := hx
+    subst x
+    have hpHorn :
+        Set.projIcc (-1 : ℝ) 1 (by norm_num) (2 - 1) =
+          ⟨1, by norm_num⟩ := by
+      norm_num [Set.projIcc_right]
+    have hpEdge :
+        Set.projIcc (0 : ℝ) 1 zero_le_one (2 - 2) =
+          ⟨0, by norm_num⟩ := by
+      norm_num [Set.projIcc_left]
+    change
+      hornIccToBoundaryTwoSup
+          (Set.projIcc (-1 : ℝ) 1 (by norm_num) (2 - 1)) =
+        unitIntervalToBoundaryTwoSup
+          (TopCat.I.homeomorph.symm
+            (Set.projIcc (0 : ℝ) 1 zero_le_one (2 - 2)))
+    rw [hpHorn, hpEdge]
+    have h := congrArg
+      (fun f : |(Δ[0] : SSet.{0})| ⟶
+          |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+            (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| =>
+        f (default : |(Δ[0] : SSet.{0})|))
+      unitIntervalToBoundaryTwoSup_zero
+    simpa using h.symm
+
+lemma boundaryCircleLiftPath_zero_eq_three :
+    boundaryCircleLiftPath 0 = boundaryCircleLiftPath 3 := by
+  have hpHorn :
+      Set.projIcc (-1 : ℝ) 1 (by norm_num) (0 - 1) =
+        ⟨-1, by norm_num⟩ := by
+    norm_num [Set.projIcc_left]
+  have hpEdge :
+      Set.projIcc (0 : ℝ) 1 zero_le_one (3 - 2) =
+        ⟨1, by norm_num⟩ := by
+    norm_num [Set.projIcc_right]
+  rw [boundaryCircleLiftPath, if_pos (by norm_num), hpHorn,
+    boundaryCircleLiftPath, if_neg (by norm_num), hpEdge]
+  have h := congrArg
+    (fun f : |(Δ[0] : SSet.{0})| ⟶
+        |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+          (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| =>
+      f (default : |(Δ[0] : SSet.{0})|))
+    unitIntervalToBoundaryTwoSup_one
+  simpa using h.symm
+
+/-- The inverse circle map obtained by traversing the horn and last edge. -/
+noncomputable def boundaryCircleToBoundaryTwoSup :
+    boundaryCircle ⟶
+      |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+        (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| := by
+  letI : Fact (0 < (3 : ℝ)) := ⟨by norm_num⟩
+  exact TopCat.ofHom
+    { toFun := AddCircle.liftIco (3 : ℝ) 0 boundaryCircleLiftPath
+      continuous_toFun :=
+        AddCircle.liftIco_zero_continuous boundaryCircleLiftPath_zero_eq_three
+          continuous_boundaryCircleLiftPath.continuousOn }
+
+lemma boundaryCircleToBoundaryTwoSup_hornIcc
+    (t : Set.Icc (-1 : ℝ) 1) :
+    boundaryCircleToBoundaryTwoSup (hornIccToBoundaryCircle t) =
+      hornIccToBoundaryTwoSup t := by
+  letI : Fact (0 < (3 : ℝ)) := ⟨by norm_num⟩
+  have htIco : t.1 + 1 ∈ Set.Ico (0 : ℝ) 3 :=
+    ⟨by linarith [t.2.1], by linarith [t.2.2]⟩
+  change
+    AddCircle.liftIco (3 : ℝ) 0 boundaryCircleLiftPath
+        ((t.1 + 1 : ℝ) : AddCircle (3 : ℝ)) =
+      hornIccToBoundaryTwoSup t
+  rw [AddCircle.liftIco_zero_coe_apply htIco, boundaryCircleLiftPath,
+    if_pos (by linarith [t.2.2])]
+  have hval : t.1 + 1 - 1 = t.1 := by ring
+  have hp :
+      Set.projIcc (-1 : ℝ) 1 (by norm_num) (t.1 + 1 - 1) = t := by
+    rw [hval]
+    exact Set.projIcc_of_mem _ t.2
+  rw [hp]
+
+lemma boundaryCircleToBoundaryTwoSup_unitInterval
+    (t : TopCat.I.{0}) :
+    boundaryCircleToBoundaryTwoSup (unitIntervalToBoundaryCircle t) =
+      unitIntervalToBoundaryTwoSup t := by
+  letI : Fact (0 < (3 : ℝ)) := ⟨by norm_num⟩
+  let u := TopCat.I.homeomorph t
+  by_cases h1 : (u : ℝ) = 1
+  · have ht : t = 1 := by
+      apply TopCat.I.homeomorph.injective
+      apply Subtype.ext
+      simpa [u, TopCat.I.homeomorph_one] using h1
+    subst t
+    have hcircle := congrArg
+      (fun f : |(Δ[0] : SSet.{0})| ⟶ boundaryCircle =>
+        boundaryCircleToBoundaryTwoSup
+          (f (default : |(Δ[0] : SSet.{0})|)))
+      unitIntervalToBoundaryCircle_one
+    have hglue := congrArg
+      (fun f : |(Δ[0] : SSet.{0})| ⟶
+          |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+            (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| =>
+        f (default : |(Δ[0] : SSet.{0})|))
+      unitIntervalToBoundaryTwoSup_one
+    change
+      boundaryCircleToBoundaryTwoSup
+          (unitIntervalToBoundaryCircle (1 : TopCat.I.{0})) =
+        unitIntervalToBoundaryTwoSup (1 : TopCat.I.{0})
+    have hcircle' :
+        boundaryCircleToBoundaryTwoSup
+            (unitIntervalToBoundaryCircle (1 : TopCat.I.{0})) =
+          boundaryCircleToBoundaryTwoSup (0 : AddCircle (3 : ℝ)) := by
+      simpa using hcircle
+    rw [hcircle']
+    change
+      AddCircle.liftIco (3 : ℝ) 0 boundaryCircleLiftPath
+          ((0 : ℝ) : AddCircle (3 : ℝ)) =
+        unitIntervalToBoundaryTwoSup (1 : TopCat.I.{0})
+    rw [AddCircle.liftIco_zero_coe_apply
+      (p := (3 : ℝ)) (x := (0 : ℝ)) (by norm_num)]
+    rw [boundaryCircleLiftPath, if_pos (by norm_num)]
+    have hp :
+        Set.projIcc (-1 : ℝ) 1 (by norm_num) (0 - 1) =
+          ⟨-1, by norm_num⟩ := by
+      norm_num [Set.projIcc_left]
+    rw [hp]
+    simpa using hglue.symm
+  · have hu_lt : (u : ℝ) < 1 := lt_of_le_of_ne u.2.2 h1
+    have hxIco : 2 + (u : ℝ) ∈ Set.Ico (0 : ℝ) 3 :=
+      ⟨by linarith [u.2.1], by linarith⟩
+    change
+      AddCircle.liftIco (3 : ℝ) 0 boundaryCircleLiftPath
+          ((2 + (u : ℝ) : ℝ) : AddCircle (3 : ℝ)) =
+        unitIntervalToBoundaryTwoSup t
+    rw [AddCircle.liftIco_zero_coe_apply hxIco, boundaryCircleLiftPath]
+    by_cases h0 : (u : ℝ) = 0
+    · have ht : t = 0 := by
+        apply TopCat.I.homeomorph.injective
+        apply Subtype.ext
+        simpa [u, TopCat.I.homeomorph_zero] using h0
+      subst t
+      rw [if_pos (by simp [u])]
+      have hp :
+          Set.projIcc (-1 : ℝ) 1 (by norm_num)
+              (2 + (u : ℝ) - 1) =
+            ⟨1, by norm_num⟩ := by
+        rw [h0]
+        norm_num [Set.projIcc_right]
+      rw [hp]
+      have hglue := congrArg
+        (fun f : |(Δ[0] : SSet.{0})| ⟶
+            |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+              (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| =>
+          f (default : |(Δ[0] : SSet.{0})|))
+        unitIntervalToBoundaryTwoSup_zero
+      simpa using hglue.symm
+    · have hu_pos : 0 < (u : ℝ) := lt_of_le_of_ne u.2.1 (Ne.symm h0)
+      rw [if_neg (by linarith)]
+      have hp :
+          Set.projIcc (0 : ℝ) 1 zero_le_one
+              (2 + (u : ℝ) - 2) = u := by
+        have hval : 2 + (u : ℝ) - 2 = (u : ℝ) := by ring
+        rw [hval]
+        exact Set.projIcc_of_mem _ u.2
+      rw [hp, Homeomorph.symm_apply_apply]
+
+lemma lastEdgeToBoundaryCircle_comp_inverse :
+    lastEdgeToBoundaryCircle ≫ boundaryCircleToBoundaryTwoSup =
+    SSet.toTop.map
+      (SSet.Subcomplex.homOfLE
+        (le_sup_left :
+          boundaryTwoFirstFace ≤
+            boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)) := by
+  ext x
+  change
+    boundaryCircleToBoundaryTwoSup
+        (unitIntervalToBoundaryCircle (lastEdgeIsoI.hom x)) =
+      SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_left :
+            boundaryTwoFirstFace ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)) x
+  rw [boundaryCircleToBoundaryTwoSup_unitInterval]
+  change
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_left :
+            boundaryTwoFirstFace ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+      (lastEdgeIsoI.inv (lastEdgeIsoI.hom x)) =
+    _
+  have hx := congrArg
+    (fun f : |(boundaryTwoFirstFace : SSet.{0})| ⟶
+        |(boundaryTwoFirstFace : SSet.{0})| => f x)
+    lastEdgeIsoI.hom_inv_id
+  have hx' : lastEdgeIsoI.inv (lastEdgeIsoI.hom x) = x := by
+    change (lastEdgeIsoI.hom ≫ lastEdgeIsoI.inv) x = x
+    exact hx
+  rw [hx']
+
+lemma boundaryTwoRemainingFacesToBoundaryCircle_comp_inverse :
+    boundaryTwoRemainingFacesToBoundaryCircle ≫
+      boundaryCircleToBoundaryTwoSup =
+    SSet.toTop.map
+      (SSet.Subcomplex.homOfLE
+        (le_sup_right :
+          boundaryTwoRemainingFaces ≤
+            boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)) := by
+  ext x
+  change
+    boundaryCircleToBoundaryTwoSup
+        (hornIccToBoundaryCircle
+          (horn_two_zero_toIcc
+            (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom x))) =
+      SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_right :
+            boundaryTwoRemainingFaces ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces)) x
+  rw [boundaryCircleToBoundaryTwoSup_hornIcc]
+  change
+    SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_right :
+            boundaryTwoRemainingFaces ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+      (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv
+        (hornIcc_from
+          (horn_two_zero_toIcc
+            (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom x)))) =
+      _
+  have hHorn := congrArg
+    (fun f : |(Λ[2, 0] : SSet.{0})| ⟶ |(Λ[2, 0] : SSet.{0})| =>
+      f (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom x))
+    horn_two_zero_toIcc_from
+  have hHorn' :
+      hornIcc_from
+          (horn_two_zero_toIcc
+            (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom x)) =
+        SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom x := by
+    simpa using hHorn
+  rw [hHorn']
+  have hIsoCat :
+      SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom ≫
+        SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv = 𝟙 _ := by
+    rw [← SSet.toTop.map_comp, Iso.hom_inv_id, SSet.toTop.map_id]
+  have hIso := congrArg
+    (fun f : |(boundaryTwoRemainingFaces : SSet.{0})| ⟶
+        |(boundaryTwoRemainingFaces : SSet.{0})| => f x)
+    hIsoCat
+  have hIso' :
+      SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv
+          (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom x) = x := by
+    change
+      (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom ≫
+          SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv) x = x
+    exact hIso
+  rw [hIso']
+
+/-- The circle map followed by its path inverse is the identity on the
+last-edge pushout. -/
+lemma boundaryTwoSupToBoundaryCircle_comp_inverse :
+    boundaryTwoSupToBoundaryCircle ≫ boundaryCircleToBoundaryTwoSup = 𝟙 _ := by
+  apply toTop_boundaryTwo_isPushout.hom_ext
+  · rw [boundaryTwoSupToBoundaryCircle_firstFace_assoc,
+      lastEdgeToBoundaryCircle_comp_inverse, Category.comp_id]
+  · rw [boundaryTwoSupToBoundaryCircle_remainingFaces_assoc,
+      boundaryTwoRemainingFacesToBoundaryCircle_comp_inverse, Category.comp_id]
+
+lemma boundaryTwoSupToBoundaryCircle_unitInterval
+    (t : TopCat.I.{0}) :
+    boundaryTwoSupToBoundaryCircle (unitIntervalToBoundaryTwoSup t) =
+      unitIntervalToBoundaryCircle t := by
+  have hFace := congrArg
+    (fun f :
+        |(boundaryTwoFirstFace : SSet.{0})| ⟶ boundaryCircle =>
+      f (lastEdgeIsoI.inv t))
+    boundaryTwoSupToBoundaryCircle_firstFace
+  change
+    boundaryTwoSupToBoundaryCircle
+        (SSet.toTop.map
+          (SSet.Subcomplex.homOfLE
+            (le_sup_left :
+              boundaryTwoFirstFace ≤
+                boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+          (lastEdgeIsoI.inv t)) =
+      unitIntervalToBoundaryCircle t
+  rw [show boundaryTwoSupToBoundaryCircle
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_left :
+            boundaryTwoFirstFace ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+        (lastEdgeIsoI.inv t)) =
+      lastEdgeToBoundaryCircle (lastEdgeIsoI.inv t) by simpa using hFace]
+  change unitIntervalToBoundaryCircle
+      (lastEdgeIsoI.hom (lastEdgeIsoI.inv t)) =
+    unitIntervalToBoundaryCircle t
+  have ht := congrArg
+    (fun f : TopCat.I.{0} ⟶ TopCat.I.{0} => f t)
+    lastEdgeIsoI.inv_hom_id
+  rw [show lastEdgeIsoI.hom (lastEdgeIsoI.inv t) = t by
+    change (lastEdgeIsoI.inv ≫ lastEdgeIsoI.hom) t = t
+    exact ht]
+
+lemma boundaryTwoSupToBoundaryCircle_hornIcc
+    (t : Set.Icc (-1 : ℝ) 1) :
+    boundaryTwoSupToBoundaryCircle (hornIccToBoundaryTwoSup t) =
+      hornIccToBoundaryCircle t := by
+  have hFace := congrArg
+    (fun f :
+        |(boundaryTwoRemainingFaces : SSet.{0})| ⟶ boundaryCircle =>
+      f (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv
+        (hornIcc_from t)))
+    boundaryTwoSupToBoundaryCircle_remainingFaces
+  change
+    boundaryTwoSupToBoundaryCircle
+        (SSet.toTop.map
+          (SSet.Subcomplex.homOfLE
+            (le_sup_right :
+              boundaryTwoRemainingFaces ≤
+                boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+          (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv
+            (hornIcc_from t))) =
+      hornIccToBoundaryCircle t
+  rw [show boundaryTwoSupToBoundaryCircle
+      (SSet.toTop.map
+        (SSet.Subcomplex.homOfLE
+          (le_sup_right :
+            boundaryTwoRemainingFaces ≤
+              boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces))
+        (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv
+          (hornIcc_from t))) =
+      boundaryTwoRemainingFacesToBoundaryCircle
+        (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv
+          (hornIcc_from t)) by simpa using hFace]
+  change
+    hornIccToBoundaryCircle
+      (horn_two_zero_toIcc
+        (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom
+          (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv
+            (hornIcc_from t)))) =
+      hornIccToBoundaryCircle t
+  have hIsoCat :
+      SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv ≫
+        SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom = 𝟙 _ := by
+    rw [← SSet.toTop.map_comp, Iso.inv_hom_id, SSet.toTop.map_id]
+  have hIso := congrArg
+    (fun f : |(Λ[2, 0] : SSet.{0})| ⟶ |(Λ[2, 0] : SSet.{0})| =>
+      f (hornIcc_from t))
+    hIsoCat
+  have hIso' :
+      SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom
+          (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv
+            (hornIcc_from t)) =
+        hornIcc_from t := by
+    change
+      (SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.inv ≫
+        SSet.toTop.map boundaryTwoRemainingFacesIsoHorn.hom)
+          (hornIcc_from t) = hornIcc_from t
+    exact hIso
+  rw [hIso']
+  have ht := congrArg (fun f : hornIcc ⟶ hornIcc => f t)
+    hornIcc_from_toIcc
+  rw [show horn_two_zero_toIcc (hornIcc_from t) = t by
+    change (hornIcc_from ≫ horn_two_zero_toIcc) t = t
+    exact ht]
+
+/-- The path inverse followed by the circle map is the identity. -/
+lemma boundaryCircleToBoundaryTwoSup_comp_boundaryTwoSupToBoundaryCircle :
+    boundaryCircleToBoundaryTwoSup ≫ boundaryTwoSupToBoundaryCircle = 𝟙 _ := by
+  ext y
+  letI : Fact (0 < (3 : ℝ)) := ⟨by norm_num⟩
+  let x := AddCircle.equivIco (3 : ℝ) 0 y
+  have hxIco : (x : ℝ) ∈ Set.Ico (0 : ℝ) 3 := by
+    simpa using x.2
+  have hy : (((x : ℝ) : AddCircle (3 : ℝ))) = y :=
+    AddCircle.coe_equivIco
+  change
+    boundaryTwoSupToBoundaryCircle
+        (boundaryCircleToBoundaryTwoSup y) = y
+  rw [← hy]
+  change
+    boundaryTwoSupToBoundaryCircle
+        (AddCircle.liftIco (3 : ℝ) 0 boundaryCircleLiftPath
+          (((x : ℝ) : AddCircle (3 : ℝ)))) =
+      (((x : ℝ) : AddCircle (3 : ℝ)))
+  rw [AddCircle.liftIco_zero_coe_apply hxIco, boundaryCircleLiftPath]
+  by_cases hx2 : (x : ℝ) ≤ 2
+  · rw [if_pos hx2, boundaryTwoSupToBoundaryCircle_hornIcc]
+    have hmem : (x : ℝ) - 1 ∈ Set.Icc (-1 : ℝ) 1 :=
+      ⟨by linarith [hxIco.1], by linarith⟩
+    have hp :
+        Set.projIcc (-1 : ℝ) 1 (by norm_num) ((x : ℝ) - 1) =
+          ⟨(x : ℝ) - 1, hmem⟩ :=
+      Set.projIcc_of_mem _ hmem
+    rw [hp]
+    change ((((x : ℝ) - 1) + 1 : ℝ) : AddCircle (3 : ℝ)) =
+      ((x : ℝ) : AddCircle (3 : ℝ))
+    congr 1
+    ring
+  · rw [if_neg hx2, boundaryTwoSupToBoundaryCircle_unitInterval]
+    have hmem : (x : ℝ) - 2 ∈ Set.Icc (0 : ℝ) 1 :=
+      ⟨by linarith, by linarith [hxIco.2]⟩
+    have hp :
+        Set.projIcc (0 : ℝ) 1 zero_le_one ((x : ℝ) - 2) =
+          ⟨(x : ℝ) - 2, hmem⟩ :=
+      Set.projIcc_of_mem _ hmem
+    rw [hp]
+    change
+      ((2 + (TopCat.I.homeomorph.{0}
+        (TopCat.I.homeomorph.{0}.symm ⟨(x : ℝ) - 2, hmem⟩) : ℝ) : ℝ) :
+          AddCircle (3 : ℝ)) =
+        ((x : ℝ) : AddCircle (3 : ℝ))
+    rw [Homeomorph.apply_symm_apply]
+    change ((2 + ((x : ℝ) - 2) : ℝ) : AddCircle (3 : ℝ)) =
+      ((x : ℝ) : AddCircle (3 : ℝ))
+    congr 1
+    ring
+
+/-- The last-edge pushout is isomorphic to the concrete additive circle. -/
+noncomputable def boundaryTwoSupIsoBoundaryCircle :
+    |((boundaryTwoFirstFace ⊔ boundaryTwoRemainingFaces :
+      (SSet.stdSimplex.obj ⦋2⦌ : SSet.{0}).Subcomplex) : SSet.{0})| ≅
+      boundaryCircle where
+  hom := boundaryTwoSupToBoundaryCircle
+  inv := boundaryCircleToBoundaryTwoSup
+  hom_inv_id := boundaryTwoSupToBoundaryCircle_comp_inverse
+  inv_hom_id :=
+    boundaryCircleToBoundaryTwoSup_comp_boundaryTwoSupToBoundaryCircle
+
+/-- Geometric realization of `∂Δ[2]` is homeomorphic to an additive circle. -/
+noncomputable def homeomorph_boundaryTwo_addCircle :
+    |boundaryTwoSSet| ≃ₜ AddCircle (3 : ℝ) :=
+  TopCat.homeoOfIso
+    ((SSet.toTop.mapIso boundaryTwoIsoSup).trans
+      boundaryTwoSupIsoBoundaryCircle)
 
 /-! ## A reusable attachment step -/
 
